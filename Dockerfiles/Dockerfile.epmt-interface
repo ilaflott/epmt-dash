@@ -1,0 +1,11 @@
+FROM python:3.6
+
+USER root
+WORKDIR /home/dash
+ADD . /home/dash
+RUN pip install --trusted-host pypi.python.org -r requirements_short.txt
+
+EXPOSE 8050
+ENV NAME World
+ENV PYTHONUNBUFFERED 0
+CMD ["python","-u","index.py"]

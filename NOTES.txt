@@ -1,0 +1,170 @@
+Notes:
+
+TOC:
+Dash - Overview of how dash works
+Current Status
+Implementation
+References
+Plans
+
+Dash:
+    Dash operates with Layouts, Callbacks and some very basic startup commands.
+
+    Layouts:
+            Layouts generate HTML to be served
+            Layouts use Dash Components for example:
+                dash_table.DataTable 
+                html.Div
+
+    Callbacks:
+            Callbacks provide interactivity to the webpage.
+            Callbacks are methods that take input and provide output to the Layout
+            Callbacks can have multiple inputs and states as input and replace contents
+                within the Layout using ID tags
+
+            Callback Example:
+                # Callback for excel download
+                @app.callback(
+                    Output('download-link-metasearch-1', 'href'),
+                    [Input('my-date-picker-range-metasearch', 'start_date'),
+                    Input('my-date-picker-range-metasearch', 'end_date')])   
+                def update_link(start_date, end_date):
+                    # Do excel download things
+            
+            This example passes the inputs start_date and end_date values from my-date-picker-range-metasearch, 
+            to the update_link method under the variable names start_date and end_date.
+            my-date-picker-range-metasearch is the id of a component in the layout.
+
+
+Current Status:
+I'm working on stripping down the Reporting Dashboard down to bare pages callbacks and functions.
+    Still work to be done in the callbacks and function cleanup
+
+
+Implementation:
+    Currently Using DataTables means dataframes will be in favor rather than dictionaries.
+    Datatables have the ability to handle selections for callbacks to make interactive pages.
+
+
+References:
+
+    List of dash projects(Some outdated):
+        https://github.com/ucg8j/awesome-dash/blob/master/README.md
+        https://community.plot.ly/t/show-and-tell-community-thread/7554
+
+I'm sure we're going to need to work with DataTables a TON:
+    Styling them custom here:
+        https://github.com/plotly/dash-recipes/blob/master/dash-datatable-custom-css.py
+        https://dash.plot.ly/datatable/style
+        https://dash.plot.ly/datatable/
+        https://dash.plot.ly/datatable/interactivity
+        https://community.plot.ly/t/dash-datatable-style-data-conditional-row-vice/21587
+
+
+
+Plans:
+
+Phase 1: 
+The goal will be for us to iterate quickly, run locally, see and comment. 
+    basic displays/routes down 
+    Display that displays a list
+    allows a set of things to be selected
+    prints those lists upon selection would be fine 
+        (By printing I mean logger.debug() to stdout)
+    Abbreviated vs raw display toggle
+        Abbreviated is basically a “human readable view” of a small subset of the raw data
+            as well as put into human readable units. 
+    For abbreviated metrics let’s try this for now: duration in h:m:s, 
+        % in user, % in system, % sleeping (wall-user-sys), 
+        % iowait (see iowait in Data) Bytes in, bytes out(try using gb,tb,mb,kB) 
+        to keep fields short, exit status
+        For extra credit see if you can render the jobs with non-zero exit status in red.
+
+
+
+
+Phase 2:
+    wire up interactivity and workflows.
+    That may take some time and require some CSS templating like bootstrap
+
+    Each display from the beginning should not assume anything about its own viewport. 
+    i.e. it might eventually be in a separate window, frame or region of the screen.
+
+    It should also be display aware, lay itself out on phone, a tablet and a laptop
+    Bootstrap helps with that
+
+UnitTesting:
+    For unit testing, the GUI just mocks calls to the API
+    So in that case, be very sure you are not tying the two together... 
+    The API is just where you will be getting the information from, but it’s conceivable isn’t he future that you get the info another way, 
+    like a REST call. So you need to keep the ‘data access’ separate from the ‘display logic’.
+
+    Links:
+        https://github.com/plotly/dash/issues/297
+        https://dash.plot.ly/testing
+
+
+ 
+And be ready for the real ones. You can use a local DB if you want, but again, I’m going to test it in CI without EPMT. ;-)
+I think the API may be that module - since it returns data frames and lists and stuff. So you just need stub functions that return static data as a placeholder for now.
+
+This display engine, like the last one you wrote, will be drivable by URL routes, which I will shortly outline in the documentation
+
+This means every display should be able to be duplicated with a URL
+
+unprocessed vs processed jobs.
+
+So that’s x.y.z.a/jobs&unprocessed=True or processed=False or some representation of the arguments
+just dumping raw info.
+
+WHat we are showing doesn’t quite matter as much early on as how we are doing it. That’s important to get right
+You are allowed to assume contents of the returned data frame up to the actual metrics. Those you get from the headers.
+I.e. you can assume a job Id but you can’t necessarily assume papiex metrics...
+Basically, what’s in the job model is ok to assume
+Everything after is data driven
+
+
+We will be building out the routes slowly and each functionality over time, 
+making sure each display is right before we move on.
+
+Well for the first one, you’ll only need to mock one call - get unprocessed jobs
+And you are only going to fetch the last N of them, where N is a default
+
+(saved in a cookie)
+
+interacting displays, i.e. you have selected multiple jobs in the unprocessed job list
+For example:
+update a display 
+    every time someone clicks on another job 
+        as they are adding them to a set)
+
+real logging (just hardcode verbosity and location)
+
+
+Philip Mucci
+ 
+And comments comments comments... without comments we will be lost
+I put one in the card that does about what we need, that should be good. Read through that one - and see if you need more. I think you need less than that link, because we’re not graphing anything at this point, just displaying lists that can be selected, sorted etc.
+For the purposes of DRY code, you can assume any time we want to print/render a table, we will want to be able to 1) Select one or more rows 2) Sort on any column.
+You can figure out what kind of interactivity we have, i.e, do we need to click a row and then click a button (route) or is the GUI reactive, where a single click does it. (I don’t think Dash/Flask will let us do the latter, which is ok, but we need to know)
+
+
+
+works without calling the API
+If you end up making assumptions about what’s in the database, you need to be aware of that.
+
+
+testing it on a vanilla phusion/baseimage:0.10.2 docker image with only a python 3.7 installed.
+
+(Similar to recipe from the Dockerfiles)
+
+not testing with EPMT
+script that will install requirements
+run the GUI via docker
+export the port to local host
+
+That way we can unit test the GUI super easily.
+research how we test python/dash guis automatically.
+
+I’ve decided I could get a display working like this in 8-10 hours with no experience but lots of online reading.
+Even sorting isn’t important. Forget about the details, just get the list done first
