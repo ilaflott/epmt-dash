@@ -15,6 +15,7 @@ app = dash.Dash(__name__,  external_stylesheets=external_stylesheets, url_base_p
 
 server = app.server
 app.config.suppress_callback_exceptions = True
+fullurl = ''
 #app.css.config.serve_locally = False
 #app.scripts.config.serve_locally = False
 

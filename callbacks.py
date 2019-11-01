@@ -19,16 +19,10 @@ import io
 
 from logging import getLogger, basicConfig, DEBUG, ERROR, INFO, WARNING
 logger = getLogger(__name__)  # you can use other name
-#logger.setLevel(100)
 
 #pd.options.mode.chained_assignment = None
-#df['Date'] = pd.to_datetime(df['Date'])
-#current_year = df['Year'].max()
-#current_week = df[df['Year'] == current_year]['Week'].max()
-#now = datetime.now()
-#datestamp = now.strftime("%Y%m%d")
 
-######################## Index Callbacks ######################## 
+######################## Select rows Callbacks ######################## 
 
 @app.callback(
     Output('content','children'),
@@ -93,23 +87,30 @@ nclick = 0
     [Input('my-toggle-switch', 'value'),
     Input('new-data-button', 'n_clicks')])
 def update_output(value,new_data):
-    from layouts import joblist as j
+    from layouts import df
     # Here nclick tracks how many times new data is pressed
     # this is used to update if it has changed
     global nclick
 
     # If new data is pressed once or more than once
     if new_data is not nclick:
+        # Update global with click count
         logger.debug("New Data pressed")
-        j.reset()
         nclick = new_data
-        orig = j.df
-        logger.info("Orig: cpu_time {} type:{}".format(orig.iloc[[0]]['cpu_time'],type(orig.iloc[[0]]['cpu_time'])))
+        
+        # Reset class instance with new random jobs
+        import jobs
+        new_jobs= jobs.job_gen()
+        new_jobs.reset()
+        # Set new random jobs as original
+        orig = new_jobs.df
+        # Check original against alternative df
+        logger.debug("Orig: cpu_time {} type:{}".format(orig.iloc[[0]]['cpu_time'],type(orig.iloc[[0]]['cpu_time'])))
         alt = orig.copy()
-        logger.info("Alt: cpu_time {} type:{}".format(alt.iloc[[0]]['cpu_time'],type(alt.iloc[[0]]['cpu_time'])))
+        logger.debug("Alt: cpu_time {} type:{}".format(alt.iloc[[0]]['cpu_time'],type(alt.iloc[[0]]['cpu_time'])))
     else:
         logger.debug("New Data not pressed")
-        orig = j.df
+        orig = df
         alt = orig.copy()
     ctx = dash.callback_context
     logger.info(value)
@@ -142,7 +143,7 @@ def update_output(value,new_data):
     logger.info("cpu_time {} type:{}".format(orig.iloc[[0]]['cpu_time'],type(orig.iloc[[0]]['cpu_time'])))
     logger.info("cpu_time {} type:{}".format(alt.iloc[[0]]['cpu_time'],type(alt.iloc[[0]]['cpu_time'])))
 
-    return [alt.head(5).to_dict('records'),
+    return [alt.head(10).to_dict('records'),
     [{"name": i, "id": i} for i in sorted(alt.columns)]
     ]
 

@@ -8,6 +8,8 @@ from components import Header #, print_button
 from datetime import datetime as dt
 from datetime import date, timedelta
 
+from logging import getLogger, basicConfig, DEBUG, ERROR, INFO, WARNING
+logger = getLogger(__name__)  # you can use other name
 
 
 
@@ -15,6 +17,7 @@ from datetime import date, timedelta
 
 import jobs
 joblist = jobs.job_gen()
+
 df = joblist.df
     
 ######################## End List of jobs ########################
@@ -73,7 +76,7 @@ layout_index =  html.Div([
                         'backgroundColor': '#FF6347',
                         'color': 'Black',
                     }],
-                data=df.head(5).to_dict('records'),
+                data=df.head(10).to_dict('records'),
             ),
             html.Div(id='switches', style={'inline':'true'}, children=[
               html.Button(id='index-select-all', children="Select All"),
@@ -94,7 +97,8 @@ layout_index =  html.Div([
 
 ######################## END index Layout ########################
 
-
+unproc = df.loc[df['Processing Complete'] == "No"].to_dict('records')
+logger.info(unproc)
 ######################## START unprocessed Layout ########################
 layout_unprocessed =  html.Div([
     html.Div([
@@ -115,15 +119,9 @@ layout_unprocessed =  html.Div([
           columns=[
             {"name": i, "id": i} for i in sorted(df.columns)
           ],
-          data=df.loc[df['Processing Complete'] == "No"].to_dict('records')
+          data=unproc
           )
         ]),
-        # Download Button
-        html.Div([
-          html.A(html.Button('Download Data', id='download-button'), id='download-link-ga-category')
-          ]),
-        # Second Data Table
-        
         # GRAPHS
         html.Div([
           html.Div(
@@ -227,7 +225,7 @@ layout_alerts =  html.Div([
 
 
 ######################## END alerts Layout ########################
-
+from app import fullurl
 ######################## START sample Layout ########################
 layout_sample =  html.Div([
     html.Div([
@@ -263,7 +261,7 @@ layout_sample =  html.Div([
             id='update_graph_1'
             ),
             html.Div([
-                html.P("Alert Table Here")
+                html.P(fullurl)
             ]
             )]
         ),

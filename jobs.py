@@ -29,7 +29,7 @@ def make_jobs(x):
 df = pd.DataFrame()
 class job_gen:
   def __init__(self):
-    sample = make_jobs(8)
+    sample = make_jobs(10)
     # Here tags are excluded as the datatable doesn't support dictionaries
     self.df = pd.DataFrame(sample, columns=['jobid','Processed','tags','exit_code','duration','usertime','systemtime','cpu_time','bytes_in','bytes_out'])
     self.df = self.df[['jobid','Processed','exit_code','duration','usertime','systemtime','cpu_time','bytes_in','bytes_out']]

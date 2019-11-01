@@ -38,9 +38,13 @@ app.layout = html.Div([
 ])
 # Update page
 # # # # # # # # #
+
 @app.callback(Output('page-content', 'children'),
-              [Input('url', 'pathname')])
-def display_page(pathname):
+              [Input('url', 'pathname'),
+              Input('url', 'href')])
+def display_page(pathname,pfullurl):
+    from app import fullurl
+    fullurl = pfullurl
     if pathname == '' or pathname == '/':
         return layout_index
     elif pathname == '/unprocessed/':
@@ -48,6 +52,17 @@ def display_page(pathname):
     elif pathname == '/alerts/':
         return layout_alerts
     elif pathname == '/table/':
+        from urllib.parse import parse_qs, urlparse
+        # https://docs.python.org/3/library/urllib.parse.html
+        # Parse URL using pfullurl
+        logger.info("URL:{}".format(pfullurl))
+        logger.debug(parse_qs(urlparse(pfullurl).query))
+        ji = parse_qs(urlparse(pfullurl).query)
+        logger.debug("jobids{}".format(ji['jobid'][0].split(',')))
+        qjobids = ji['jobid'][0].split(',')
+        # Generate DF for next layout
+        from layouts import df
+        logger.info(df.loc[df['Job ID'].isin(qjobids)])
         return layout_sample
     else:
         return noPage
