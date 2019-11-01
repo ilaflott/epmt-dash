@@ -42,9 +42,15 @@ I'm working on stripping down the Reporting Dashboard down to bare pages callbac
 
 
 Implementation:
-    Currently Using DataTables means dataframes will be in favor rather than dictionaries.
-    Datatables have the ability to handle selections for callbacks to make interactive pages.
-
+    This Multi Layout structure Uses App.py as the Main module.
+        index.py configures app.py with the layout based on the url that is requested
+        layouts.py contains the separate layouts that will be used as pages
+        callbacks.py is all the callbacks that will be used throughout the dash
+    Dash Components:
+        Currently Using DataTables means dataframes will be in favor rather than dictionaries.
+        Datatables have the ability to handle selections for callbacks to make interactive pages.
+    URL:
+        http://www.compciv.org/guides/python/how-tos/creating-proper-url-query-strings/
 
 References:
 
