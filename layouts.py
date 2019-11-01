@@ -14,8 +14,8 @@ from datetime import date, timedelta
 ######################## Random List of Jobs & DF ########################
 
 import jobs
-df = jobs.df
-
+joblist = jobs.job_gen()
+df = joblist.df
     
 ######################## End List of jobs ########################
 
@@ -81,29 +81,14 @@ layout_index =  html.Div([
               id='my-toggle-switch',
               label='Abbreviated',
               labelPosition='left',
-              style={'display':'inline-block'},
+              style={'display':'inline-block','font-size':'medium'}, # Set font size so it's not randomly inherited between browsers
               value=False,
               color='Green'
-              )]),
+              ),
+              html.Button('New Data', id='new-data-button')]),
             html.Div(id='content', children=[html.P("Hi")])
         ]),
 
-        # Download Button
-        html.Div([
-          html.A(html.Button('Download Data', id='download-button'), id='download-link-ga-category')
-          ]),
-        # Second Data Table
-        
-        # GRAPHS
-        html.Div([
-          html.Div(
-            id='update_graph_1'
-            ),
-            html.Div([
-                html.P("Index Job Table Here")
-            ]
-            )]
-        ),
         ], className="subpage")
     ], className="page")
 

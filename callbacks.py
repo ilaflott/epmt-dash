@@ -1,3 +1,4 @@
+import dash
 from dash.dependencies import Input, Output, State
 from app import app
 import plotly.graph_objs as go
@@ -18,6 +19,7 @@ import io
 
 from logging import getLogger, basicConfig, DEBUG, ERROR, INFO, WARNING
 logger = getLogger(__name__)  # you can use other name
+#logger.setLevel(100)
 
 #pd.options.mode.chained_assignment = None
 #df['Date'] = pd.to_datetime(df['Date'])
@@ -39,7 +41,7 @@ def f(data,rows):
             #or
             #selected_rows=pd.DataFrame(rows).iloc[i] 
         
-    #print([i['Job ID'] for i in selected_rows])
+    print([i['Job ID'] for i in selected_rows])
     return ("Selected Rows: "+str([i['Job ID'] for i in selected_rows]))
 
 # Custom Select all
@@ -83,16 +85,34 @@ def strfdelta(tdelta, fmt="{hours}:{minutes}:{seconds}"):
     d["minutes"], d["seconds"] = divmod(rem, 60)
     return fmt.format(**d)
 
+nclick = 0
 
 @app.callback(
     [Output('table-multicol-sorting', 'data'),
     Output('table-multicol-sorting','columns')],
-    [Input('my-toggle-switch', 'value')])
-def update_output(value):
-    import jobs
-    j = jobs.df
-    orig = jobs.df
-    alt = j.copy()
+    [Input('my-toggle-switch', 'value'),
+    Input('new-data-button', 'n_clicks')])
+def update_output(value,new_data):
+    from layouts import joblist as j
+    # Here nclick tracks how many times new data is pressed
+    # this is used to update if it has changed
+    global nclick
+
+    # If new data is pressed once or more than once
+    if new_data is not nclick:
+        logger.debug("New Data pressed")
+        j.reset()
+        nclick = new_data
+        orig = j.df
+        logger.info("Orig: cpu_time {} type:{}".format(orig.iloc[[0]]['cpu_time'],type(orig.iloc[[0]]['cpu_time'])))
+        alt = orig.copy()
+        logger.info("Alt: cpu_time {} type:{}".format(alt.iloc[[0]]['cpu_time'],type(alt.iloc[[0]]['cpu_time'])))
+    else:
+        logger.debug("New Data not pressed")
+        orig = j.df
+        alt = orig.copy()
+    ctx = dash.callback_context
+    logger.info(value)
     
     # Convert usertime to percentage
     if value:
@@ -114,10 +134,14 @@ def update_output(value):
     
     # Convert Durations
     if value:
-        alt['duration'] = pd.to_timedelta(alt['duration'], unit='us').apply(strfdelta)
+        alt['duration'] = pd.to_timedelta(alt['duration'], unit='us').apply(lambda x: x*10000).apply(strfdelta)
         alt['duration'] = pd.to_datetime(alt['duration'], format="%H:%M:%S").dt.time
-        alt['cpu_time'] = pd.to_timedelta(alt['cpu_time'], unit='us').apply(strfdelta)
+        alt['cpu_time'] = pd.to_timedelta(alt['cpu_time'], unit='us').apply(lambda x: x*10000).apply(strfdelta)
         alt['cpu_time'] = pd.to_datetime(alt['cpu_time'], format="%H:%M:%S").dt.time
+
+    logger.info("cpu_time {} type:{}".format(orig.iloc[[0]]['cpu_time'],type(orig.iloc[[0]]['cpu_time'])))
+    logger.info("cpu_time {} type:{}".format(alt.iloc[[0]]['cpu_time'],type(alt.iloc[[0]]['cpu_time'])))
+
     return [alt.head(5).to_dict('records'),
     [{"name": i, "id": i} for i in sorted(alt.columns)]
     ]
