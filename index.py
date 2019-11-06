@@ -19,6 +19,13 @@ app.index_string = '''
         <title>EPMT Job Display</title>
         {%favicon%}
         {%css%}
+        <script>
+        $(document).ready(function(){
+        // jQuery methods go here...
+        document.getElementById('expanded-row--empty-cell dash-select-header').innerHTML = 'Test';
+
+        });
+        </script>
     </head>
     <body>
         {%app_entry%}
@@ -27,7 +34,11 @@ app.index_string = '''
             {%scripts%}
             {%renderer%}
         </footer>
-        <div>Experiment Performance Management Tool - Minimal Metrics LLC</div>
+        <div>Experiment Performance Management Tool - Minimal Metrics LLC
+        <p style="float: right">
+        <img src="\\assets\\cc_logo.jpeg" width="120" height="120"></p>
+        </div>
+        <div style="clear: both;"></div>
     </body>
 </html>
 '''

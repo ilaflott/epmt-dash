@@ -1,18 +1,22 @@
 import dash
 
 
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css',
+external_stylesheets = [ # Remote Styles
                         "https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css",
                         "https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css",
+
+                         # Fonts
                         "https://fonts.googleapis.com/css?family=Raleway:400,300,600",
-                        "https://codepen.io/bcd/pen/KQrXdb.css",
-                        "https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"]
-                        #"https://codepen.io/dmcomfort/pen/JzdzEZ.css"]
+                        "https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css",
+
+                        # Locally saved /assets/*
+                        #"https://codepen.io/bcd/pen/KQrXdb.css", # Bordering & Theming
+                        #"https://codepen.io/dmcomfort/pen/JzdzEZ.css", # Data table theming
+                        #'https://codepen.io/chriddyp/pen/bWLwgP.css', # Plotly Css
+                        ]
+
 
 app = dash.Dash(__name__,  external_stylesheets=external_stylesheets, url_base_pathname='/')
-
-
-
 server = app.server
 app.config.suppress_callback_exceptions = True
 fullurl = ''

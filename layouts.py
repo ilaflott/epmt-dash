@@ -56,8 +56,42 @@ layout_index =  html.Div([
                 id='table-multicol-sorting',
                 row_selectable="multi",
                 sort_action='native',
+                sort_mode='multi',
+                #data=df.head(10).to_dict('records'), # Do not display data initially, callback will handle it
+                filter_action="native",
+                #style_as_list_view=True,
                 columns=[
                     {"name": i, "id": i} for i in df.columns
+                ],
+                fixed_rows={ 'headers': True, 'data': 0 },
+                fixed_columns={ 'headers': True, 'data': 1 },#, Css is not setup for this
+                style_header={
+                  #'overflow': 'visible',
+                  'font-size':'18px',
+                  'padding': '10px',
+                  'whiteSpace':'normal',
+                  #'height':'100%'
+                  #'text-align':'center',
+                },
+                style_cell={
+                  'font-family':'sans-serif',
+                  'font-size':'16px',
+                  'overflow': 'hidden',
+                  #'textOverflow': 'ellipsis',
+                  'minWidth': '120px'#, 'maxWidth': '140px',
+                },
+                style_table={
+                'padding': '5px',
+                'height': '600px'},
+                style_header_conditional=[
+                      #                {
+                     #'if': {'column_id': 'tags'},
+                     #'text-align': 'left',
+                     #},
+                    {
+                    'if': {'column_id': 'Job ID'},
+                    'text-align': 'right',
+                    }
                 ],
                 style_data_conditional=[
                     #{
@@ -73,24 +107,38 @@ layout_index =  html.Div([
 
                             'filter_query': '{Exit Status} != 0'
                         },
-                        'backgroundColor': '#FF6347',
-                        'color': 'Black',
-                    }],
-                data=df.head(10).to_dict('records'),
+                        'backgroundColor': '#FFc0b5'
+                    },
+                    {
+                    'if': {'filter_query': '{Exit Status} != 0','column_id': 'Exit Status'},
+                          'text-align': 'left',
+                          'font-weight':'600',
+                    },
+                    #{
+                    #'if': {'column_id': 'tags'},
+                    #'text-align': 'left',
+                    #},
+                    {
+                    'if': {'column_id': 'Job ID'},
+                    'text-align': 'right',
+                    }
+                    ],
             ),
             html.Div(id='switches', style={'inline':'true'}, children=[
               html.Button(id='index-select-all', children="Select All"),
               daq.ToggleSwitch(
-              id='my-toggle-switch',
-              label='Abbreviated',
-              labelPosition='left',
-              style={'display':'inline-block','font-size':'medium'}, # Set font size so it's not randomly inherited between browsers
+              id='raw-switch',
+              label='Display Raw',
+              # labelPosition='left',
+              style={'display':'inline-block','fontsize':'medium'}, # Set font size so it's not randomly inherited between browsers
               value=False,
               color='Green'
               ),
               html.Button('New Data', id='new-data-button')]),
-            html.Div(id='content', children=[html.P("Hi")])
+            html.Div(id='content', children=[html.P("Hi")]),
+            html.Div(id='content2')
         ]),
+        html.Script('''window.alert("sometext");''')
 
         ], className="subpage")
     ], className="page")

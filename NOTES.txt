@@ -53,19 +53,21 @@ Implementation:
         http://www.compciv.org/guides/python/how-tos/creating-proper-url-query-strings/
 
 References:
+    Very long thread on implementing Dash beneath Flask
 
     List of dash projects(Some outdated):
         https://github.com/ucg8j/awesome-dash/blob/master/README.md
         https://community.plot.ly/t/show-and-tell-community-thread/7554
 
-I'm sure we're going to need to work with DataTables a TON:
-    Styling them custom here:
-        https://github.com/plotly/dash-recipes/blob/master/dash-datatable-custom-css.py
-        https://dash.plot.ly/datatable/style
-        https://dash.plot.ly/datatable/
-        https://dash.plot.ly/datatable/interactivity
-        https://community.plot.ly/t/dash-datatable-style-data-conditional-row-vice/21587
-
+    I'm sure we're going to need to work with DataTables a TON:
+        Styling them custom here:
+            https://github.com/plotly/dash-recipes/blob/master/dash-datatable-custom-css.py
+            ***https://dash.plot.ly/datatable/style
+            https://dash.plot.ly/datatable/
+            https://dash.plot.ly/datatable/interactivity
+            https://community.plot.ly/t/dash-datatable-style-data-conditional-row-vice/21587
+        Full Column name hotspot sorting previously worked:
+            https://github.com/plotly/dash-table-experiments/blob/master/images/DataTable.gif
 
 
 Plans:

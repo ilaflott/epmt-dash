@@ -3,7 +3,7 @@ import dash_core_components as dcc
 
 def Header():
     return html.Div([
-        get_logo(),
+        #get_logo(),
         get_header(),
         html.Br([]),
         get_menu()

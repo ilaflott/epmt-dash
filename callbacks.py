@@ -35,7 +35,7 @@ def f(data,rows):
             #or
             #selected_rows=pd.DataFrame(rows).iloc[i] 
         
-    print([i['Job ID'] for i in selected_rows])
+    #print([i['Job ID'] for i in selected_rows])
     return ("Selected Rows: "+str([i['Job ID'] for i in selected_rows]))
 
 # Custom Select all
@@ -79,20 +79,34 @@ def strfdelta(tdelta, fmt="{hours}:{minutes}:{seconds}"):
     d["minutes"], d["seconds"] = divmod(rem, 60)
     return fmt.format(**d)
 
+power_labels = {0: '', 1: 'K', 2: 'M', 3: 'G', 4: 'T', 5: 'P'}
+def get_unit(alist):
+    hi = max(alist)
+    from math import log
+    #print(alist)
+    return power_labels[int(log(hi,1024))]
+def convtounit(val,reqUnit):
+    # Letter to Unit reverse search
+    unitp = list(power_labels.keys())[list(power_labels.values()).index(reqUnit)]
+    return val/1024**unitp
+
 nclick = 0
 
 @app.callback(
     [Output('table-multicol-sorting', 'data'),
-    Output('table-multicol-sorting','columns')],
-    [Input('my-toggle-switch', 'value'),
+    Output('table-multicol-sorting', 'columns')],
+    [Input('raw-switch', 'value'),
     Input('new-data-button', 'n_clicks')])
-def update_output(value,new_data):
+def update_output(raw_toggle, new_data):
     from layouts import df
+    ctx = dash.callback_context
+    # CTX Needs to be used... 
+    logger.info("{}{}{}".format(ctx.triggered,ctx.inputs,ctx.states))
     # Here nclick tracks how many times new data is pressed
     # this is used to update if it has changed
     global nclick
 
-    # If new data is pressed once or more than once
+    # New Data button clicked
     if new_data is not nclick:
         # Update global with click count
         logger.debug("New Data pressed")
@@ -105,18 +119,18 @@ def update_output(value,new_data):
         # Set new random jobs as original
         orig = new_jobs.df
         # Check original against alternative df
-        logger.debug("Orig: cpu_time {} type:{}".format(orig.iloc[[0]]['cpu_time'],type(orig.iloc[[0]]['cpu_time'])))
+        #logger.debug("Orig: cpu_time {} type:{}".format(orig.iloc[[0]]['cpu_time'],type(orig.iloc[[0]]['cpu_time'])))
         alt = orig.copy()
-        logger.debug("Alt: cpu_time {} type:{}".format(alt.iloc[[0]]['cpu_time'],type(alt.iloc[[0]]['cpu_time'])))
+        #logger.debug("Alt: cpu_time {} type:{}".format(alt.iloc[[0]]['cpu_time'],type(alt.iloc[[0]]['cpu_time'])))
     else:
-        logger.debug("New Data not pressed")
         orig = df
         alt = orig.copy()
     ctx = dash.callback_context
-    logger.info(value)
+    #logger.info(value)
     
+    # If Raw toggle is switched
     # Convert usertime to percentage
-    if value:
+    if not raw_toggle:
         alt['usertime'] = alt['usertime'] / orig['cpu_time']
         alt['usertime'] = pd.Series(
             ["{0:.2f}%".format(val * 100) for val in alt['usertime']], index=alt.index)
@@ -129,22 +143,26 @@ def update_output(value,new_data):
         }, inplace=True)
 
     # Convert Bytes
-    if value:
-        alt['bytes_in'] = alt['bytes_in'].apply(format_bytes)
-        alt['bytes_out'] = alt['bytes_out'].apply(format_bytes)
-    
+        in_units = alt['bytes_in'].tolist()
+        in_units = get_unit(in_units)
+        out_units = alt['bytes_out'].tolist()
+        out_units = get_unit(out_units)
+        logger.info("Input units {}b Output Units {}b".format(in_units,out_units))
+        alt['bytes_in'] = alt['bytes_in'].apply(convtounit,reqUnit=in_units).round(1)#.map('{:.2f}'.format)
+        alt['bytes_out'] = alt['bytes_out'].apply(convtounit,reqUnit=out_units).round(1)#.map('{:.2f}'.format)
+        alt.rename(columns={
+            'bytes_in': 'bytes_in ({}b)'.format(in_units),
+            'bytes_out': 'bytes_out ({}b)'.format(out_units),
+        }, inplace=True)
+
     # Convert Durations
-    if value:
-        alt['duration'] = pd.to_timedelta(alt['duration'], unit='us').apply(lambda x: x*10000).apply(strfdelta)
-        alt['duration'] = pd.to_datetime(alt['duration'], format="%H:%M:%S").dt.time
+        alt['Duration'] = pd.to_timedelta(alt['Duration'], unit='us').apply(lambda x: x*10000).apply(strfdelta)
+        alt['Duration'] = pd.to_datetime(alt['Duration'], format="%H:%M:%S").dt.time
         alt['cpu_time'] = pd.to_timedelta(alt['cpu_time'], unit='us').apply(lambda x: x*10000).apply(strfdelta)
         alt['cpu_time'] = pd.to_datetime(alt['cpu_time'], format="%H:%M:%S").dt.time
-
-    logger.info("cpu_time {} type:{}".format(orig.iloc[[0]]['cpu_time'],type(orig.iloc[[0]]['cpu_time'])))
-    logger.info("cpu_time {} type:{}".format(alt.iloc[[0]]['cpu_time'],type(alt.iloc[[0]]['cpu_time'])))
-
-    return [alt.head(10).to_dict('records'),
-    [{"name": i, "id": i} for i in sorted(alt.columns)]
+        alt.rename(columns={'cpu_time':'cpu_time (HH:MM:SS)'}, inplace=True)
+    return [alt.to_dict('records'),
+    [{"name": i, "id": i} for i in alt.columns]
     ]
 
 ######################## /Index Callbacks ######################## 
