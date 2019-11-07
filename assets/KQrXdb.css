@@ -20,27 +20,26 @@ body {
 	  width: 100%;
 	  /*min-height: 300mm;*/
 	  padding: 5mm;
-	  margin: 10mm auto;
+	  /*margin: 10mm auto;*/
 	  /* border: 1px #D3D3D3 solid; */
 	  border-radius: 5px;
 	  background: white;
 	  /* box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); */
  }
 
- /* Used for cleaning up fixed columns */
- #table-multicol-sorting > div.dash-spreadsheet-container.dash-spreadsheet.dash-freeze-top.dash-freeze-left.dash-fill-width > div > div.row.row-0 > div.cell.cell-0-0.dash-fixed-row.dash-fixed-column > table
- {
-	 height:100%;
- }
- #table-multicol-sorting > div.dash-spreadsheet-container.dash-spreadsheet.dash-freeze-top.dash-freeze-left.dash-fill-width > div > div.row.row-0 > div.cell.cell-0-0.dash-fixed-row.dash-fixed-column > table > tbody > tr:nth-child(1)
- {
-	 height: 100%;
- }
- #table-multicol-sorting > div.dash-spreadsheet-container.dash-spreadsheet.dash-freeze-top.dash-freeze-left.dash-fill-width > div > div.row.row-0 > div.cell.cell-0-0.dash-fixed-row.dash-fixed-column > table > tbody > tr:nth-child(1) > th.dash-header.column-0
- {
-	 height: 100%
- }
-
+/* Top Right toolbar */
+div[id="switches"]{
+	padding: 5px;
+    position: fixed;
+    top: 74px;
+    right: 72px;
+    z-index: 310;
+    background-color: lightgray;
+    border-radius: 15px;
+    margin: 15px;
+    width: 260px;
+    justify-content: space-between;
+}
 
 /*Used for resizing the sort buttons*/
 span.column-header--sort{
@@ -71,7 +70,7 @@ svg.svg-inline--fa.fa-sort.fa-w-10 {
 }
 
  .subpage {
-	  padding: 1cm;
+	  padding: 10px;
 	  border: 5px #ccc solid;
 	  /*height: 257mm;*/
 	  /*outline: 2cm whitesmoke solid;*/

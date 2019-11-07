@@ -27,7 +27,20 @@ df = joblist.df
 layout_index =  html.Div([
     html.Div([
         # CC Header
+        html.Div(style={'inline':'true'},children=[
         Header(),
+        html.Div(id='switches', style={'inline':'true'}, children=[
+              daq.ToggleSwitch(
+              id='raw-switch',
+              label='Display Raw',
+              # labelPosition='left',
+              style={'display':'inline-block','fontsize':'medium'}, # Set font size so it's not randomly inherited between browsers
+              value=False,
+              color='Green'
+              ),
+        html.Button('New Data', id='new-data-button')]),
+        ]),
+        ]),
         # Date Picker
         
         # Header Bar
@@ -56,7 +69,7 @@ layout_index =  html.Div([
                 id='table-multicol-sorting',
                 row_selectable="multi",
                 sort_action='native',
-                sort_mode='multi',
+                #sort_mode='multi', Keeping it simple now
                 #data=df.head(10).to_dict('records'), # Do not display data initially, callback will handle it
                 filter_action="native",
                 #style_as_list_view=True,
@@ -64,7 +77,7 @@ layout_index =  html.Div([
                     {"name": i, "id": i} for i in df.columns
                 ],
                 fixed_rows={ 'headers': True, 'data': 0 },
-                fixed_columns={ 'headers': True, 'data': 1 },#, Css is not setup for this
+                #fixed_columns={ 'headers': True, 'data': 1 },#, Css is not setup for this
                 style_header={
                   #'overflow': 'visible',
                   'font-size':'18px',
@@ -124,17 +137,8 @@ layout_index =  html.Div([
                     }
                     ],
             ),
-            html.Div(id='switches', style={'inline':'true'}, children=[
+            html.Div(id='lower-menu', style={'inline':'true'}, children=[
               html.Button(id='index-select-all', children="Select All"),
-              daq.ToggleSwitch(
-              id='raw-switch',
-              label='Display Raw',
-              # labelPosition='left',
-              style={'display':'inline-block','fontsize':'medium'}, # Set font size so it's not randomly inherited between browsers
-              value=False,
-              color='Green'
-              ),
-              html.Button('New Data', id='new-data-button')]),
             html.Div(id='content', children=[html.P("Hi")]),
             html.Div(id='content2')
         ]),
