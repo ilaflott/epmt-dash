@@ -43,6 +43,8 @@ def get_menu():
 
         dcc.Link('Overview - Unprocessed Jobs', href='/unprocessed/', className="tab"),
 
+        dcc.Link('References', href='/refs/', className="tab"),
+
         dcc.Link('Alert Jobs', href='/alerts/', className="tab"),
 
         # dcc.Link('Menu Entry', href='/url/', className="tab"),

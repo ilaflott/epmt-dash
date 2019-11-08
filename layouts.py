@@ -17,8 +17,9 @@ logger = getLogger(__name__)  # you can use other name
 
 import jobs
 joblist = jobs.job_gen()
-
 df = joblist.df
+
+
     
 ######################## End List of jobs ########################
 
@@ -95,7 +96,8 @@ layout_index =  html.Div([
                 },
                 style_table={
                 'padding': '5px',
-                'height': '600px'},
+                #'height': '600px'
+                },
                 style_header_conditional=[
                       #                {
                      #'if': {'column_id': 'tags'},
@@ -188,6 +190,84 @@ layout_unprocessed =  html.Div([
     ], className="page")
 
 ######################## END unprocessed Layout ########################
+
+######################## START References Layout ########################
+import pandas as pd
+refs = {1:["ref1",['tag1:tag1','tag2:tag2'],['job1','job2'],['duration','cpu_time','num_procs']],
+        2:["ref2",['tag1:tag1','tag2:tag2'],['job1','job2'],['duration','cpu_time','num_procs']],
+        3:["ref3",['tag1:tag1','tag2:tag2'],['job1','job2'],['duration','cpu_time','num_procs']],
+        4:["ref4",['tag1:tag1','tag2:tag2'],['job1','job2'],['duration','cpu_time','num_procs']]}
+ref_df = pd.DataFrame(refs)
+ref_df = ref_df.transpose()
+ref_df.rename(columns={0:"Model",1:"Tags",2:"Jobs",3:"Features"},inplace=True)
+from json import dumps
+ref_df['Tags'] = ref_df['Tags'].apply(dumps)
+ref_df['Jobs'] = ref_df['Jobs'].apply(dumps)
+ref_df['Features'] = ref_df['Features'].apply(dumps)
+layout_references =  html.Div([
+    html.Div([
+        # CC Header
+        Header(),
+        # Date Picker
+        
+        # Header Bar
+        html.Div([
+          html.H6(["Reference Models"], className="gs-header gs-text-header padded",style={'marginTop': 15})
+          ]),
+        # Radio Button
+        
+        # First Data Table
+        html.Div([
+          dash_table.DataTable(
+                id='table-multicol-sorting',
+                row_selectable="multi",
+                sort_action='native',
+                #sort_mode='multi', Keeping it simple now
+                #data=df.head(10).to_dict('records'), # Do not display data initially, callback will handle it
+                filter_action="native",
+                #style_as_list_view=True,
+                columns=[
+                    {"name": i, "id": i} for i in ref_df.columns
+                ],
+                data=ref_df.to_dict('records'),
+                fixed_rows={ 'headers': True, 'data': 0 },
+                #fixed_columns={ 'headers': True, 'data': 1 },#, Css is not setup for this
+                style_header={
+                  #'overflow': 'visible',
+                  'font-size':'18px',
+                  'padding': '10px',
+                  'whiteSpace':'normal',
+                  #'height':'100%'
+                  #'text-align':'center',
+                },
+                style_cell={
+                  'font-family':'sans-serif',
+                  'font-size':'16px',
+                  'overflow': 'hidden',
+                  'minWidth': '120px'#, 'maxWidth': '140px',
+                },
+                style_table={
+                'padding': '5px',
+                },
+                style_header_conditional=[
+                    {
+                    'if': {'column_id': 'Job ID'},
+                    'text-align': 'right',
+                    }
+                ],
+                style_data_conditional=[
+                    {
+                      'if': {'column_id': 'Job ID'},
+                      'text-align': 'right',
+                    }
+                ],
+            )
+        ]),
+
+        ], className="subpage")
+    ], className="page")
+######################## END References Layout ########################
+
 
 ######################## START Display Layout ########################
 layout_display =  html.Div([

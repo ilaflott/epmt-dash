@@ -52,7 +52,12 @@ span.column-header--sort{
 }
 span.column-header-name {
 	position: relative;
-	top:-80px;
+	top:-60%;
+	/*left: -8px;*/
+}
+
+#table-multicol-sorting > div.dash-spreadsheet-container.dash-spreadsheet.dash-freeze-top.dash-fill-width > div > div.row.row-0 > div.cell.cell-0-1.dash-fixed-row > table > tbody > tr:nth-child(1) {
+    height: 200px;
 }
 
 th.dash-header[class*=" column-"] > div {
@@ -60,11 +65,11 @@ th.dash-header[class*=" column-"] > div {
 	height: 100%;
 	width:100%;
 }
-th.dash-header[class*=" column-"].cell--right-last > div span.column-header-name{
-	display: table-cell; /*contents*/
+/*th.dash-header[class*=" column-"].cell--right-last > div span.column-header-name{
+	display: table-cell; /*contents
 	height: 100%;
 	width:100%;
-}
+}*/
 svg.svg-inline--fa.fa-sort.fa-w-10 {
 	display: block;
 }

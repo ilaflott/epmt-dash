@@ -4,7 +4,7 @@ from dash.dependencies import Input, Output, State
 # see https://community.plot.ly/t/nolayoutexception-on-deployment-of-multi-page-dash-app-example-code/12463/2?u=dcomfort
 from app import server
 from app import app
-from layouts import layout_index, layout_unprocessed, layout_alerts, noPage, layout_display, layout_sample
+from layouts import *
 import callbacks
 import logging
 logging.basicConfig(level=logging.DEBUG)
@@ -19,13 +19,7 @@ app.index_string = '''
         <title>EPMT Job Display</title>
         {%favicon%}
         {%css%}
-        <script>
-        $(document).ready(function(){
-        // jQuery methods go here...
-        document.getElementById('expanded-row--empty-cell dash-select-header').innerHTML = 'Test';
 
-        });
-        </script>
     </head>
     <body>
         {%app_entry%}
@@ -62,6 +56,8 @@ def display_page(pathname,pfullurl):
         return layout_unprocessed
     elif pathname == '/alerts/':
         return layout_alerts
+    elif pathname == '/refs/':
+        return layout_references
     elif pathname == '/table/':
         from urllib.parse import parse_qs, urlparse
         # https://docs.python.org/3/library/urllib.parse.html
