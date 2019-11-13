@@ -1,5 +1,6 @@
 import dash_html_components as html
 import dash_core_components as dcc
+import dash_bootstrap_components as dbc
 
 def Header():
     return html.Div([
@@ -8,6 +9,10 @@ def Header():
         html.Br([]),
         get_menu()
     ])
+
+from jobs import get_version
+def Footer():
+    return html.Div(["Experiment Performance Management Tool - ", html.Div(id='version',children=[get_version()],style={'width': '49%', 'display': 'inline-block'})])
 
 def get_logo():
     logo = html.Div([
@@ -37,17 +42,19 @@ def get_header():
 
 
 def get_menu():
-    menu = html.Div([
-
-        dcc.Link('Overview - Recent Jobs', href='/', className="tab first"),
-
-        dcc.Link('Overview - Unprocessed Jobs', href='/unprocessed/', className="tab"),
-
-        dcc.Link('References', href='/refs/', className="tab"),
-
-        dcc.Link('Alert Jobs', href='/alerts/', className="tab"),
-
-        # dcc.Link('Menu Entry', href='/url/', className="tab"),
-
-    ], className="row ")
+    menu = dbc.Container([
+        dbc.Row(
+            [
+                dbc.Col([
+                html.Div([
+                    dcc.Link('Overview - Recent Jobs', href='/', className="tab first"),
+                    dcc.Link('Models', href='/refs/', className="tab"),
+                    dcc.Link('Alert Jobs', href='/alerts/', className="tab")])
+                ],width=5),
+                dbc.Col(html.Div(dcc.Input(placeholder='Search/Filter...', type='text', value='',style={'display':'block','width':'100%'})),width=5)
+            ],
+            justify="between",
+            )
+    ], fluid=True)
     return menu
+                    #dcc.Linhtml.Div(k('Overview - Unprocessed Jobs', href='/unprocessed/', className="tab"),

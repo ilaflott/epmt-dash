@@ -4,7 +4,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 import dash_table
 import dash
-from components import Header #, print_button
+from components import Header, Footer #, print_button
 from datetime import datetime as dt
 from datetime import date, timedelta
 
@@ -25,6 +25,19 @@ df = joblist.df
 
 
 ######################## START index Layout ########################
+
+# Autosizing Columns
+# Need to export this
+def create_conditional_style(df):
+    PIXEL_FOR_CHAR = 10
+    style=[]
+    for col in df.columns:
+        name_length = len(col)
+        pixel = 50 + round(name_length * PIXEL_FOR_CHAR)
+        pixel = str(pixel) + "px"
+        style.append({'if': {'column_id': col}, 'minWidth': pixel})
+    return style
+
 layout_index =  html.Div([
     html.Div([
         # CC Header
@@ -33,13 +46,13 @@ layout_index =  html.Div([
         html.Div(id='switches', style={'inline':'true'}, children=[
               daq.ToggleSwitch(
               id='raw-switch',
-              label='Display Raw',
+              label='Raw Data',
               # labelPosition='left',
               style={'display':'inline-block','fontsize':'medium'}, # Set font size so it's not randomly inherited between browsers
               value=False,
               color='Green'
               ),
-        html.Button('New Data', id='new-data-button')]),
+        ]),
         ]),
         ]),
         # Date Picker
@@ -72,7 +85,7 @@ layout_index =  html.Div([
                 sort_action='native',
                 #sort_mode='multi', Keeping it simple now
                 #data=df.head(10).to_dict('records'), # Do not display data initially, callback will handle it
-                filter_action="native",
+                #filter_action="native",
                 #style_as_list_view=True,
                 columns=[
                     {"name": i, "id": i} for i in df.columns
@@ -81,72 +94,74 @@ layout_index =  html.Div([
                 #fixed_columns={ 'headers': True, 'data': 1 },#, Css is not setup for this
                 style_header={
                   #'overflow': 'visible',
-                  'font-size':'18px',
-                  'padding': '10px',
+                  'font-size':'15px',
+                  'padding': '5px',
                   'whiteSpace':'normal',
-                  #'height':'100%'
-                  #'text-align':'center',
                 },
                 style_cell={
                   'font-family':'sans-serif',
                   'font-size':'16px',
                   'overflow': 'hidden',
+                  'minWidth': '95px',
                   #'textOverflow': 'ellipsis',
-                  'minWidth': '120px'#, 'maxWidth': '140px',
                 },
                 style_table={
                 'padding': '5px',
                 #'height': '600px'
                 },
                 style_header_conditional=[
-                      #                {
-                     #'if': {'column_id': 'tags'},
-                     #'text-align': 'left',
-                     #},
+                     {
+                    'if': {'column_id': 'tags'},
+                    'text-align': 'left',
+                    },
                     {
                     'if': {'column_id': 'Job ID'},
                     'text-align': 'right',
-                    }
+                    },
+                    
                 ],
                 style_data_conditional=[
-                    #{
-                    #    'if': {
-
-                    #        'filter_query': '{Processing Complete} eq "No"'
-                    #    },
-                    #    'backgroundColor': '#FF6347',
-                    #    'color': 'Black',
-                    #},
-                    {
-                        'if': {
-
-                            'filter_query': '{Exit Status} != 0'
-                        },
+                    {'if': {'filter_query': '{Exit Status} != 0'},
                         'backgroundColor': '#FFc0b5'
                     },
+                    # Shrink Narrow columns
                     {
-                    'if': {'filter_query': '{Exit Status} != 0','column_id': 'Exit Status'},
-                          'text-align': 'left',
-                          'font-weight':'600',
+                    'if': {'column_id': 'bytes_in (Gb)'},
+                    'minWidth': '75px',
                     },
-                    #{
-                    #'if': {'column_id': 'tags'},
-                    #'text-align': 'left',
-                    #},
+                    {
+                    'if': {'column_id': 'bytes_out (Gb)'},
+                    'minWidth': '75px',
+                    },
+                    {
+                    'if': {'column_id': 'Exit Status'},
+                    'minWidth': '60px',
+                    },
+                    {
+                    'if': {'column_id': 'Processing Complete'},
+                    'minWidth': '80px',
+                    },
+
                     {
                     'if': {'column_id': 'Job ID'},
                     'text-align': 'right',
+                    },
+                    {
+                    'if': {'column_id': 'tags'},
+                    'text-align': 'left',
                     }
                     ],
             ),
             html.Div(id='lower-menu', style={'inline':'true'}, children=[
               html.Button(id='index-select-all', children="Select All"),
-            html.Div(id='content', children=[html.P("Hi")]),
+            html.Button('New Data', id='new-data-button'),
+            html.Div(id='content', children=[]),
             html.Div(id='content2')
         ]),
         html.Script('''window.alert("sometext");''')
 
-        ], className="subpage")
+        ], className="subpage"),
+        Footer()
     ], className="page")
 
 ######################## END index Layout ########################
@@ -224,7 +239,7 @@ layout_references =  html.Div([
                 sort_action='native',
                 #sort_mode='multi', Keeping it simple now
                 #data=df.head(10).to_dict('records'), # Do not display data initially, callback will handle it
-                filter_action="native",
+                #filter_action="native",
                 #style_as_list_view=True,
                 columns=[
                     {"name": i, "id": i} for i in ref_df.columns
@@ -237,6 +252,7 @@ layout_references =  html.Div([
                   'font-size':'18px',
                   'padding': '10px',
                   'whiteSpace':'normal',
+                  'width':'90px'
                   #'height':'100%'
                   #'text-align':'center',
                 },
@@ -244,7 +260,7 @@ layout_references =  html.Div([
                   'font-family':'sans-serif',
                   'font-size':'16px',
                   'overflow': 'hidden',
-                  'minWidth': '120px'#, 'maxWidth': '140px',
+                  'minWidth': '40px'#, 'maxWidth': '140px',
                 },
                 style_table={
                 'padding': '5px',

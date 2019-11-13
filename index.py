@@ -20,22 +20,29 @@ app.index_string = '''
         {%favicon%}
         {%css%}
 
+    <script>
+    function movebtn()
+    {
+    $(".expanded-row--empty-cell.dash-select-header").append($('button#index-select-all'));
+    console.log("Done");
+    }
+    function executeWithDelay() {
+        console.log("Executing");
+        setTimeout(movebtn(), 5000);
+    }
+    </script>
     </head>
-    <body>
+    <body onLoad="executeWithDelay()">
         {%app_entry%}
         <footer>
             {%config%}
             {%scripts%}
             {%renderer%}
         </footer>
-        <div>Experiment Performance Management Tool - Minimal Metrics LLC
-        <p style="float: right">
-        <img src="\\assets\\cc_logo.jpeg" width="120" height="120"></p>
-        </div>
-        <div style="clear: both;"></div>
     </body>
 </html>
 '''
+        #<img src="\\assets\\cc_logo.jpeg" width="120" height="120">
 
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),

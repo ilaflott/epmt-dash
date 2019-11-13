@@ -138,8 +138,8 @@ def update_output(raw_toggle, new_data):
         alt['systemtime'] = pd.Series(
             ["{0:.2f}%".format(val * 100) for val in alt['systemtime']], index=alt.index)
         alt.rename(columns={
-            'systemtime': 'systemtime (% of cpu_time)',
-            'usertime': 'usertime (% of cpu_time)',
+            'systemtime': 'systemtime (%cpu_time)',
+            'usertime': 'usertime (%cpu_time)',
         }, inplace=True)
 
     # Convert Bytes
@@ -156,8 +156,8 @@ def update_output(raw_toggle, new_data):
         }, inplace=True)
 
     # Convert Durations
-        alt['Duration'] = pd.to_timedelta(alt['Duration'], unit='us').apply(lambda x: x*10000).apply(strfdelta)
-        alt['Duration'] = pd.to_datetime(alt['Duration'], format="%H:%M:%S").dt.time
+        alt['Duration (HH:MM:SS)'] = pd.to_timedelta(alt['Duration (HH:MM:SS)'], unit='us').apply(lambda x: x*10000).apply(strfdelta)
+        alt['Duration (HH:MM:SS)'] = pd.to_datetime(alt['Duration (HH:MM:SS)'], format="%H:%M:%S").dt.time
         alt['cpu_time'] = pd.to_timedelta(alt['cpu_time'], unit='us').apply(lambda x: x*10000).apply(strfdelta)
         alt['cpu_time'] = pd.to_datetime(alt['cpu_time'], format="%H:%M:%S").dt.time
         alt.rename(columns={'cpu_time':'cpu_time (HH:MM:SS)'}, inplace=True)

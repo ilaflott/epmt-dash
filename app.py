@@ -1,7 +1,9 @@
 import dash
+import dash_bootstrap_components as dbc
 
 
 external_stylesheets = [ # Remote Styles
+                        dbc.themes.BOOTSTRAP,
                         "https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css",
                         "https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css",
 

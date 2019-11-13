@@ -44,7 +44,7 @@ class job_gen:
     # Useful Renaming
     self.df.rename(columns={
       'jobid': 'Job ID',
-      'duration':'Duration',
+      'duration':'Duration (HH:MM:SS)',
       'Processed': 'Processing Complete',
       'exit_code': 'Exit Status'
         }, inplace=True)
@@ -54,3 +54,6 @@ class job_gen:
 #unproc_df = df.loc[df['Processing Complete'] == True].to_dict('records')
     
 ######################## End List of jobs ########################
+
+def get_version():
+  return "EPMT 1.1.1"
