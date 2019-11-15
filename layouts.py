@@ -1,4 +1,4 @@
-#import dash_bootstrap_components as dbc
+import dash_bootstrap_components as dbc
 import dash_daq as daq
 import dash_core_components as dcc
 import dash_html_components as html
@@ -43,16 +43,6 @@ layout_index =  html.Div([
         # CC Header
         html.Div(style={'inline':'true'},children=[
         Header(),
-        html.Div(id='switches', style={'inline':'true'}, children=[
-              daq.ToggleSwitch(
-              id='raw-switch',
-              label='Raw Data',
-              # labelPosition='left',
-              style={'display':'inline-block','fontsize':'medium'}, # Set font size so it's not randomly inherited between browsers
-              value=False,
-              color='Green'
-              ),
-        ]),
         ]),
         ]),
         # Date Picker
@@ -77,6 +67,8 @@ layout_index =  html.Div([
         #   sort_mode='multi',
         #   sort_by=[]
         #   ),
+        html.Div(id='content', children=[]),
+        html.Div(id='content2'),
         #First Data Table
         html.Div([
             dash_table.DataTable(
@@ -92,22 +84,24 @@ layout_index =  html.Div([
                 ],
                 fixed_rows={ 'headers': True, 'data': 0 },
                 #fixed_columns={ 'headers': True, 'data': 1 },#, Css is not setup for this
+                style_table={
+                'padding': '5px',
+                'height': '430px',
+                'font-size':'14px'
+                },
                 style_header={
-                  #'overflow': 'visible',
-                  'font-size':'15px',
+                  'font-weight':'bold',
                   'padding': '5px',
                   'whiteSpace':'normal',
+                  #'overflow': 'visible',
+                  #'font-size':'14px',
                 },
                 style_cell={
                   'font-family':'sans-serif',
-                  'font-size':'16px',
                   'overflow': 'hidden',
-                  'minWidth': '95px',
+                  'minWidth': '100px',
+                  #'font-size':'14px',
                   #'textOverflow': 'ellipsis',
-                },
-                style_table={
-                'padding': '5px',
-                #'height': '600px'
                 },
                 style_header_conditional=[
                      {
@@ -115,13 +109,13 @@ layout_index =  html.Div([
                     'text-align': 'left',
                     },
                     {
-                    'if': {'column_id': 'Job ID'},
+                    'if': {'column_id': 'job id'},
                     'text-align': 'right',
                     },
                     
                 ],
                 style_data_conditional=[
-                    {'if': {'filter_query': '{Exit Status} != 0'},
+                    {'if': {'filter_query': '{exit status} != 0'},
                         'backgroundColor': '#FFc0b5'
                     },
                     # Shrink Narrow columns
@@ -130,20 +124,24 @@ layout_index =  html.Div([
                     'minWidth': '75px',
                     },
                     {
+                    'if': {'column_id': 'job id'},
+                    'minWidth': '40px',
+                    },
+                    {
                     'if': {'column_id': 'bytes_out (Gb)'},
                     'minWidth': '75px',
                     },
                     {
-                    'if': {'column_id': 'Exit Status'},
-                    'minWidth': '60px',
+                    'if': {'column_id': 'exit status'},
+                    'minWidth': '50px',
                     },
                     {
-                    'if': {'column_id': 'Processing Complete'},
+                    'if': {'column_id': 'processing complete'},
                     'minWidth': '80px',
                     },
 
                     {
-                    'if': {'column_id': 'Job ID'},
+                    'if': {'column_id': 'job id'},
                     'text-align': 'right',
                     },
                     {
@@ -152,13 +150,24 @@ layout_index =  html.Div([
                     }
                     ],
             ),
-            html.Div(id='lower-menu', style={'inline':'true'}, children=[
-              html.Button(id='index-select-all', children="Select All"),
+    dbc.Row([
+      dbc.Col([
+            html.Button(id='index-select-all', children="Select All"),
+      ], width='auto'),dbc.Col([
+            dcc.DatePickerRange(
+              id='my-date-picker-range',
+              min_date_allowed=dt(2019, 10, 1),
+              max_date_allowed=dt(2040, 12, 25),
+              clearable=True,
+              with_portal=True,
+              show_outside_days=True,
+              minimum_nights=0
+            ),
+      ],width=7),dbc.Col([
             html.Button('New Data', id='new-data-button'),
-            html.Div(id='content', children=[]),
-            html.Div(id='content2')
-        ]),
-        html.Script('''window.alert("sometext");''')
+            ],width='auto')
+    ],)
+
 
         ], className="subpage"),
         Footer()
@@ -166,7 +175,7 @@ layout_index =  html.Div([
 
 ######################## END index Layout ########################
 
-unproc = df.loc[df['Processing Complete'] == "No"].to_dict('records')
+unproc = df.loc[df['processing complete'] == "No"].to_dict('records')
 logger.info(unproc)
 ######################## START unprocessed Layout ########################
 layout_unprocessed =  html.Div([
@@ -249,31 +258,33 @@ layout_references =  html.Div([
                 #fixed_columns={ 'headers': True, 'data': 1 },#, Css is not setup for this
                 style_header={
                   #'overflow': 'visible',
-                  'font-size':'18px',
+                  'font-size':'19px',
+                  'font-weight':'bold',
                   'padding': '10px',
                   'whiteSpace':'normal',
-                  'width':'90px'
-                  #'height':'100%'
+                  #'width':'90px',
+                  #'height':'40px'
                   #'text-align':'center',
                 },
                 style_cell={
                   'font-family':'sans-serif',
-                  'font-size':'16px',
+                  #'font-size':'16px',
                   'overflow': 'hidden',
-                  'minWidth': '40px'#, 'maxWidth': '140px',
+                  'minWidth': '40px',#, 'maxWidth': '140px',
+                  'height':'50px'
                 },
                 style_table={
                 'padding': '5px',
                 },
                 style_header_conditional=[
                     {
-                    'if': {'column_id': 'Job ID'},
+                    'if': {'column_id': 'job id'},
                     'text-align': 'right',
                     }
                 ],
                 style_data_conditional=[
                     {
-                      'if': {'column_id': 'Job ID'},
+                      'if': {'column_id': 'job id'},
                       'text-align': 'right',
                     }
                 ],

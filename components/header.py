@@ -1,6 +1,7 @@
 import dash_html_components as html
 import dash_core_components as dcc
 import dash_bootstrap_components as dbc
+import dash_daq as daq
 
 def Header():
     return html.Div([
@@ -12,7 +13,8 @@ def Header():
 
 from jobs import get_version
 def Footer():
-    return html.Div(["Experiment Performance Management Tool - ", html.Div(id='version',children=[get_version()],style={'width': '49%', 'display': 'inline-block'})])
+    # https://gitlab.com/minimal-metrics-llc/epmt/epmt-dash/issues
+    return html.Div(["Experiment Performance Management Tool - ", html.Div(id='version',children=[dcc.Link(get_version() + " Issue Tracker",href='https://gitlab.com/minimal-metrics-llc/epmt/epmt-dash/issues')],style={'width': '49%', 'display': 'inline-block'})])
 
 def get_logo():
     logo = html.Div([
@@ -50,10 +52,35 @@ def get_menu():
                     dcc.Link('Overview - Recent Jobs', href='/', className="tab first"),
                     dcc.Link('Models', href='/refs/', className="tab"),
                     dcc.Link('Alert Jobs', href='/alerts/', className="tab")])
-                ],width=5),
-                dbc.Col(html.Div(dcc.Input(placeholder='Search/Filter...', type='text', value='',style={'display':'block','width':'100%'})),width=5)
+                ],width="auto"),
+                dbc.Col(
+                        dcc.Input(placeholder='Search/Filter...',
+                            type='text',
+                            value='',
+                            style={'display':'block','width':'100%'}
+                        ),
+                    width="auto",
+                    #md=3,
+                    lg=6
+                    ),
+                html.Div(id='switches', 
+                    children=[
+                    dbc.Col(
+                        daq.ToggleSwitch(
+                            id='raw-switch',
+                            label='Raw Data',
+                            # labelPosition='left',
+                            #style={'display':'inline-block','fontsize':'medium'}, # Set font size so it's not randomly inherited between browsers
+                            value=False,
+                            color='Green'
+                        ),
+                    width="auto"
+                    )
+                    ]
+                ),
             ],
             justify="between",
+            align="center"
             )
     ], fluid=True)
     return menu
