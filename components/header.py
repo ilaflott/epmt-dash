@@ -54,22 +54,25 @@ def get_menu():
                     dcc.Link('Alert Jobs', href='/alerts/', className="tab")])
                 ],width="auto"),
                 dbc.Col(
-                        dcc.Input(placeholder='Search/Filter...',
+                        dcc.Input(
+                            id='searchdf',
+                            placeholder='Search/Filter...',
                             type='text',
                             value='',
                             style={'display':'block','width':'100%'}
                         ),
                     width="auto",
                     #md=3,
-                    lg=6
+                    lg=4
                     ),
                 html.Div(id='switches', 
                     children=[
+                    dbc.Col("Raw Data"),
                     dbc.Col(
                         daq.ToggleSwitch(
                             id='raw-switch',
-                            label='Raw Data',
-                            # labelPosition='left',
+                            #label='Raw Data',
+                            #labelPosition='left',
                             #style={'display':'inline-block','fontsize':'medium'}, # Set font size so it's not randomly inherited between browsers
                             value=False,
                             color='Green'

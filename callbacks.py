@@ -22,8 +22,10 @@ logger = getLogger(__name__)  # you can use other name
 
 #pd.options.mode.chained_assignment = None
 
-######################## Select rows Callbacks ######################## 
 
+
+
+######################## Select rows Callbacks ######################## 
 @app.callback(
     Output('content','children'),
     [Input('table-multicol-sorting', 'data'),
@@ -94,10 +96,12 @@ nclick = 0
 
 @app.callback(
     [Output('table-multicol-sorting', 'data'),
-    Output('table-multicol-sorting', 'columns')],
+    Output('table-multicol-sorting', 'columns'),
+    Output(component_id='content2', component_property='children')],
     [Input('raw-switch', 'value'),
-    Input('new-data-button', 'n_clicks')])
-def update_output(raw_toggle, new_data):
+    Input('new-data-button', 'n_clicks'),
+    Input(component_id='searchdf', component_property='value')])
+def update_output(raw_toggle, new_data, search_value):
     from layouts import df
     ctx = dash.callback_context
     # CTX Needs to be used... 
@@ -133,10 +137,10 @@ def update_output(raw_toggle, new_data):
     if not raw_toggle:
         alt['usertime'] = alt['usertime'] / orig['cpu_time']
         alt['usertime'] = pd.Series(
-            ["{0:.2f}".format(val * 100) for val in alt['usertime']], index=alt.index)
+            [float("{0:.2f}".format(val * 100)) for val in alt['usertime']], index=alt.index)
         alt['systemtime'] = alt['systemtime'] / orig['cpu_time']
         alt['systemtime'] = pd.Series(
-            ["{0:.2f}".format(val * 100) for val in alt['systemtime']], index=alt.index)
+            [float("{0:.2f}".format(val * 100)) for val in alt['systemtime']], index=alt.index)
         alt.rename(columns={
             'systemtime': 'systemtime (%cpu_time)',
             'usertime': 'usertime (%cpu_time)',
@@ -161,8 +165,34 @@ def update_output(raw_toggle, new_data):
         alt['cpu_time'] = pd.to_timedelta(alt['cpu_time'], unit='us').apply(lambda x: x*10000).apply(strfdelta)
         alt['cpu_time'] = pd.to_datetime(alt['cpu_time'], format="%H:%M:%S").dt.time
         alt.rename(columns={'cpu_time':'cpu_time (HH:MM:SS)'}, inplace=True)
-    return [alt.to_dict('records'),
-    [{"name": i, "id": i} for i in alt.columns]
+
+    # Run the search
+    query = []
+    algebra = ["==","=",">","<"]
+    if any(n in search_value for n in algebra): # Handle incomplete search
+        for item in search_value.split(","): # Break query into subqueries
+            for al in algebra:
+                if len(item.split(al)) >= 2 and item.split(al)[1] is not '': # Setup equal searches
+                    logger.debug("{}{}".format(al,item.split(al)))
+                    query.append([al,item.split(al)])
+        try:
+            for q in query:
+                # Fuzzy
+                if q[0] == '=':
+                    alt = alt.loc[alt[q[1][0]].str.contains(q[1][1])]
+                if q[0] == '==':
+                    logger.debug("Checking for exact {} {}".format(q[1][0],q[1][1]))
+                    alt = alt.loc[alt[q[1][0]] == q[1][1]]
+                if q[0] == '>':
+                    alt = alt.loc[alt[q[1][0]] > int(q[1][1])]
+                if q[0] == '<':
+                    alt = alt.loc[alt[q[1][0]] < q[1][1]]
+        except Exception as e:
+            logger.error("Threw exception on query: {}".format(e))
+    return [
+        alt.to_dict('records'),
+        [{"name": i, "id": i} for i in alt.columns],
+        'You\'ve entered: {}'.format(query)
     ]
 
 ######################## /Index Callbacks ######################## 

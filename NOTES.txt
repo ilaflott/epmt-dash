@@ -53,6 +53,10 @@ Implementation:
         http://www.compciv.org/guides/python/how-tos/creating-proper-url-query-strings/
 
 References:
+    
+    Dash basic core components are here:
+        https://dash.plot.ly/dash-core-components
+
     Very long thread on implementing Dash beneath Flask
 
     List of dash projects(Some outdated):
@@ -69,6 +73,8 @@ References:
         Full Column name hotspot sorting previously worked:
             https://github.com/plotly/dash-table-experiments/blob/master/images/DataTable.gif
 
+    Dash Bootstrap Layouts I used are here:
+    https://dash-bootstrap-components.opensource.faculty.ai/l/components/layout
 
 Plans:
 
@@ -93,11 +99,10 @@ The goal will be for us to iterate quickly, run locally, see and comment.
 
 Phase 2:
     wire up interactivity and workflows.
-    That may take some time and require some CSS templating like bootstrap
-
+        That may take some time and require some CSS templating like bootstrap
     Each display from the beginning should not assume anything about its own viewport. 
     i.e. it might eventually be in a separate window, frame or region of the screen.
-
+            :: This is mostly handled by Dash layouts.  Each dash component can be moved
     It should also be display aware, lay itself out on phone, a tablet and a laptop
     Bootstrap helps with that
 

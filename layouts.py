@@ -86,7 +86,7 @@ layout_index =  html.Div([
                 #fixed_columns={ 'headers': True, 'data': 1 },#, Css is not setup for this
                 style_table={
                 'padding': '5px',
-                'height': '430px',
+                #'height': '430px',
                 'font-size':'14px'
                 },
                 style_header={
