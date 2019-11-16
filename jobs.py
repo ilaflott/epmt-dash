@@ -51,7 +51,7 @@ def make_jobs(x):
         systemt = random.randrange(0,8640000*0.5)
         cput = usert+systemt
         duration = random.uniform(cput, cput*1.3) # 8640000 jiffies in 24 hours
-        exit_code = 1 if bool(random.random() < 0.3) else 0
+        exit_code = int(1) if bool(random.random() < 0.3) else int(0)
         result.append([jobid,job_name,Processed,tag, start_time,
              # Exit code, duration, user, system
              exit_code, duration,usert,systemt,cput,

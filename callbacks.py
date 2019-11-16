@@ -179,16 +179,23 @@ def update_output(raw_toggle, new_data, search_value):
             for q in query:
                 # Fuzzy
                 if q[0] == '=':
+                    # Should probably check if alt[q[1][0]] is string
+                    logger.debug("Checking for fuzzy '{}' '{}'".format(q[1][0],q[1][1]))
                     alt = alt.loc[alt[q[1][0]].str.contains(q[1][1])]
+                
                 if q[0] == '==':
-                    logger.debug("Checking for exact {} {}".format(q[1][0],q[1][1]))
+                    logger.debug("Checking for exact '{}' '{}'".format(q[1][0],q[1][1]))
                     alt = alt.loc[alt[q[1][0]] == q[1][1]]
+                
                 if q[0] == '>':
                     alt = alt.loc[alt[q[1][0]] > int(q[1][1])]
+                
                 if q[0] == '<':
                     alt = alt.loc[alt[q[1][0]] < q[1][1]]
+                logger.debug("DF looks like\n{}".format(alt))
         except Exception as e:
-            logger.error("Threw exception on query: {}".format(e))
+            logger.error("Threw exception on query({}): {}".format(query,e))
+            logger.warn("The Datatype for {} is {}".format(alt[1][0], alt[1][0].dtype))
     return [
         alt.to_dict('records'),
         [{"name": i, "id": i} for i in alt.columns],
