@@ -25,6 +25,9 @@ logger = getLogger(__name__)  # you can use other name
 
 
 
+
+
+
 ######################## Select rows Callbacks ######################## 
 @app.callback(
     Output('content','children'),
@@ -102,6 +105,7 @@ nclick = 0
     Input('new-data-button', 'n_clicks'),
     Input(component_id='searchdf', component_property='value')])
 def update_output(raw_toggle, new_data, search_value):
+    logger.info("Update_output started")
     from layouts import df
     ctx = dash.callback_context
     # CTX Needs to be used... 
@@ -180,9 +184,11 @@ def update_output(raw_toggle, new_data, search_value):
                 # Fuzzy
                 if q[0] == '=':
                     # Should probably check if alt[q[1][0]] is string
-                    logger.debug("Checking for fuzzy '{}' '{}'".format(q[1][0],q[1][1]))
-                    alt = alt.loc[alt[q[1][0]].str.contains(q[1][1])]
-                
+                    if alt[q[1][0]].dtype == np.object:
+                        logger.debug("Checking for fuzzy '{}' '{}'".format(q[1][0],q[1][1]))
+                        alt = alt.loc[alt[q[1][0]].str.contains(q[1][1])]
+                    else:
+                        logger.error("Fuzzy search not allowed on non objects")
                 if q[0] == '==':
                     logger.debug("Checking for exact '{}' '{}'".format(q[1][0],q[1][1]))
                     alt = alt.loc[alt[q[1][0]] == q[1][1]]
@@ -193,9 +199,10 @@ def update_output(raw_toggle, new_data, search_value):
                 if q[0] == '<':
                     alt = alt.loc[alt[q[1][0]] < q[1][1]]
                 logger.debug("DF looks like\n{}".format(alt))
+            #logger.debug("The Query column is\n{}".format(alt[q[1][0]]))
         except Exception as e:
             logger.error("Threw exception on query({}): {}".format(query,e))
-            logger.warn("The Datatype for {} is {}".format(alt[1][0], alt[1][0].dtype))
+    logger.info("Update_output complete")
     return [
         alt.to_dict('records'),
         [{"name": i, "id": i} for i in alt.columns],
@@ -204,5 +211,8 @@ def update_output(raw_toggle, new_data, search_value):
 
 ######################## /Index Callbacks ######################## 
 
+######################## Create Ref Callback ######################## 
 
 
+
+######################## /Create Ref Callbacks ######################## 

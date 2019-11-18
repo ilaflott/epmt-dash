@@ -18,6 +18,10 @@ logger = getLogger(__name__)  # you can use other name
 import jobs
 joblist = jobs.job_gen()
 df = joblist.df
+import refs
+ref_df = refs.ref_gen().df
+
+logger.error("Refs:{}".format(ref_df))
 
 
     
@@ -68,6 +72,10 @@ layout_index =  html.Div([
         #   sort_by=[]
         #   ),
         html.Div(id='content', children=[]),
+        html.Div([
+          html.Div(id='output-container-button',
+             children='Enter a value and press submit')
+        ]),
         html.Div(id='content2'),
         #First Data Table
         html.Div([
@@ -152,6 +160,9 @@ layout_index =  html.Div([
             ),
     dbc.Row([
       dbc.Col([
+            html.Button(id='create_newModel', children="Create Model"),
+      ], width='auto'),
+      dbc.Col([
             html.Button(id='index-select-all', children="Select All"),
       ], width='auto'),dbc.Col([
             dcc.DatePickerRange(
@@ -217,13 +228,12 @@ layout_unprocessed =  html.Div([
 
 ######################## START References Layout ########################
 import pandas as pd
-refs = {1:["ref1",['tag1:tag1','tag2:tag2'],['job1','job2'],['duration','cpu_time','num_procs']],
-        2:["ref2",['tag1:tag1','tag2:tag2'],['job1','job2'],['duration','cpu_time','num_procs']],
-        3:["ref3",['tag1:tag1','tag2:tag2'],['job1','job2'],['duration','cpu_time','num_procs']],
-        4:["ref4",['tag1:tag1','tag2:tag2'],['job1','job2'],['duration','cpu_time','num_procs']]}
-ref_df = pd.DataFrame(refs)
-ref_df = ref_df.transpose()
-ref_df.rename(columns={0:"Model",1:"Tags",2:"Jobs",3:"Features"},inplace=True)
+from refs import make_refs
+refa = make_refs(1,name='t')
+refa = pd.DataFrame(refa, columns=['Model','Active','Tags','Jobs','Features'])
+
+alt_df = ref_df.append({'Jobs':'test'},ignore_index=True)
+
 from json import dumps
 ref_df['Tags'] = ref_df['Tags'].apply(dumps)
 ref_df['Jobs'] = ref_df['Jobs'].apply(dumps)
@@ -243,7 +253,7 @@ layout_references =  html.Div([
         # First Data Table
         html.Div([
           dash_table.DataTable(
-                id='table-multicol-sorting',
+                id='table-ref-models',
                 row_selectable="multi",
                 sort_action='native',
                 #sort_mode='multi', Keeping it simple now
@@ -251,9 +261,23 @@ layout_references =  html.Div([
                 #filter_action="native",
                 #style_as_list_view=True,
                 columns=[
-                    {"name": i, "id": i} for i in ref_df.columns
+                    #{"name": i, "id": i, "presentation":"dropdown"} for i in ref_df.columns
+                    {"name":"Model","id":"Model"},
+                    {"name":"Active","id":"Active","presentation":"dropdown"},
+                    {"name":"Tags","id":"Tags"},
+                    {"name":"Jobs","id":"Jobs"},
+                    {"name":"Features","id":"Features"},
                 ],
                 data=ref_df.to_dict('records'),
+                editable=True,
+                dropdown={
+                    'Active': {
+                        'options': [
+                            {'label': i, 'value': i}
+                            for i in ['True','False']
+                        ]
+                    }
+                },
                 fixed_rows={ 'headers': True, 'data': 0 },
                 #fixed_columns={ 'headers': True, 'data': 1 },#, Css is not setup for this
                 style_header={
@@ -269,8 +293,8 @@ layout_references =  html.Div([
                 style_cell={
                   'font-family':'sans-serif',
                   #'font-size':'16px',
-                  'overflow': 'hidden',
-                  'minWidth': '40px',#, 'maxWidth': '140px',
+                  #'overflow': 'hidden',
+                  'minWidth': '70px',#, 'maxWidth': '140px',
                   'height':'50px'
                 },
                 style_table={

@@ -65,6 +65,7 @@ class job_gen:
     sample = make_jobs(20)
     # Here tags are excluded as the datatable doesn't support dictionaries
     self.df = pd.DataFrame(sample, columns=['jobid','name','Processed','tags','start_time','exit_code','duration','usertime','systemtime','cpu_time','bytes_in','bytes_out'])
+    # Here I do some data cleanup/conversions
     from json import dumps
     self.df['tags'] = self.df['tags'].apply(dumps)
     #logger.info("Tags{}".format(self.df['tags']))
