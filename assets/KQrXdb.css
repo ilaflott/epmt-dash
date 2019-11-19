@@ -55,9 +55,7 @@ span.column-header-name {
 	top:-59px;
 	/*left: -5%;*/
 }
-#table-multicol-sorting > div.dash-spreadsheet-container.dash-spreadsheet.dash-freeze-top.dash-fill-width > div > div.row.row-0 > div.cell.cell-0-1.dash-fixed-row > table > tbody > tr:nth-child(1) {
-    height: 80px;
-}
+
 th.dash-header[class*=" column-"] > div {
 	display: block; /*initial*/
 	height: 100%;

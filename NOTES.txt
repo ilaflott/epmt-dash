@@ -63,7 +63,34 @@ References:
         https://github.com/ucg8j/awesome-dash/blob/master/README.md
         https://community.plot.ly/t/show-and-tell-community-thread/7554
 
-    I'm sure we're going to need to work with DataTables a TON:
+    DATATABLES:
+    Column Sorting CSS:
+        By default datatables column sorting works by a very small triangle group
+        in the upper left.  This hotspot is only around those triangles.  I've done
+        some CSS work in 'assets/KQrXdb.css' to force the triangle hotspot 
+        to take up the entire header of each column.
+        This causes the text to be behind the hotspot.  All this work however,
+        depends on the datatable to have this specific styling to keep the text
+        within bounds & sized appropriately :
+        '''
+        fixed_rows={ 'headers': True, 'data': 0 },
+                #fixed_columns={ 'headers': True, 'data': 1 },#, Css is not setup for this
+                style_table={
+                'padding': '5px',
+                'font-size':'14px'
+                },
+                style_header={
+                  'font-weight':'bold',
+                  'padding': '5px',
+                  'whiteSpace':'normal',
+                },
+                style_cell={
+                  'font-family':'sans-serif',
+                  'overflow': 'hidden',
+                  'minWidth': '100px',
+                },
+        '''
+
         Styling them custom here:
             https://github.com/plotly/dash-recipes/blob/master/dash-datatable-custom-css.py
             ***https://dash.plot.ly/datatable/style

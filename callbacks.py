@@ -23,10 +23,44 @@ logger = getLogger(__name__)  # you can use other name
 #pd.options.mode.chained_assignment = None
 
 
+@app.callback(dash.dependencies.Output('content', 'data'),
+              [dash.dependencies.Input('test', 'children')])
+def display_page(pathname):
+    #import layouts
+    logger.debug("Pathname is {}".format(pathname))
+    import jobs
+    joblist = jobs.job_gen()
+    df = joblist.df
+    return df.to_dict('records')
 
 
+@app.callback(
+    [dash.dependencies.Output('output-container-button', 'children'),
+    dash.dependencies.Output('table-ref-models','data')],
+    [dash.dependencies.Input('create_newModel', 'n_clicks')],
+    [dash.dependencies.State('table-multicol-sorting', 'selected_rows'),
+    dash.dependencies.State('table-multicol-sorting', 'data')
+    
+    ])
+def update_output(n_clicks, value,e):
+    selected_rows = []
+    if value:
+        #logger.debug("Test{}{}".format(value,e))
+        selected_rows=[e[i]['job id'] for i in value]
+        from layouts import ref_df
+        logger.debug("Selected jobs {}".format(selected_rows))
 
+        # Generate new refs for each of selected jobs
+        import pandas as pd
+        from refs import make_refs
+        refa = make_refs(1,name='t')
+        refa = pd.DataFrame(refa, columns=['Model','Active','Tags','Jobs','Features'])
 
+        ref_df = ref_df.append({'Jobs':selected_rows},ignore_index=True)
+        logger.debug("Updating Refs with \n{}".format(ref_df))
+
+        return [selected_rows,
+        ref_df.to_dict('records')]
 
 ######################## Select rows Callbacks ######################## 
 @app.callback(

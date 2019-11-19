@@ -27,6 +27,11 @@ logger.error("Refs:{}".format(ref_df))
     
 ######################## End List of jobs ########################
 
+# Ref model initialization data
+from json import dumps
+ref_df['Tags'] = ref_df['Tags'].apply(dumps)
+ref_df['Jobs'] = ref_df['Jobs'].apply(dumps)
+ref_df['Features'] = ref_df['Features'].apply(dumps)
 
 ######################## START index Layout ########################
 
@@ -52,25 +57,9 @@ layout_index =  html.Div([
         # Date Picker
         
         # Header Bar
-        html.Div([
-          html.H6(["Recent Jobs"], className="gs-header gs-text-header padded",style={'marginTop': 15})
-          ]),
-        # Radio Button
-        
-        # Pageable table
-        # dash_table.DataTable(
-        #   id='table-multicol-sorting',
-        #   columns=[
-        #       {"name": i, "id": i} for i in sorted(df.columns)
-        #   ],
-        #   page_current=0,
-        #   page_size=PAGE_SIZE,
-        #   page_action='custom',
 
-        #   sort_action='custom',
-        #   sort_mode='multi',
-        #   sort_by=[]
-        #   ),
+        dcc.Tabs(id="tabs", children=[
+          dcc.Tab(label='Recent Jobs', children=[
         html.Div(id='content', children=[]),
         html.Div([
           html.Div(id='output-container-button',
@@ -181,6 +170,82 @@ layout_index =  html.Div([
 
 
         ], className="subpage"),
+            ]),
+      dcc.Tab(label='Models', children=[
+        
+        html.Div([
+          html.H6(["Reference Models"], className="gs-header gs-text-header padded",style={'marginTop': 15})
+          ]),
+        # Radio Button
+        
+        # First Data Table
+        html.Div([
+          dash_table.DataTable(
+                id='table-ref-models',
+                row_selectable="multi",
+                sort_action='native',
+                #sort_mode='multi', Keeping it simple now
+                #data=df.head(10).to_dict('records'), # Do not display data initially, callback will handle it
+                #filter_action="native",
+                #style_as_list_view=True,
+                columns=[
+                    #{"name": i, "id": i, "presentation":"dropdown"} for i in ref_df.columns
+                    {"name":"Model","id":"Model"},
+                    {"name":"Active","id":"Active","presentation":"dropdown"},
+                    {"name":"Tags","id":"Tags"},
+                    {"name":"Jobs","id":"Jobs"},
+                    {"name":"Features","id":"Features"},
+                ],
+                data=ref_df.to_dict('records'),
+                editable=True,
+                dropdown={
+                    'Active': {
+                        'options': [
+                            {'label': i, 'value': i}
+                            for i in ['True','False']
+                        ]
+                    }
+                },
+                fixed_rows={ 'headers': True, 'data': 0 },
+                #fixed_columns={ 'headers': True, 'data': 1 },#, Css is not setup for this
+                style_header={
+                  #'overflow': 'visible',
+                  'font-size':'19px',
+                  'font-weight':'bold',
+                  'padding': '10px',
+                  'whiteSpace':'normal',
+                  #'width':'90px',
+                  #'height':'40px'
+                  #'text-align':'center',
+                },
+                style_cell={
+                  'font-family':'sans-serif',
+                  #'font-size':'16px',
+                  #'overflow': 'hidden',
+                  'minWidth': '70px',#, 'maxWidth': '140px',
+                  'height':'50px'
+                },
+                style_table={
+                'padding': '5px',
+                },
+                style_header_conditional=[
+                    {
+                    'if': {'column_id': 'job id'},
+                    'text-align': 'right',
+                    }
+                ],
+                style_data_conditional=[
+                    {
+                      'if': {'column_id': 'job id'},
+                      'text-align': 'right',
+                    }
+                ],
+            )
+        ]),
+
+        
+        ])
+          ]),
         Footer()
     ], className="page")
 
@@ -412,44 +477,97 @@ from app import fullurl
 ######################## START sample Layout ########################
 layout_sample =  html.Div([
     html.Div([
-        # CC Header
-        Header(),
-        # Date Picker
-        
-        # Header Bar
-        html.Div([
-          html.H6(["Alert Jobs"], className="gs-header gs-text-header padded",style={'marginTop': 15})
-          ]),
-        # Radio Button
-        
-        # First Data Table
+      #dcc.Location(id='url', refresh=False),
         html.Div([
           dash_table.DataTable(
-          id='table-multicol-sorting',
+          id='custom-table',
           columns=[
             {"name": i, "id": i} for i in sorted(df.columns)
           ],
-          data=df.to_dict('records')
+          #data=df.to_dict('records')
           )
-        ]),
-        # Download Button
-        html.Div([
-          html.A(html.Button('Download Data', id='download-button'), id='download-link-ga-category')
-          ]),
-        # Second Data Table
-        
-        # GRAPHS
-        html.Div([
-          html.Div(
-            id='update_graph_1'
-            ),
-            html.Div([
-                html.P(fullurl)
-            ]
-            )]
-        ),
+        ])
         ], className="subpage")
     ], className="page")
+
+
+def layouts(pfullurl):
+  logger.info("URL {}".format(pfullurl))
+  from urllib.parse import parse_qs, urlparse
+  ji = parse_qs(urlparse(pfullurl).query)
+  logger.debug("Parsed query string:{}".format(ji))
+  jobids = ji['jobid']
+  logger.debug("jobids {}".format(jobids))
+  from layouts import df
+  logger.debug("{}\n{}".format(jobids,df.loc[df['job id'].isin(jobids)]))
+  tableData = df.loc[df['job id'].isin(jobids)]
+  return html.Div([
+    html.Div([
+      #dcc.Location(id='url', refresh=False),
+        html.Div([
+          dash_table.DataTable(
+          id='custom-table',
+          columns=[
+            {"name": i, "id": i} for i in sorted(tableData.columns)
+          ],
+          sort_action='native',
+          data=tableData.to_dict('records'),
+          fixed_rows={ 'headers': True, 'data': 0 },
+                #fixed_columns={ 'headers': True, 'data': 1 },#, Css is not setup for this
+                style_table={
+                'padding': '5px',
+                #'height': '430px',
+                'font-size':'14px'
+                },
+                style_header={
+                  'font-weight':'bold',
+                  'padding': '5px',
+                  'whiteSpace':'normal',
+                  #'overflow': 'visible',
+                  #'font-size':'14px',
+                },
+                style_cell={
+                  'font-family':'sans-serif',
+                  'overflow': 'hidden',
+                  'minWidth': '100px',
+                  #'font-size':'14px',
+                  #'textOverflow': 'ellipsis',
+                },
+          )
+        ])
+        ], className="subpage")
+    ], className="page")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ######################## END sample Layout ########################
 
