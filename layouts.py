@@ -13,25 +13,14 @@ logger = getLogger(__name__)  # you can use other name
 
 
 
-######################## Random List of Jobs & DF ########################
+######################## Random List of Jobs & References ########################
+from components import get_recent_jobs
+df = get_recent_jobs()
 
-import jobs
-joblist = jobs.job_gen()
-df = joblist.df
-import refs
-ref_df = refs.ref_gen().df
+from components import get_references
+ref_df = get_references()
+######################## End List of Jobs & References ########################
 
-logger.error("Refs:{}".format(ref_df))
-
-
-    
-######################## End List of jobs ########################
-
-# Ref model initialization data
-from json import dumps
-ref_df['Tags'] = ref_df['Tags'].apply(dumps)
-ref_df['Jobs'] = ref_df['Jobs'].apply(dumps)
-ref_df['Features'] = ref_df['Features'].apply(dumps)
 
 ######################## START index Layout ########################
 
@@ -292,17 +281,6 @@ layout_unprocessed =  html.Div([
 ######################## END unprocessed Layout ########################
 
 ######################## START References Layout ########################
-import pandas as pd
-from refs import make_refs
-refa = make_refs(1,name='t')
-refa = pd.DataFrame(refa, columns=['Model','Active','Tags','Jobs','Features'])
-
-alt_df = ref_df.append({'Jobs':'test'},ignore_index=True)
-
-from json import dumps
-ref_df['Tags'] = ref_df['Tags'].apply(dumps)
-ref_df['Jobs'] = ref_df['Jobs'].apply(dumps)
-ref_df['Features'] = ref_df['Features'].apply(dumps)
 layout_references =  html.Div([
     html.Div([
         # CC Header
@@ -473,8 +451,8 @@ layout_alerts =  html.Div([
 
 
 ######################## END alerts Layout ########################
-from app import fullurl
-######################## START sample Layout ########################
+
+######################## START table Layout ########################
 layout_sample =  html.Div([
     html.Div([
       #dcc.Location(id='url', refresh=False),
@@ -492,88 +470,56 @@ layout_sample =  html.Div([
 
 
 def layouts(pfullurl):
-  logger.info("URL {}".format(pfullurl))
-  from urllib.parse import parse_qs, urlparse
-  ji = parse_qs(urlparse(pfullurl).query)
-  logger.debug("Parsed query string:{}".format(ji))
-  jobids = ji['jobid']
-  logger.debug("jobids {}".format(jobids))
-  from layouts import df
-  logger.debug("{}\n{}".format(jobids,df.loc[df['job id'].isin(jobids)]))
-  tableData = df.loc[df['job id'].isin(jobids)]
-  return html.Div([
-    html.Div([
-      #dcc.Location(id='url', refresh=False),
-        html.Div([
-          dash_table.DataTable(
-          id='custom-table',
-          columns=[
-            {"name": i, "id": i} for i in sorted(tableData.columns)
-          ],
-          sort_action='native',
-          data=tableData.to_dict('records'),
-          fixed_rows={ 'headers': True, 'data': 0 },
-                #fixed_columns={ 'headers': True, 'data': 1 },#, Css is not setup for this
-                style_table={
-                'padding': '5px',
-                #'height': '430px',
-                'font-size':'14px'
-                },
-                style_header={
-                  'font-weight':'bold',
+    from components import parseurl
+    ji = parseurl(pfullurl)
+    # Grab jobid values from dictionary
+    jobids = ji['jobid']
+
+    from layouts import df
+    logger.debug("{}\n{}".format(jobids,df.loc[df['job id'].isin(jobids)]))
+    tableData = df.loc[df['job id'].isin(jobids)]
+    return html.Div([
+      html.Div([
+        #dcc.Location(id='url', refresh=False),
+          html.Div([
+            dash_table.DataTable(
+            id='custom-table',
+            columns=[
+              {"name": i, "id": i} for i in sorted(tableData.columns)
+            ],
+            sort_action='native',
+            data=tableData.to_dict('records'),
+            fixed_rows={ 'headers': True, 'data': 0 },
+                  #fixed_columns={ 'headers': True, 'data': 1 },#, Css is not setup for this
+                  style_table={
                   'padding': '5px',
-                  'whiteSpace':'normal',
-                  #'overflow': 'visible',
-                  #'font-size':'14px',
-                },
-                style_cell={
-                  'font-family':'sans-serif',
-                  'overflow': 'hidden',
-                  'minWidth': '100px',
-                  #'font-size':'14px',
-                  #'textOverflow': 'ellipsis',
-                },
-          )
-        ])
-        ], className="subpage")
-    ], className="page")
+                  #'height': '430px',
+                  'font-size':'14px'
+                  },
+                  style_header={
+                    'font-weight':'bold',
+                    'padding': '5px',
+                    'whiteSpace':'normal',
+                    #'overflow': 'visible',
+                    #'font-size':'14px',
+                  },
+                  style_cell={
+                    'font-family':'sans-serif',
+                    'overflow': 'hidden',
+                    'minWidth': '100px',
+                    #'font-size':'14px',
+                    #'textOverflow': 'ellipsis',
+                  },
+            )
+          ])
+          ], className="subpage")
+      ], className="page")
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-######################## END sample Layout ########################
+######################## END table Layout ########################
 
 ######################## 404 Page ########################
 noPage = html.Div([ 
     # CC Header
-    Header(),
+    #Header(),
     html.P(["404 Page not found"])
     ], className="no-page")

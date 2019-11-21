@@ -206,36 +206,65 @@ def update_output(raw_toggle, new_data, search_value):
 
     # Run the search
     query = []
-    algebra = ["==","=",">","<"]
-    if any(n in search_value for n in algebra): # Handle incomplete search
-        for item in search_value.split(","): # Break query into subqueries
-            for al in algebra:
+    separator = ","
+    equalities = ["==","=",">","<"]
+    if any(n in search_value for n in equalities): # Wait for user to enter comparison symbol
+        # Take user input into a query list
+        for item in search_value.split(separator): # Break query into subqueries on a sep
+            for al in equalities:
                 if len(item.split(al)) >= 2 and item.split(al)[1] is not '': # Setup equal searches
-                    logger.debug("{}{}".format(al,item.split(al)))
+                    #logger.debug("Comparison '{}' on Values:{}".format(al,item.split(al)))
                     query.append([al,item.split(al)])
+        # Attempt to parse queries
         try:
+            # Q[0] is Query Equality Type
+            # Q[1][0] is Column to search on
+            # Q[1][1] is Value to check column for
+            # Example:
+            # query = [['=', ['processing complete', 'Y']],]
             for q in query:
+                logger.debug("Processing Query: {}".format(q))
+                logger.debug("Datatype is {}".format(alt[q[1][0]].dtype))
                 # Fuzzy
                 if q[0] == '=':
+                    logger.debug("Checking for fuzzy '{}' '{}'".format(q[1][0],q[1][1]))
                     # Should probably check if alt[q[1][0]] is string
+                    # Here I use np.object as a string comparison
                     if alt[q[1][0]].dtype == np.object:
-                        logger.debug("Checking for fuzzy '{}' '{}'".format(q[1][0],q[1][1]))
                         alt = alt.loc[alt[q[1][0]].str.contains(q[1][1])]
+                    # If Searching on a integer column convert second param to int
+                    elif alt[q[1][0]].dtype == np.int64:
+                        alt = alt.loc[alt[q[1][0]] == int(q[1][1])]
                     else:
-                        logger.error("Fuzzy search not allowed on non objects")
+                        alt = alt.loc[alt[q[1][0]].str.contains(str(q[1][1]))]
                 if q[0] == '==':
                     logger.debug("Checking for exact '{}' '{}'".format(q[1][0],q[1][1]))
-                    alt = alt.loc[alt[q[1][0]] == q[1][1]]
+                    # If Searching on a integer column convert second param to int
+                    if alt[q[1][0]].dtype == np.int64:
+                        alt = alt.loc[alt[q[1][0]] == int(q[1][1])]
+                    else:
+                        alt = alt.loc[alt[q[1][0]] == q[1][1]]
+                    
                 
                 if q[0] == '>':
-                    alt = alt.loc[alt[q[1][0]] > int(q[1][1])]
-                
+                    from components import convert_str_time
+                    if ':' in q[1][1]:
+                        t = convert_str_time(q[1][1])
+                        alt = alt.loc[alt[q[1][0]] > t]
+                    else:
+                        alt = alt.loc[alt[q[1][0]] > int(q[1][1])]
+
                 if q[0] == '<':
-                    alt = alt.loc[alt[q[1][0]] < q[1][1]]
-                logger.debug("DF looks like\n{}".format(alt))
+                    from components import convert_str_time
+                    if ':' in q[1][1]:
+                        t = convert_str_time(q[1][1])
+                        alt = alt.loc[alt[q[1][0]] > t]
+                    else:
+                        alt = alt.loc[alt[q[1][0]] < int(q[1][1])]
+                logger.debug("DF has {} rows. \nFirst 5:\n{}".format(alt.shape[0],alt.head(5)))
             #logger.debug("The Query column is\n{}".format(alt[q[1][0]]))
         except Exception as e:
-            logger.error("Threw exception on query({}): {}".format(query,e))
+            logger.error("Threw exception on \nquery: ({})\nexception: ({})".format(q,e))
     logger.info("Update_output complete")
     return [
         alt.to_dict('records'),

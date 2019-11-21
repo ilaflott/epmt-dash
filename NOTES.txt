@@ -37,8 +37,26 @@ Dash:
 
 
 Current Status:
-I'm working on stripping down the Reporting Dashboard down to bare pages callbacks and functions.
-    Still work to be done in the callbacks and function cleanup
+    Working:
+        Fuzzy Searching/Partial matches
+            start_time=12
+            start_time=01:33 PM
+            exit status=1
+            tags=c96l49
+            
+        Exact search matches on
+            start_time==01:33 PM UTC
+            processing complete==Yes
+            exit status==1
+        
+        Greater/Less than:
+            duration (HH:MM:SS)>15:00:00
+            duration (HH:MM:SS)>15:00
+
+    Broken:
+        Any search using raw switch converted data
+        duration (HH:MM:SS)=16
+        usertime (%cpu_time)=1
 
 
 Implementation:
