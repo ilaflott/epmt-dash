@@ -8,6 +8,7 @@ def Header():
         #get_logo(),
         get_header(),
         html.Br([]),
+        html.Div(),
         get_menu()
     ])
 

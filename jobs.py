@@ -6,7 +6,7 @@ from string import ascii_letters
 from logging import getLogger, basicConfig, DEBUG, ERROR, INFO, WARNING
 logger = getLogger(__name__)  # you can use other name
 
-def str_time_prop(start, end, format, prop):
+def str_time_prop(start, end, format):
     """Get a time at a proportion of a range of two formatted times.
 
     start and end should be strings specifying times formated in the
@@ -18,13 +18,13 @@ def str_time_prop(start, end, format, prop):
     stime = time.mktime(time.strptime(start, format))
     etime = time.mktime(time.strptime(end, format))
 
-    ptime = stime + prop * (etime - stime)
+    ptime = stime + random.random() * (etime - stime)
 
     return time.strftime(format, time.localtime(ptime))
 
 
-def random_date(start, end, dfmt, prop):
-    return str_time_prop(start, end, dfmt, prop)
+def random_date(start, end, dfmt):
+    return str_time_prop(start, end, dfmt)
 
 
 # Generate Random time,zone
@@ -46,13 +46,17 @@ def make_jobs(x):
         job_name = names.name_gen().name
         Processed = bool(random.getrandbits(1))
         tag = dict(tags) if bool(random.getrandbits(1)) else {'Tags':'None'}
-        start_time = random_date("1:30 PM UTC", "4:50 PM UTC", "%I:%M %p %Z", random.random())
+        timeformat="%m/%d/%Y %I:%M %p %Z"
+        start_datetime = random_date("11/1/2019 1:30 PM UTC", "11/5/2019 4:50 PM UTC", timeformat)
+        from datetime import datetime
+        start_time = datetime.strptime(start_datetime, timeformat).time()
+        start_day = datetime.strptime(start_datetime, timeformat).date()
         usert = random.randrange(0,8640000*0.5)
         systemt = random.randrange(0,8640000*0.5)
         cput = usert+systemt
         duration = random.uniform(cput, cput*1.3) # 8640000 jiffies in 24 hours
         exit_code = int(1) if bool(random.random() < 0.3) else int(0)
-        result.append([jobid,job_name,Processed,tag, start_time,
+        result.append([jobid,job_name,Processed,tag,start_day, start_time,
              # Exit code, duration, user, system
              exit_code, duration,usert,systemt,cput,
              # Bytes in, Bytes out
@@ -64,18 +68,18 @@ class job_gen:
   def __init__(self):
     sample = make_jobs(20)
     # Here tags are excluded as the datatable doesn't support dictionaries
-    self.df = pd.DataFrame(sample, columns=['jobid','name','Processed','tags','start_time','exit_code','duration','usertime','systemtime','cpu_time','bytes_in','bytes_out'])
+    self.df = pd.DataFrame(sample, columns=['jobid','name','Processed','tags','start_day','start_time','exit_code','duration','usertime','systemtime','cpu_time','bytes_in','bytes_out'])
     # Here I do some data cleanup/conversions
     from json import dumps
     self.df['tags'] = self.df['tags'].apply(dumps)
     #logger.info("Tags{}".format(self.df['tags']))
-    self.df = self.df[['jobid','name','start_time','Processed','exit_code','duration','usertime','systemtime','cpu_time','bytes_in','bytes_out','tags']]
+    self.df = self.df[['jobid','name','start_day','start_time','Processed','exit_code','duration','usertime','systemtime','cpu_time','bytes_in','bytes_out','tags']]
     import numpy as np
     self.df['Processed'] = np.where(self.df['Processed'], 'Yes', 'No')
     # Useful Renaming
     self.df.rename(columns={
       'jobid': 'job id',
-      'duration':'duration (HH:MM:SS)',
+      'duration':'duration',
       'Processed': 'processing complete',
       'exit_code': 'exit status'
         }, inplace=True)

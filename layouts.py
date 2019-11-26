@@ -19,6 +19,7 @@ df = get_recent_jobs()
 
 from components import get_references
 ref_df = get_references()
+logger.error("ref_df:({})".format(id(ref_df)))
 ######################## End List of Jobs & References ########################
 
 
@@ -43,18 +44,22 @@ layout_index =  html.Div([
         Header(),
         ]),
         ]),
-        # Date Picker
-        
-        # Header Bar
-
-        dcc.Tabs(id="tabs", children=[
-          dcc.Tab(label='Recent Jobs', children=[
-        html.Div(id='content', children=[]),
-        html.Div([
-          html.Div(id='output-container-button',
-             children='Enter a value and press submit')
-        ]),
-        html.Div(id='content2'),
+        # These tabs are huge
+        # https://community.plot.ly/t/adjusting-height-of-tabs/13136/5
+    dcc.Tabs(id="tabs", children=[
+        dcc.Tab(label='Recent Jobs', children=[
+                dbc.Row([
+                  # Selected jobs notification
+                  dbc.Col([
+                  html.Div(id='content',style={'inline':'true'}, children=[])]),
+                # Search box query notification
+                dbc.Col([html.Div(id='content2')]),
+                # Models created notification
+                dbc.Col([html.Div(style={'inline':'true'},children=["Model Status:",
+                          html.Div(id='recent-job-model-status',
+                                   children='')
+                          ])])
+                ]),
         #First Data Table
         html.Div([
             dash_table.DataTable(
@@ -144,7 +149,7 @@ layout_index =  html.Div([
             html.Button(id='index-select-all', children="Select All"),
       ], width='auto'),dbc.Col([
             dcc.DatePickerRange(
-              id='my-date-picker-range',
+              id='jobs-date-picker',
               min_date_allowed=dt(2019, 10, 1),
               max_date_allowed=dt(2040, 12, 25),
               clearable=True,
@@ -152,7 +157,7 @@ layout_index =  html.Div([
               show_outside_days=True,
               minimum_nights=0
             ),
-      ],width=7),dbc.Col([
+      ],width='auto'),dbc.Col([
             html.Button('New Data', id='new-data-button'),
             ],width='auto')
     ],)
@@ -160,6 +165,7 @@ layout_index =  html.Div([
 
         ], className="subpage"),
             ]),
+      # Reference model datatable tab
       dcc.Tab(label='Models', children=[
         
         html.Div([
@@ -167,8 +173,8 @@ layout_index =  html.Div([
           ]),
         # Radio Button
         
-        # First Data Table
         html.Div([
+          # The inline dropdowns are broken[not displayed] due to my sorting css work on column headers
           dash_table.DataTable(
                 id='table-ref-models',
                 row_selectable="multi",
@@ -178,15 +184,15 @@ layout_index =  html.Div([
                 #filter_action="native",
                 #style_as_list_view=True,
                 columns=[
-                    #{"name": i, "id": i, "presentation":"dropdown"} for i in ref_df.columns
-                    {"name":"Model","id":"Model"},
-                    {"name":"Active","id":"Active","presentation":"dropdown"},
-                    {"name":"Tags","id":"Tags"},
-                    {"name":"Jobs","id":"Jobs"},
-                    {"name":"Features","id":"Features"},
+                    {"name": i, "id": i} for i in ref_df.columns
+                    #{"name":"Model","id":"Model"},
+                    #{"name":"Active","id":"Active"},#,"presentation":"dropdown"},
+                    #{"name":"Tags","id":"Tags"},
+                    #{"name":"Jobs","id":"Jobs"},
+                    #{"name":"Features","id":"Features"},
                 ],
                 data=ref_df.to_dict('records'),
-                editable=True,
+                #editable=True,
                 dropdown={
                     'Active': {
                         'options': [
@@ -241,7 +247,7 @@ layout_index =  html.Div([
 ######################## END index Layout ########################
 
 unproc = df.loc[df['processing complete'] == "No"].to_dict('records')
-logger.info(unproc)
+#logger.info(unproc)
 ######################## START unprocessed Layout ########################
 layout_unprocessed =  html.Div([
     html.Div([
@@ -493,7 +499,7 @@ def layouts(pfullurl):
                   #fixed_columns={ 'headers': True, 'data': 1 },#, Css is not setup for this
                   style_table={
                   'padding': '5px',
-                  #'height': '430px',
+                  'height': '300px',
                   'font-size':'14px'
                   },
                   style_header={

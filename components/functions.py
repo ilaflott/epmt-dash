@@ -8,7 +8,7 @@ import pandas as pd
 
 from logging import getLogger, basicConfig, DEBUG, ERROR, INFO, WARNING
 logger = getLogger(__name__)  # you can use other name
-
+basicConfig(level=INFO)
 pd.options.mode.chained_assignment = None
 
 
@@ -24,12 +24,12 @@ def parseurl(i):
 def get_references():
     import refs
     ref_df = refs.ref_gen().df
-    logger.error("Refs:{}".format(ref_df))
+    logger.debug("Refs({}):\n{}".format(id(ref_df),ref_df))
     # Ref model initialization data
     from json import dumps
-    ref_df['Tags'] = ref_df['Tags'].apply(dumps)
-    ref_df['Jobs'] = ref_df['Jobs'].apply(dumps)
-    ref_df['Features'] = ref_df['Features'].apply(dumps)
+    ref_df['Tags'] = ref_df['Tags'].apply(dumps) # Dumps stringify's dictionaries
+    ref_df['Jobs'] = ref_df['Jobs'].apply(dumps) # Dumps stringify's lists
+    ref_df['Features'] = ref_df['Features'].apply(dumps) # Dumps stringify's lists
     return ref_df
 
 def get_recent_jobs():
@@ -40,9 +40,10 @@ def get_recent_jobs():
 def conv_str_time(st):
     logger.info("Convert to time")
     import datetime
-    if st.count(':') == 2:
-        return datetime.datetime.strptime(q[1][1],"%H:%M:%S").time()
-    elif st.count(':') == 1:
-        return datetime.datetime.strptime(q[1][1],"%H:%M").time()
+    if st.count(':') == 1:
+        return datetime.datetime.strptime(st[1][1],"%H:%M").time()
+    # limit functionality for now
+    #if st.count(':') == 2:
+    #    return datetime.datetime.strptime(st[1][1],"%H:%M:%S").time()
     else:
         return None

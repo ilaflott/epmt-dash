@@ -33,9 +33,9 @@ def display_page(pathname):
     df = joblist.df
     return df.to_dict('records')
 
-
+from refs import make_refs
 @app.callback(
-    [dash.dependencies.Output('output-container-button', 'children'),
+    [dash.dependencies.Output('recent-job-model-status', 'children'),
     dash.dependencies.Output('table-ref-models','data')],
     [dash.dependencies.Input('create_newModel', 'n_clicks')],
     [dash.dependencies.State('table-multicol-sorting', 'selected_rows'),
@@ -47,18 +47,20 @@ def update_output(n_clicks, value,e):
     if value:
         #logger.debug("Test{}{}".format(value,e))
         selected_rows=[e[i]['job id'] for i in value]
-        from layouts import ref_df
         logger.debug("Selected jobs {}".format(selected_rows))
 
         # Generate new refs for each of selected jobs
         import pandas as pd
-        from refs import make_refs
         refa = make_refs(1,name='t')
-        refa = pd.DataFrame(refa, columns=['Model','Active','Tags','Jobs','Features'])
-
-        ref_df = ref_df.append({'Jobs':selected_rows},ignore_index=True)
+        refa = pd.DataFrame(refa, columns=['Model','Tags','Jobs','Features','Active'])
+        from layouts import ref_df
+        logger.info("ref_df before append id({})".format(id(ref_df)))
+        ref_df = ref_df.append({'Jobs':selected_rows,'Tags':{'test':'tag'}},ignore_index=True)
+        logger.info("ref_df after append id({})".format(id(ref_df)))
+        from json import dumps
+        ref_df['Tags'] = ref_df['Tags'].apply(dumps)
         logger.debug("Updating Refs with \n{}".format(ref_df))
-
+        logger.debug(repr(ref_df))
         return [selected_rows,
         ref_df.to_dict('records')]
 
@@ -102,6 +104,7 @@ def select_all(n_clicks,data,selected_count):
             return []
     return [i for i in range(len(data))]
 
+
 def format_bytes(size,roundn=2):
     # 2**10 = 1024
     power = 2**10
@@ -112,35 +115,63 @@ def format_bytes(size,roundn=2):
         n += 1
     return (str(round(size,roundn)) + power_labels[n]+'B')
 
+
 def strfdelta(tdelta, fmt="{hours}:{minutes}:{seconds}"):
     d = {"days": tdelta.days}
     d["hours"], rem = divmod(tdelta.seconds, 3600)
     d["minutes"], d["seconds"] = divmod(rem, 60)
     return fmt.format(**d)
 
+
+# Get greatest unit from df
 power_labels = {0: '', 1: 'K', 2: 'M', 3: 'G', 4: 'T', 5: 'P'}
 def get_unit(alist):
-    hi = max(alist)
+    if len(alist) > 0:
+        hi = max(alist)
+    else:
+        hi = 1
     from math import log
     #print(alist)
     return power_labels[int(log(hi,1024))]
+
+
+# Convert df value used with get_unit
 def convtounit(val,reqUnit):
     # Letter to Unit reverse search
     unitp = list(power_labels.keys())[list(power_labels.values()).index(reqUnit)]
     return val/1024**unitp
 
+# Global click counter hack to track button click changes in single instance
 nclick = 0
 
+# Callback:
+# inputs:
+#   raw-switch - the toggle for converting datatypes
+#   new-data-button - a button for resetting the random jobs
+#   searchdf - a text area that actively is run on keypress
+
+# outputs:
+#   table, data - This is the data in the main jobs table
+#   table, columns - The table column names can be changed
+#   content2 - This text area displays the search inputs interpretation of a query
 @app.callback(
     [Output('table-multicol-sorting', 'data'),
     Output('table-multicol-sorting', 'columns'),
     Output(component_id='content2', component_property='children')],
     [Input('raw-switch', 'value'),
     Input('new-data-button', 'n_clicks'),
-    Input(component_id='searchdf', component_property='value')])
-def update_output(raw_toggle, new_data, search_value):
+    Input(component_id='searchdf', component_property='value'),
+    Input(component_id='jobs-date-picker', component_property='start_date'),
+    Input(component_id='jobs-date-picker', component_property='end_date')])
+def update_output(raw_toggle, new_data, search_value,start,end):
     logger.info("Update_output started")
     from layouts import df
+    # Limit by time
+    if end:
+        from datetime import datetime, timedelta
+        mask = (df['start_day'] > datetime.strptime(start, "%Y-%m-%d").date() - timedelta(days=1)) & (df['start_day'] <= datetime.strptime(end, "%Y-%m-%d").date())
+        logger.debug("{} {}".format(start,end))
+        df = df.loc[mask]
     ctx = dash.callback_context
     # CTX Needs to be used... 
     logger.info("{}{}{}".format(ctx.triggered,ctx.inputs,ctx.states))
@@ -198,11 +229,11 @@ def update_output(raw_toggle, new_data, search_value):
         }, inplace=True)
 
     # Convert durations
-        alt['duration (HH:MM:SS)'] = pd.to_timedelta(alt['duration (HH:MM:SS)'], unit='us').apply(lambda x: x*10000).apply(strfdelta)
-        alt['duration (HH:MM:SS)'] = pd.to_datetime(alt['duration (HH:MM:SS)'], format="%H:%M:%S").dt.time
+        alt['duration'] = pd.to_timedelta(alt['duration'], unit='us').apply(lambda x: x*10000).apply(strfdelta)
+        alt['duration'] = pd.to_datetime(alt['duration'], format="%H:%M:%S").dt.time
         alt['cpu_time'] = pd.to_timedelta(alt['cpu_time'], unit='us').apply(lambda x: x*10000).apply(strfdelta)
         alt['cpu_time'] = pd.to_datetime(alt['cpu_time'], format="%H:%M:%S").dt.time
-        alt.rename(columns={'cpu_time':'cpu_time (HH:MM:SS)'}, inplace=True)
+        alt.rename(columns={'cpu_time':'cpu_time (HH:MM:SS)','duration':'duration (HH:MM:SS)'}, inplace=True)
 
     # Run the search
     query = []
@@ -247,17 +278,17 @@ def update_output(raw_toggle, new_data, search_value):
                     
                 
                 if q[0] == '>':
-                    from components import convert_str_time
+                    from components import conv_str_time
                     if ':' in q[1][1]:
-                        t = convert_str_time(q[1][1])
+                        t = conv_str_time(q[1][1])
                         alt = alt.loc[alt[q[1][0]] > t]
                     else:
                         alt = alt.loc[alt[q[1][0]] > int(q[1][1])]
 
                 if q[0] == '<':
-                    from components import convert_str_time
+                    from components import conv_str_time
                     if ':' in q[1][1]:
-                        t = convert_str_time(q[1][1])
+                        t = conv_str_time(q[1][1])
                         alt = alt.loc[alt[q[1][0]] > t]
                     else:
                         alt = alt.loc[alt[q[1][0]] < int(q[1][1])]

@@ -37,10 +37,12 @@ div[id="switches"]{
     /*justify-content: space-between;*/
 }
 
-th.dash-header[class*=" column-"]:hover {
-	/*background-color: aqua;*/
-	height: 100px;
+/* Move header backward to be behind the datepicker */
+div.row-0{
+	z-index: 1;
 }
+
+
 /*Used for resizing the sort buttons and header titles*/
 span.column-header--sort{
 	width: 100%;
@@ -109,11 +111,11 @@ p{ margin-bottom: 1rem }
 
 .gs-header{ color: white !important; -webkit-print-color-adjust: exact; }
 
-.gs-text-header{ background: #C41230 !important; -webkit-print-color-adjust: exact; }
+.gs-text-header{ background: rgb(28, 0, 92) !important; -webkit-print-color-adjust: exact; }
 
-.gs-table-header{ background: #C41230 !important; -webkit-print-color-adjust: exact; }
+.gs-table-header{ background: rgb(28, 0, 92) !important; -webkit-print-color-adjust: exact; }
 
-.gs-accent-header{ background: #65201F !important; -webkit-print-color-adjust: exact; }
+.gs-accent-header{ background: rgb(28, 0, 92) !important; -webkit-print-color-adjust: exact; }
 
 div.padded{ padding: 10px; }
 

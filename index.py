@@ -4,6 +4,7 @@ from dash.dependencies import Input, Output, State
 # see https://community.plot.ly/t/nolayoutexception-on-deployment-of-multi-page-dash-app-example-code/12463/2?u=dcomfort
 from app import server
 from app import app
+from flask import get_flashed_messages
 from layouts import *
 import callbacks
 import logging
@@ -19,20 +20,8 @@ app.index_string = '''
         <title>EPMT Job Display</title>
         {%favicon%}
         {%css%}
-
-    <script>
-    function movebtn()
-    {
-    $(".expanded-row--empty-cell.dash-select-header").append($('button#index-select-all'));
-    console.log("Done");
-    }
-    function executeWithDelay() {
-        console.log("Executing");
-        setTimeout(movebtn(), 5000);
-    }
-    </script>
     </head>
-    <body onLoad="executeWithDelay()">
+    <body>
         {%app_entry%}
         <footer>
             {%config%}
