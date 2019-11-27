@@ -22,7 +22,7 @@ logger = getLogger(__name__)  # you can use other name
 
 #pd.options.mode.chained_assignment = None
 
-
+# 
 @app.callback(dash.dependencies.Output('content', 'data'),
               [dash.dependencies.Input('test', 'children')])
 def display_page(pathname):
@@ -33,36 +33,60 @@ def display_page(pathname):
     df = joblist.df
     return df.to_dict('records')
 
+
+# Callback for reference model table updating
+# Input: 
+#   create new model button click
+#   delete model button click
+# State: 
+#   recent jobs table selected and data
+# Output:
+#   text area on recent jobs screen
+#   reference model table
+#
+# Output: 
 from refs import make_refs
 @app.callback(
     [dash.dependencies.Output('recent-job-model-status', 'children'),
     dash.dependencies.Output('table-ref-models','data')],
-    [dash.dependencies.Input('create_newModel', 'n_clicks')],
+    [dash.dependencies.Input('create-newModel-btn', 'n_clicks_timestamp'),
+    dash.dependencies.Input('delete-Model-btn', 'n_clicks_timestamp')],
     [dash.dependencies.State('table-multicol-sorting', 'selected_rows'),
-    dash.dependencies.State('table-multicol-sorting', 'data')
+    dash.dependencies.State('table-multicol-sorting', 'data'),
+    dash.dependencies.State('table-ref-models', 'selected_rows'),
+    dash.dependencies.State('table-ref-models', 'data')
     
     ])
-def update_output(n_clicks, value,e):
-    selected_rows = []
-    if value:
-        #logger.debug("Test{}{}".format(value,e))
-        selected_rows=[e[i]['job id'] for i in value]
-        logger.debug("Selected jobs {}".format(selected_rows))
+def update_output(new_model_btn,delete_model_btn, sel_jobs,job_data,sel_refs,ref_data):
 
-        # Generate new refs for each of selected jobs
-        import pandas as pd
-        refa = make_refs(1,name='t')
-        refa = pd.DataFrame(refa, columns=['Model','Tags','Jobs','Features','Active'])
-        from layouts import ref_df
-        logger.info("ref_df before append id({})".format(id(ref_df)))
-        ref_df = ref_df.append({'Jobs':selected_rows,'Tags':{'test':'tag'}},ignore_index=True)
-        logger.info("ref_df after append id({})".format(id(ref_df)))
-        from json import dumps
-        ref_df['Tags'] = ref_df['Tags'].apply(dumps)
-        logger.debug("Updating Refs with \n{}".format(ref_df))
-        logger.debug(repr(ref_df))
-        return [selected_rows,
-        ref_df.to_dict('records')]
+    # Create model on selected rows
+    selected_rows = []
+    from layouts import ref_df
+    if int(new_model_btn) > int(delete_model_btn):
+        if sel_jobs:
+            selected_rows=[job_data[i]['job id'] for i in sel_jobs]
+            logger.debug("Selected jobs {}".format(selected_rows))
+            # Generate new refs for each of selected jobs
+            import pandas as pd
+            refa = make_refs(1,name='t')
+            refa = pd.DataFrame(refa, columns=['Model','Tags','Jobs','Features','Active'])
+            logger.info("ref_df before append id({})".format(id(ref_df)))
+            ref_df = ref_df.append({'Jobs':selected_rows,'Tags':{'test':'tag'}},ignore_index=True)
+            logger.info("ref_df after append id({})".format(id(ref_df)))
+            from json import dumps
+            ref_df['Tags'] = ref_df['Tags'].apply(dumps)
+            logger.debug("Updating Refs with \n{}".format(ref_df))
+            logger.debug(repr(ref_df))
+            return [selected_rows, ref_df.to_dict('records')]
+        return ["None selected", ref_df.to_dict('records')]
+    # Delete Model
+    elif int(new_model_btn) < int(delete_model_btn):
+        if sel_refs:
+            selected_refs=[ref_data[i]['Model'] for i in sel_refs]
+            logger.info("Ref is {}".format(selected_refs))
+            return [selected_rows, ref_df.to_dict('records')]
+    else:
+        return [selected_rows, ref_df.to_dict('records')]
 
 ######################## Select rows Callbacks ######################## 
 @app.callback(

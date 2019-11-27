@@ -143,7 +143,7 @@ layout_index =  html.Div([
             ),
     dbc.Row([
       dbc.Col([
-            html.Button(id='create_newModel', children="Create Model"),
+            html.Button(id='create-newModel-btn', children="Create Model", n_clicks_timestamp=0),
       ], width='auto'),
       dbc.Col([
             html.Button(id='index-select-all', children="Select All"),
@@ -235,7 +235,8 @@ layout_index =  html.Div([
                       'text-align': 'right',
                     }
                 ],
-            )
+            ),
+            html.Button(id='delete-Model-btn', children="Delete Model", n_clicks_timestamp=0),
         ]),
 
         
