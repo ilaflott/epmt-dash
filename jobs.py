@@ -294,12 +294,19 @@ class job_gen:
     sample = get_jobs()
     self.df = pd.DataFrame(sample)
     # Here I do some data cleanup/conversions
-    from json import dumps
-    self.df['tags'] = self.df['tags'].apply(dumps)
+    
+    # Extract the exit code to a column
     exit_codes = [d.get('status')['exit_code'] for d in self.df.info_dict]
     self.df['exit_code'] = exit_codes
+    
+    # Grab tags
+    tags = pd.DataFrame.from_dict(self.df['tags'].tolist())
+    self.df = pd.merge(self.df,tags, left_index=True, right_index=True)
+
+    #datetime.strptime(start, "%Y-%m-%d").date()
+    self.df['start_day'] = self.df.start.map(lambda x: x.date())
     #logger.info("Tags{}".format(self.df['tags']))
-    self.df = self.df[['jobid','exit_code','Processed','duration','usertime','systemtime','cpu_time','write_bytes','read_bytes','tags']]
+    self.df = self.df[['jobid','exit_code','Processed','start_day','end','duration','usertime','systemtime','cpu_time','write_bytes','read_bytes','exp_name','exp_time','atm_res','ocn_res','script_name']]
     import numpy as np
     self.df['Processed'] = np.where(self.df['Processed'], 'Yes', 'No')
     # Useful Renaming

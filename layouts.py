@@ -148,15 +148,16 @@ layout_index =  html.Div([
       dbc.Col([
             html.Button(id='index-select-all', children="Select All"),
       ], width='auto'),dbc.Col([
+        html.Div(style={'display':'block','width':'360px','text-align':'center'},children=[
             dcc.DatePickerRange(
               id='jobs-date-picker',
-              min_date_allowed=dt(2019, 10, 1),
+              min_date_allowed=dt(1990, 1, 1),
               max_date_allowed=dt(2040, 12, 25),
               clearable=True,
               with_portal=True,
               show_outside_days=True,
               minimum_nights=0
-            ),
+            ),"(Inclusive Date Selections)"]),
       ],width='auto'),dbc.Col([
             html.Button('New Data', id='new-data-button'),
             ],width='auto')

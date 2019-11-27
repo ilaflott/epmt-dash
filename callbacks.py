@@ -146,24 +146,7 @@ def strfdelta(tdelta, fmt="{hours}:{minutes}:{seconds}"):
     d["minutes"], d["seconds"] = divmod(rem, 60)
     return fmt.format(**d)
 
-
-# Get greatest unit from df
-power_labels = {0: '', 1: 'K', 2: 'M', 3: 'G', 4: 'T', 5: 'P'}
-def get_unit(alist):
-    if len(alist) > 0:
-        hi = max(alist)
-    else:
-        hi = 1
-    from math import log
-    #print(alist)
-    return power_labels[int(log(hi,1024))]
-
-
-# Convert df value used with get_unit
-def convtounit(val,reqUnit):
-    # Letter to Unit reverse search
-    unitp = list(power_labels.keys())[list(power_labels.values()).index(reqUnit)]
-    return val/1024**unitp
+from components import convtounit, get_unit, power_labels
 
 # Global click counter hack to track button click changes in single instance
 nclick = 0
@@ -193,6 +176,7 @@ def update_output(raw_toggle, new_data, search_value,start,end):
     # Limit by time
     if end:
         from datetime import datetime, timedelta
+        logger.info("Comparing start day {} with input {}".format(type(df['start_day']), datetime.strptime(start, "%Y-%m-%d").date() ))
         mask = (df['start_day'] > datetime.strptime(start, "%Y-%m-%d").date() - timedelta(days=1)) & (df['start_day'] <= datetime.strptime(end, "%Y-%m-%d").date())
         logger.debug("{} {}".format(start,end))
         df = df.loc[mask]
@@ -245,8 +229,8 @@ def update_output(raw_toggle, new_data, search_value,start,end):
         out_units = alt['bytes_out'].tolist()
         out_units = get_unit(out_units)
         logger.info("Input units {}b Output Units {}b".format(in_units,out_units))
-        alt['bytes_in'] = alt['bytes_in'].apply(convtounit,reqUnit=in_units).round(1)#.map('{:.2f}'.format)
-        alt['bytes_out'] = alt['bytes_out'].apply(convtounit,reqUnit=out_units).round(1)#.map('{:.2f}'.format)
+        alt['bytes_in'] = alt['bytes_in'].apply(convtounit,reqUnit=in_units).round(2)#.map('{:.2f}'.format)
+        alt['bytes_out'] = alt['bytes_out'].apply(convtounit,reqUnit=out_units).round(2)#.map('{:.2f}'.format)
         alt.rename(columns={
             'bytes_in': 'bytes_in ({}b)'.format(in_units),
             'bytes_out': 'bytes_out ({}b)'.format(out_units),
