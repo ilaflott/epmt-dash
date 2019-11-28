@@ -6,17 +6,18 @@ logger = getLogger(__name__)  # you can use other name
 
 
 #
-def make_refs(x,name=''):
+def make_refs(x,name='',jobs=None):
     from layouts import df
     from random import randint,getrandbits
 
     refs = []
     joblist = df['job id'].sample(n = 1).tolist()
     featureli = ['duration','cpu_time','num_procs']
-    print(joblist)
+    #print(joblist)
 
     for n in range(x):
-        jobs = [ joblist[i] for i in range(randint(1,1))]         #  setup 5-8 jobs per ref
+        if not jobs:
+            jobs = [ joblist[i] for i in range(randint(1,1))]         #  setup 5-8 jobs per ref
         features = [featureli[i] for i in range(randint(1,3))]    #  Setup random features
         ref_active = bool(getrandbits(1)  < 0.95)                 #  95% Chance of being active
         refs.append(['ref'+str(n)+name, {"taga":"tagb"}, jobs,
@@ -26,7 +27,7 @@ def make_refs(x,name=''):
 # Generate a list of references
 class ref_gen:
     def __init__(self):
-        references = make_refs(1)
+        references = make_refs(3)
         self.df = pd.DataFrame(references, columns=['Model','Tags','Jobs','Features','Active'])
         self.df['Active'] = np.where(self.df['Active'], 'Yes', 'No')
         # Reorder

@@ -143,6 +143,9 @@ layout_index =  html.Div([
             ),
     dbc.Row([
       dbc.Col([
+            html.Button(id='run-analysis-btn', children="Run Analysis", n_clicks_timestamp=0, style={'background-color':'#20c997','color':'#020080'}),
+      ], width='auto'),
+      dbc.Col([
             html.Button(id='create-newModel-btn', children="Create Model", n_clicks_timestamp=0),
       ], width='auto'),
       dbc.Col([
@@ -158,9 +161,7 @@ layout_index =  html.Div([
               show_outside_days=True,
               minimum_nights=0
             ),"(Inclusive Date Selections)"]),
-      ],width='auto'),dbc.Col([
-            html.Button('New Data', id='new-data-button'),
-            ],width='auto')
+      ],width='auto')
     ],)
 
 

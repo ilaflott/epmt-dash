@@ -45,7 +45,6 @@ def display_page(pathname):
 #   reference model table
 #
 # Output: 
-from refs import make_refs
 @app.callback(
     [dash.dependencies.Output('recent-job-model-status', 'children'),
     dash.dependencies.Output('table-ref-models','data')],
@@ -61,32 +60,39 @@ def update_output(new_model_btn,delete_model_btn, sel_jobs,job_data,sel_refs,ref
 
     # Create model on selected rows
     selected_rows = []
-    from layouts import ref_df
+    import layouts
+    ref_df = layouts.ref_df
+    # New model was pressed recently
     if int(new_model_btn) > int(delete_model_btn):
         if sel_jobs:
-            selected_rows=[job_data[i]['job id'] for i in sel_jobs]
-            logger.debug("Selected jobs {}".format(selected_rows))
+            selected_rows=[str(job_data[i]['job id']) for i in sel_jobs]
+            logger.info("Selected jobs {}".format(selected_rows))
             # Generate new refs for each of selected jobs
             import pandas as pd
-            refa = make_refs(1,name='t')
-            refa = pd.DataFrame(refa, columns=['Model','Tags','Jobs','Features','Active'])
-            logger.info("ref_df before append id({})".format(id(ref_df)))
-            ref_df = ref_df.append({'Jobs':selected_rows,'Tags':{'test':'tag'}},ignore_index=True)
-            logger.info("ref_df after append id({})".format(id(ref_df)))
             from json import dumps
-            ref_df['Tags'] = ref_df['Tags'].apply(dumps)
-            logger.debug("Updating Refs with \n{}".format(ref_df))
-            logger.debug(repr(ref_df))
-            return [selected_rows, ref_df.to_dict('records')]
+            from refs import make_refs
+            refa = make_refs(1,name='t',jobs=selected_rows)
+            refa = pd.DataFrame(refa, columns=['Model','Tags','Jobs','Features','Active'])
+            refa['Jobs'] = refa['Jobs'].apply(dumps)
+            refa['Tags'] = refa['Tags'].apply(dumps)
+            refa['Features'] = refa['Features'].apply(dumps)
+            layouts.ref_df = pd.concat([ref_df,refa], ignore_index=True, sort=False)
+            logger.info("Creating new model with \n{}".format(ref_df))
+            logger.info(repr(ref_df))
+            return [selected_rows, layouts.ref_df.to_dict('records')]
         return ["None selected", ref_df.to_dict('records')]
+    
+    # Delete was pressed after new_model
     # Delete Model
     elif int(new_model_btn) < int(delete_model_btn):
-        if sel_refs:
+        if sel_refs and len(sel_refs)>0:
             selected_refs=[ref_data[i]['Model'] for i in sel_refs]
-            logger.info("Ref is {}".format(selected_refs))
-            return [selected_rows, ref_df.to_dict('records')]
-    else:
-        return [selected_rows, ref_df.to_dict('records')]
+            logger.info("Delete Model {}".format(selected_refs))
+            for n in selected_refs:
+                layouts.ref_df = ref_df[ref_df.Model != n]
+            return [selected_rows, layouts.ref_df.to_dict('records')]
+    return [selected_rows, layouts.ref_df.to_dict('records')]
+    
 
 ######################## Select rows Callbacks ######################## 
 @app.callback(
@@ -166,13 +172,14 @@ nclick = 0
     Output('table-multicol-sorting', 'columns'),
     Output(component_id='content2', component_property='children')],
     [Input('raw-switch', 'value'),
-    Input('new-data-button', 'n_clicks'),
     Input(component_id='searchdf', component_property='value'),
     Input(component_id='jobs-date-picker', component_property='start_date'),
     Input(component_id='jobs-date-picker', component_property='end_date')])
-def update_output(raw_toggle, new_data, search_value,start,end):
+def update_output(raw_toggle, search_value,start,end):
     logger.info("Update_output started")
     from layouts import df
+    orig = df
+    alt = orig.copy()
     # Limit by time
     if end:
         from datetime import datetime, timedelta
@@ -187,25 +194,6 @@ def update_output(raw_toggle, new_data, search_value,start,end):
     # this is used to update if it has changed
     global nclick
 
-    # New Data button clicked
-    if new_data is not nclick:
-        # Update global with click count
-        logger.debug("New Data pressed")
-        nclick = new_data
-        
-        # Reset class instance with new random jobs
-        import jobs
-        new_jobs= jobs.job_gen()
-        new_jobs.reset()
-        # Set new random jobs as original
-        orig = new_jobs.df
-        # Check original against alternative df
-        #logger.debug("Orig: cpu_time {} type:{}".format(orig.iloc[[0]]['cpu_time'],type(orig.iloc[[0]]['cpu_time'])))
-        alt = orig.copy()
-        #logger.debug("Alt: cpu_time {} type:{}".format(alt.iloc[[0]]['cpu_time'],type(alt.iloc[[0]]['cpu_time'])))
-    else:
-        orig = df
-        alt = orig.copy()
     ctx = dash.callback_context
     #logger.info(value)
     
