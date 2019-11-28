@@ -48,12 +48,6 @@ def get_menu():
     menu = dbc.Container([
         dbc.Row(
             [
-                dbc.Col([
-                html.Div([
-                    dcc.Link('Overview - Recent Jobs', href='/', className="tab first"),
-                    dcc.Link('Models', href='/refs/', className="tab"),
-                    dcc.Link('Alert Jobs', href='/alerts/', className="tab")])
-                ],width="auto"),
                 dbc.Col(
                         dcc.Input(
                             id='searchdf',
