@@ -254,14 +254,14 @@ samplej = {'duration': 6460243317.0,
 # Use samplej real job as template
 # replace jobid with new number
 # return list of limit of jobs
-def get_jobs(fmt='df', limit=5):
+def get_jobs(fmt='df', limit=30, offset=0):
     result = []
     for n in range(limit):
         job = dict(samplej)
         job['jobid'] = str(1234000 + n)
         job['Processed'] = 1
         result.append(job)
-    return result
+    return result[offset:]
 
 def make_jobs(x):
     result = []
@@ -321,7 +321,11 @@ class job_gen:
     self.__init__()
 
 #unproc_df = df.loc[df['Processing Complete'] == True].to_dict('records')
-    
+
+# Grabs sample jobs
+# returns dataframe
+def get_recent_jobs():
+    return job_gen().df
 ######################## End List of jobs ########################
 
 def get_version():

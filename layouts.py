@@ -11,16 +11,16 @@ from datetime import date, timedelta
 from logging import getLogger, basicConfig, DEBUG, ERROR, INFO, WARNING
 logger = getLogger(__name__)  # you can use other name
 
+DEFAULT_ROWS_PER_PAGE = 5
 
 
-######################## Random List of Jobs & References ########################
-from components import get_recent_jobs
-df = get_recent_jobs()
+########################Jobs & References ########################
+from jobs import get_recent_jobs
+job_df = get_recent_jobs()
 
-from components import get_references
+from refs import get_references
 ref_df = get_references()
-logger.error("ref_df:({})".format(id(ref_df)))
-######################## End List of Jobs & References ########################
+######################## End Jobs & References ########################
 
 
 ######################## START index Layout ########################
@@ -71,7 +71,7 @@ layout_index =  html.Div([
                 #filter_action="native",
                 #style_as_list_view=True,
                 columns=[
-                    {"name": i, "id": i} for i in df.columns
+                    {"name": i, "id": i} for i in job_df.columns
                 ],
                 fixed_rows={ 'headers': True, 'data': 0 },
                 #fixed_columns={ 'headers': True, 'data': 1 },#, Css is not setup for this
@@ -161,7 +161,29 @@ layout_index =  html.Div([
               show_outside_days=True,
               minimum_nights=0
             ),"(Inclusive Date Selections)"]),
-      ],width='auto')
+      ],width='auto'),
+      dbc.Col([
+            dcc.Dropdown(
+        id='row-count-dropdown',
+        options=[
+            {'label': '5 Rows', 'value': '5'},
+            {'label': '20 Rows', 'value': '20'},
+            {'label': '50 Rows', 'value': '50'}
+        ],
+        value = DEFAULT_ROWS_PER_PAGE
+    )
+      ], width=2),
+      # df.shape[0]
+      dbc.Col(["Page:",
+        ','.join([str(n+1) for n in range((job_df.shape[0]//DEFAULT_ROWS_PER_PAGE))]),
+      ], width='auto'),
+      dbc.Col([
+        "[ ",
+        job_df.shape[0],
+        " Jobs Total ]"
+      ], width='auto'),
+      
+        
     ],)
 
 
@@ -249,7 +271,7 @@ layout_index =  html.Div([
 
 ######################## END index Layout ########################
 
-unproc = df.loc[df['processing complete'] == "No"].to_dict('records')
+unproc = job_df.loc[job_df['processing complete'] == "No"].to_dict('records')
 #logger.info(unproc)
 ######################## START unprocessed Layout ########################
 layout_unprocessed =  html.Div([
@@ -269,7 +291,7 @@ layout_unprocessed =  html.Div([
           dash_table.DataTable(
           id='table-multicol-sorting',
           columns=[
-            {"name": i, "id": i} for i in sorted(df.columns)
+            {"name": i, "id": i} for i in sorted(job_df.columns)
           ],
           data=unproc
           )
@@ -390,9 +412,9 @@ layout_display =  html.Div([
           dash_table.DataTable(
           id='table-multicol-sorting',
           columns=[
-            {"name": i, "id": i} for i in sorted(df.columns)
+            {"name": i, "id": i} for i in sorted(job_df.columns)
           ],
-          data=df.to_dict('records')
+          data=job_df.to_dict('records')
           )
         ]),
         # Download Button
@@ -434,9 +456,9 @@ layout_alerts =  html.Div([
           dash_table.DataTable(
           id='table-multicol-sorting',
           columns=[
-            {"name": i, "id": i} for i in sorted(df.columns)
+            {"name": i, "id": i} for i in sorted(job_df.columns)
           ],
-          data=df.to_dict('records')
+          data=job_df.to_dict('records')
           )
         ]),
         # Download Button
@@ -469,7 +491,7 @@ layout_sample =  html.Div([
           dash_table.DataTable(
           id='custom-table',
           columns=[
-            {"name": i, "id": i} for i in sorted(df.columns)
+            {"name": i, "id": i} for i in sorted(job_df.columns)
           ],
           #data=df.to_dict('records')
           )
@@ -484,9 +506,8 @@ def layouts(pfullurl):
     # Grab jobid values from dictionary
     jobids = ji['jobid']
 
-    from layouts import df
-    logger.debug("{}\n{}".format(jobids,df.loc[df['job id'].isin(jobids)]))
-    tableData = df.loc[df['job id'].isin(jobids)]
+    logger.debug("{}\n{}".format(jobids,job_df.loc[job_df['job id'].isin(jobids)]))
+    tableData = job_df.loc[job_df['job id'].isin(jobids)]
     return html.Div([
       html.Div([
         #dcc.Location(id='url', refresh=False),

@@ -76,8 +76,8 @@ def update_output(new_model_btn,delete_model_btn, sel_jobs,job_data,sel_refs,ref
             refa['Jobs'] = refa['Jobs'].apply(dumps)
             refa['Tags'] = refa['Tags'].apply(dumps)
             refa['Features'] = refa['Features'].apply(dumps)
+            logger.info("Creating new model with \n{}".format(refa))
             layouts.ref_df = pd.concat([ref_df,refa], ignore_index=True, sort=False)
-            logger.info("Creating new model with \n{}".format(ref_df))
             logger.info(repr(ref_df))
             return [selected_rows, layouts.ref_df.to_dict('records')]
         return ["None selected", ref_df.to_dict('records')]
@@ -177,16 +177,17 @@ nclick = 0
     Input(component_id='jobs-date-picker', component_property='end_date')])
 def update_output(raw_toggle, search_value,start,end):
     logger.info("Update_output started")
-    from layouts import df
-    orig = df
+    from jobs import get_recent_jobs
+    job_df = get_recent_jobs()
+    orig = job_df
     alt = orig.copy()
     # Limit by time
     if end:
         from datetime import datetime, timedelta
-        logger.info("Comparing start day {} with input {}".format(type(df['start_day']), datetime.strptime(start, "%Y-%m-%d").date() ))
-        mask = (df['start_day'] > datetime.strptime(start, "%Y-%m-%d").date() - timedelta(days=1)) & (df['start_day'] <= datetime.strptime(end, "%Y-%m-%d").date())
+        logger.info("Comparing start day {} with input {}".format(type(job_df['start_day']), datetime.strptime(start, "%Y-%m-%d").date() ))
+        mask = (job_df['start_day'] > datetime.strptime(start, "%Y-%m-%d").date() - timedelta(days=1)) & (job_df['start_day'] <= datetime.strptime(end, "%Y-%m-%d").date())
         logger.debug("{} {}".format(start,end))
-        df = df.loc[mask]
+        job_df = job_df.loc[mask]
     ctx = dash.callback_context
     # CTX Needs to be used... 
     logger.info("{}{}{}".format(ctx.triggered,ctx.inputs,ctx.states))

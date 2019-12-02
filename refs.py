@@ -7,11 +7,12 @@ logger = getLogger(__name__)  # you can use other name
 
 #
 def make_refs(x,name='',jobs=None):
-    from layouts import df
+    from jobs import get_recent_jobs
+    job_df = get_recent_jobs()
     from random import randint,getrandbits
 
     refs = []
-    joblist = df['job id'].sample(n = 1).tolist()
+    joblist = job_df['job id'].sample(n = 1).tolist()
     featureli = ['duration','cpu_time','num_procs']
     #print(joblist)
 
@@ -32,3 +33,17 @@ class ref_gen:
         self.df['Active'] = np.where(self.df['Active'], 'Yes', 'No')
         # Reorder
         self.df = self.df[['Model','Active','Tags','Jobs','Features']]
+
+
+# Grabs sample reference models
+# formats them
+# returns dataframe
+def get_references():
+    ref_df = ref_gen().df
+    logger.debug("Refs({}):\n{}".format(id(ref_df),ref_df))
+    # Ref model initialization data
+    from json import dumps
+    ref_df['Tags'] = ref_df['Tags'].apply(dumps) # Dumps stringify's dictionaries
+    ref_df['Jobs'] = ref_df['Jobs'].apply(dumps) # Dumps stringify's lists
+    ref_df['Features'] = ref_df['Features'].apply(dumps) # Dumps stringify's lists
+    return ref_df

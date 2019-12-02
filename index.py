@@ -4,7 +4,6 @@ from dash.dependencies import Input, Output, State
 # see https://community.plot.ly/t/nolayoutexception-on-deployment-of-multi-page-dash-app-example-code/12463/2?u=dcomfort
 from app import server
 from app import app
-from flask import get_flashed_messages
 from layouts import *
 import callbacks
 import logging
