@@ -35,7 +35,7 @@ def create_conditional_style(df):
         style.append({'if': {'column_id': col}, 'minWidth': pixel})
     return style
 
-layout_index =  html.Div([
+recent_jobs_page =  html.Div([
     html.Div([
         # CC Header
         html.Div(style={'inline':'true'},children=[
@@ -63,7 +63,11 @@ layout_index =  html.Div([
             dash_table.DataTable(
                 id='table-multicol-sorting',
                 row_selectable="multi",
-                sort_action='native',
+                page_current=0,
+                page_size=DEFAULT_ROWS_PER_PAGE,
+                page_action='custom',
+                sort_action='custom',
+                sort_by=[],
                 #sort_mode='multi', Keeping it simple now
                 #data=df.head(10).to_dict('records'), # Do not display data initially, callback will handle it
                 #filter_action="native",
@@ -165,9 +169,11 @@ layout_index =  html.Div([
         id='row-count-dropdown',
         options=[
             {'label': '5 Rows', 'value': '5'},
-            {'label': '20 Rows', 'value': '20'},
+            {'label': '30 Rows', 'value': '30'},
             {'label': '50 Rows', 'value': '50'}
         ],
+        clearable=False,
+        searchable=False,
         value = DEFAULT_ROWS_PER_PAGE
     )
       ], width=2),

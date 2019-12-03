@@ -47,7 +47,7 @@ def display_page(pathname,pfullurl):
     from app import fullurl
     app.fullurl = pfullurl
     if pathname == '' or pathname == '/':
-        return layout_index
+        return recent_jobs_page
     elif pathname == '/unprocessed/':
         return layout_unprocessed
     elif pathname == '/alerts/':
