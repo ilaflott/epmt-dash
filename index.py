@@ -6,9 +6,10 @@ from app import server
 from app import app
 from layouts import *
 import callbacks
-import logging
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)  # you can use other name
+# Index.py Configures logger debug level
+from logging import getLogger, basicConfig, DEBUG, ERROR, INFO, WARNING
+basicConfig(level=DEBUG)
+logger = getLogger(__name__)  # you can use other name
 
 # see https://dash.plot.ly/external-resources to alter header, footer and favicon
 app.index_string = ''' 

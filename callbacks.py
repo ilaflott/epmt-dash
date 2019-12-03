@@ -3,33 +3,31 @@ from dash.dependencies import Input, Output, State
 from app import app
 import plotly.graph_objs as go
 from plotly import tools
-
 from datetime import datetime as dt
 from datetime import date, timedelta
+import io
 from datetime import datetime
-
 import numpy as np
 import pandas as pd
-
-import io
-
-
-#from components import formatter_currency, formatter_currency_with_cents, formatter_percent, formatter_percent_2_digits, formatter_number
-#from components import update_first_datatable, update_first_download, update_second_datatable, update_graph
-
+# Index.py Configures logger debug level
 from logging import getLogger, basicConfig, DEBUG, ERROR, INFO, WARNING
 logger = getLogger(__name__)  # you can use other name
 
-#pd.options.mode.chained_assignment = None
+# These are old example methods that were used by template..
+#from components import formatter_currency, formatter_currency_with_cents, formatter_percent, formatter_percent_2_digits, formatter_number
+#from components import update_first_datatable, update_first_download, update_second_datatable, update_graph
 
+#pd.options.mode.chained_assignment = None
+from layouts import DEFAULT_ROWS_PER_PAGE
+from layouts import dcc
 # 
 @app.callback(dash.dependencies.Output('content', 'data'),
               [dash.dependencies.Input('test', 'children')])
 def display_page(pathname):
     #import layouts
     logger.debug("Pathname is {}".format(pathname))
-    import jobs
-    joblist = jobs.job_gen()
+    from jobs import job_gen
+    joblist = jobs.job_gen().df
     df = joblist.df
     return df.to_dict('records')
 
@@ -157,11 +155,12 @@ from components import convtounit, get_unit, power_labels
 # Global click counter hack to track button click changes in single instance
 nclick = 0
 
-# Callback:
+# Recent jobs data table callback
 # inputs:
 #   raw-switch - the toggle for converting datatypes
 #   new-data-button - a button for resetting the random jobs
 #   searchdf - a text area that actively is run on keypress
+#   row-count-dropdown - Requested number of rows per page
 
 # outputs:
 #   table, data - This is the data in the main jobs table
@@ -170,15 +169,19 @@ nclick = 0
 @app.callback(
     [Output('table-multicol-sorting', 'data'),
     Output('table-multicol-sorting', 'columns'),
-    Output(component_id='content2', component_property='children')],
+    Output(component_id='content2', component_property='children'),
+    Output('page-selector', 'children')],
     [Input('raw-switch', 'value'),
     Input(component_id='searchdf', component_property='value'),
     Input(component_id='jobs-date-picker', component_property='start_date'),
-    Input(component_id='jobs-date-picker', component_property='end_date')])
-def update_output(raw_toggle, search_value,start,end):
+    Input(component_id='jobs-date-picker', component_property='end_date'),
+    Input(component_id='row-count-dropdown', component_property='value')])
+def update_output(raw_toggle, search_value,start,end,rows_per_page):
     logger.info("Update_output started")
-    from jobs import get_recent_jobs
-    job_df = get_recent_jobs()
+    from jobs import job_gen
+    logger.debug("Rows requested per page:{}".format(rows_per_page))
+    offset = 0
+    job_df = job_gen().df.iloc[:int(rows_per_page)]
     orig = job_df
     alt = orig.copy()
     # Limit by time
@@ -297,7 +300,8 @@ def update_output(raw_toggle, search_value,start,end):
     return [
         alt.to_dict('records'),
         [{"name": i, "id": i} for i in alt.columns],
-        'You\'ve entered: {}'.format(query)
+        'You\'ve entered: {}'.format(query),
+        [dcc.Link(str(n+1)+", ",href="?page="+str(n)) for n in range((job_df.shape[0]//DEFAULT_ROWS_PER_PAGE))]
     ]
 
 ######################## /Index Callbacks ######################## 

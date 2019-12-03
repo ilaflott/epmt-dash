@@ -3,6 +3,7 @@ import random
 import time
 import pandas as pd
 from string import ascii_letters
+# Index.py Configures logger debug level
 from logging import getLogger, basicConfig, DEBUG, ERROR, INFO, WARNING
 logger = getLogger(__name__)  # you can use other name
 
@@ -254,8 +255,14 @@ samplej = {'duration': 6460243317.0,
 # Use samplej real job as template
 # replace jobid with new number
 # return list of limit of jobs
-def get_jobs(fmt='df', limit=30, offset=0):
+def get_jobs(limit, fmt='df', offset=0):
     result = []
+    #if offset >= limit: offset = limit 
+    if offset>0:
+      # This isn't quite right..
+      # df[offset:offset+limit]
+      limit = offset + limit
+    logger.info("Getting jobs...Limit{} Offset{}".format(limit,offset))
     for n in range(limit):
         job = dict(samplej)
         job['jobid'] = str(1234000 + n)
@@ -263,7 +270,9 @@ def get_jobs(fmt='df', limit=30, offset=0):
         result.append(job)
     return result[offset:]
 
-def make_jobs(x):
+
+
+def _unused_random_job_generator(x):
     result = []
     for n in range(x):
         jobid = "job-"+str(n)
@@ -289,11 +298,11 @@ def make_jobs(x):
     return result
 
 df = pd.DataFrame()
+# Job_gen does data cleanup and conversions for displaying
 class job_gen:
-  def __init__(self):
-    sample = get_jobs()
+  def __init__(self, limit=60, offset=0):
+    sample = get_jobs(limit=limit, offset=offset)
     self.df = pd.DataFrame(sample)
-    # Here I do some data cleanup/conversions
     
     # Extract the exit code to a column
     exit_codes = [d.get('status')['exit_code'] for d in self.df.info_dict]
@@ -302,14 +311,19 @@ class job_gen:
     # Grab tags
     tags = pd.DataFrame.from_dict(self.df['tags'].tolist())
     self.df = pd.merge(self.df,tags, left_index=True, right_index=True)
-
+    # Convert Job date into a start_day datetime date
     #datetime.strptime(start, "%Y-%m-%d").date()
     self.df['start_day'] = self.df.start.map(lambda x: x.date())
+    
+    # Select specific tags for displaying
     #logger.info("Tags{}".format(self.df['tags']))
     self.df = self.df[['jobid','exit_code','Processed','start_day','end','duration','usertime','systemtime','cpu_time','write_bytes','read_bytes','exp_name','exp_time','atm_res','ocn_res','script_name']]
+    
+    # Convert True into 'Yes' for user friendly display
     import numpy as np
     self.df['Processed'] = np.where(self.df['Processed'], 'Yes', 'No')
-    # Useful Renaming
+    
+    # User friendly column names
     self.df.rename(columns={
       'jobid': 'job id',
       'exit_code': 'exit status',
@@ -320,18 +334,14 @@ class job_gen:
   def reset(self):
     self.__init__()
 
-#unproc_df = df.loc[df['Processing Complete'] == True].to_dict('records')
-
-# Grabs sample jobs
-# returns dataframe
-def get_recent_jobs():
-    return job_gen().df
 ######################## End List of jobs ########################
 
 def get_version():
   return "EPMT 1.1.1"
 
+#unproc_df = df.loc[df['Processing Complete'] == True].to_dict('records')
 
-# Test 
-
-
+# Grabs sample jobs
+# returns dataframe
+#def get_recent_jobs(limit):
+#    return job_gen(limit=limit).df

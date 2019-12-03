@@ -8,7 +8,6 @@ import pandas as pd
 
 from logging import getLogger, basicConfig, DEBUG, ERROR, INFO, WARNING
 logger = getLogger(__name__)  # you can use other name
-basicConfig(level=INFO)
 pd.options.mode.chained_assignment = None
 
 
@@ -17,7 +16,9 @@ def parseurl(i):
     logger.info("Given URL {}".format(i))
     # convert url into dictionary
     from urllib.parse import parse_qs, urlparse
-    return parse_qs(urlparse(i).query)
+    res_dict = parse_qs(urlparse(i).query)
+    logger.info("URL2Dict {}".format(res_dict))
+    return res_dict
 
 
 

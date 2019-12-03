@@ -1,6 +1,6 @@
 import dash
 import dash_bootstrap_components as dbc
-
+# Index.py Configures logger debug level
 
 external_stylesheets = [ # Remote Styles
                         dbc.themes.BOOTSTRAP,

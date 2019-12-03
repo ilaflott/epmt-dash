@@ -7,8 +7,8 @@ logger = getLogger(__name__)  # you can use other name
 
 #
 def make_refs(x,name='',jobs=None):
-    from jobs import get_recent_jobs
-    job_df = get_recent_jobs()
+    from jobs import job_gen
+    job_df = job_gen().df
     from random import randint,getrandbits
 
     refs = []

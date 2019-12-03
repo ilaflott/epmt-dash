@@ -7,16 +7,14 @@ import dash
 from components import Header, Footer #, print_button
 from datetime import datetime as dt
 from datetime import date, timedelta
-
 from logging import getLogger, basicConfig, DEBUG, ERROR, INFO, WARNING
 logger = getLogger(__name__)  # you can use other name
 
-DEFAULT_ROWS_PER_PAGE = 5
-
+DEFAULT_ROWS_PER_PAGE = 30
 
 ########################Jobs & References ########################
-from jobs import get_recent_jobs
-job_df = get_recent_jobs()
+from jobs import job_gen
+job_df = job_gen().df
 
 from refs import get_references
 ref_df = get_references()
@@ -174,9 +172,9 @@ layout_index =  html.Div([
     )
       ], width=2),
       # df.shape[0]
-      dbc.Col(["Page:",
-        ','.join([str(n+1) for n in range((job_df.shape[0]//DEFAULT_ROWS_PER_PAGE))]),
-      ], width='auto'),
+      dbc.Col(['Page:'], html.Div(id="page-selector", children=[dcc.Link(str(n+1)+", ",href="?page="+str(n)) for n in range((job_df.shape[0]//DEFAULT_ROWS_PER_PAGE))])
+        #','.join([str(n+1) for n in range((job_df.shape[0]//DEFAULT_ROWS_PER_PAGE))]),
+      , width='auto'),
       dbc.Col([
         "[ ",
         job_df.shape[0],
@@ -502,12 +500,19 @@ layout_sample =  html.Div([
 
 def layouts(pfullurl):
     from components import parseurl
-    ji = parseurl(pfullurl)
-    # Grab jobid values from dictionary
-    jobids = ji['jobid']
-
-    logger.debug("{}\n{}".format(jobids,job_df.loc[job_df['job id'].isin(jobids)]))
-    tableData = job_df.loc[job_df['job id'].isin(jobids)]
+    # offset = page * DEFAULT_ROWS_PER_PAGE
+    q = parseurl(pfullurl)
+    # Grab jobid values from query dict
+    page = int(q['page'][0])
+    job_df = job_gen(limit=DEFAULT_ROWS_PER_PAGE,offset=page*DEFAULT_ROWS_PER_PAGE).df
+    jobids = q.get('jobid',None)
+    logger.info(jobids)
+    if jobids:
+      logger.debug("{}\n{}".format(jobids,job_df.loc[job_df['job id'].isin(jobids)]))
+      tableData = job_df.loc[job_df['job id'].isin(jobids)]
+    else:
+      tableData = job_df
+    
     return html.Div([
       html.Div([
         #dcc.Location(id='url', refresh=False),
