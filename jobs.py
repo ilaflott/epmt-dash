@@ -308,12 +308,13 @@ class job_gen:
     exit_codes = [d.get('status')['exit_code'] for d in self.df.info_dict]
     self.df['exit_code'] = exit_codes
     
-    # Grab tags
+    # Extract tags out and merge them in as columns
     tags = pd.DataFrame.from_dict(self.df['tags'].tolist())
     self.df = pd.merge(self.df,tags, left_index=True, right_index=True)
+    
     # Convert Job date into a start_day datetime date
-    #datetime.strptime(start, "%Y-%m-%d").date()
     self.df['start_day'] = self.df.start.map(lambda x: x.date())
+    #datetime.strptime(start, "%Y-%m-%d").date()
     
     # Select specific tags for displaying
     #logger.info("Tags{}".format(self.df['tags']))

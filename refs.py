@@ -55,3 +55,6 @@ def get_references():
     ref_df['jobs'] = ref_df['jobs'].apply(dumps) # Dumps stringify's lists
     ref_df['features'] = ref_df['features'].apply(dumps) # Dumps stringify's lists
     return ref_df
+
+
+ref_df = get_references()

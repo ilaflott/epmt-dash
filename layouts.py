@@ -16,8 +16,8 @@ DEFAULT_ROWS_PER_PAGE = 30
 from jobs import job_gen
 job_df = job_gen().df
 
-from refs import get_references
-ref_df = get_references()
+from refs import ref_df
+#ref_df = get_references()
 ######################## End Jobs & References ########################
 
 
@@ -320,6 +320,7 @@ recent_jobs_page =  html.Div([
                     dbc.Col(
                       # Dropdown with jobs populated by callback
                       dcc.Dropdown(
+                        id='edit-model-jobs-drdn',
                         options=[
                             {'label': 'Job0', 'value': 'j0'},
                             {'label': 'Job1', 'value': 'j1'}
