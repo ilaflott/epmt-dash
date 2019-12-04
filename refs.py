@@ -5,23 +5,31 @@ from logging import getLogger, basicConfig, DEBUG, ERROR, INFO, WARNING
 logger = getLogger(__name__)  # you can use other name
 
 
-#
+# Returns a list of model data to be converted into a dataframe
 def make_refs(x,name='',jobs=None):
-    from jobs import job_gen
-    job_df = job_gen().df
     from random import randint,getrandbits
-
+    from jobs import job_gen
+    # Our generated references need to pull jobids and tags from jobs 
+    job_df = job_gen().df
     refs = []
     joblist = job_df['job id'].sample(n = 1).tolist()
     featureli = ['duration','cpu_time','num_procs']
-    #print(joblist)
-
     for n in range(x):
+        # If jobs were not passed randomly create some 5 days ago
+        from datetime import date, timedelta
+        ref_date = (date.today()-timedelta(days=5)).strftime("%b-%d-%Y")
         if not jobs:
-            jobs = [ joblist[i] for i in range(randint(1,1))]         #  setup 5-8 jobs per ref
-        features = [featureli[i] for i in range(randint(1,3))]    #  Setup random features
-        ref_active = bool(getrandbits(1)  < 0.95)                 #  95% Chance of being active
-        refs.append(['ref'+str(n)+name, {"taga":"tagb"}, jobs,
+            ref_jobs = [ joblist[i] for i in range(randint(1,1))]         #  setup 5-8 jobs per ref
+            ref_active = bool(getrandbits(1)  < 0.95)                 #  95% Chance of being active
+            features = [featureli[i] for i in range(randint(1,3))]    #  Setup random features
+        else:
+            ref_jobs = jobs
+            today = date.today()
+            # Ref model is being generated now
+            ref_date = today.strftime("%b-%d-%Y")
+            ref_active = True   # Set active User Friendly
+            features = featureli # Full Features
+        refs.append(['ref'+str(n)+name, ref_date, {"taga":"tagb"}, ref_jobs,
                      features, ref_active])                       # Append each ref to refs list
     return refs
 
@@ -29,10 +37,10 @@ def make_refs(x,name='',jobs=None):
 class ref_gen:
     def __init__(self):
         references = make_refs(3)
-        self.df = pd.DataFrame(references, columns=['Model','Tags','Jobs','Features','Active'])
-        self.df['Active'] = np.where(self.df['Active'], 'Yes', 'No')
+        self.df = pd.DataFrame(references, columns=['name', 'date created', 'tags','jobs','features','active'])
+        #self.df['active'] = np.where(self.df['active'], 'Yes', 'No')
         # Reorder
-        self.df = self.df[['Model','Active','Tags','Jobs','Features']]
+        self.df = self.df[['name','active', 'date created', 'tags','jobs','features']]
 
 
 # Grabs sample reference models
@@ -43,7 +51,7 @@ def get_references():
     logger.debug("Refs({}):\n{}".format(id(ref_df),ref_df))
     # Ref model initialization data
     from json import dumps
-    ref_df['Tags'] = ref_df['Tags'].apply(dumps) # Dumps stringify's dictionaries
-    ref_df['Jobs'] = ref_df['Jobs'].apply(dumps) # Dumps stringify's lists
-    ref_df['Features'] = ref_df['Features'].apply(dumps) # Dumps stringify's lists
+    ref_df['tags'] = ref_df['tags'].apply(dumps) # Dumps stringify's dictionaries
+    ref_df['jobs'] = ref_df['jobs'].apply(dumps) # Dumps stringify's lists
+    ref_df['features'] = ref_df['features'].apply(dumps) # Dumps stringify's lists
     return ref_df

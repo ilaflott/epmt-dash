@@ -44,68 +44,86 @@ def display_page(pathname):
 #
 # Output: 
 @app.callback(
-    [dash.dependencies.Output('recent-job-model-status', 'children'),
-    dash.dependencies.Output('table-ref-models','data')],
-    [dash.dependencies.Input('create-newModel-btn', 'n_clicks_timestamp'),
-    dash.dependencies.Input('delete-Model-btn', 'n_clicks_timestamp')],
-    [dash.dependencies.State('table-multicol-sorting', 'selected_rows'),
-    dash.dependencies.State('table-multicol-sorting', 'data'),
-    dash.dependencies.State('table-ref-models', 'selected_rows'),
-    dash.dependencies.State('table-ref-models', 'data')
-    
+    [
+        dash.dependencies.Output('recent-job-model-status', 'children'),
+        dash.dependencies.Output('table-ref-models','data'),
+        #dash.dependencies.Output('table-multicol-sorting', 'selected_rows')
+    ],
+    [
+        dash.dependencies.Input('create-newModel-btn', 'n_clicks_timestamp'),
+        dash.dependencies.Input('delete-Model-btn', 'n_clicks_timestamp'),
+        dash.dependencies.Input('toggle-Model-btn', 'n_clicks_timestamp')
+    ],
+    [
+        dash.dependencies.State('table-multicol-sorting', 'selected_rows'),
+        dash.dependencies.State('table-multicol-sorting', 'data'),
+        dash.dependencies.State('table-ref-models', 'selected_rows'),
+        dash.dependencies.State('table-ref-models', 'data')
     ])
-def update_output(new_model_btn,delete_model_btn, sel_jobs,job_data,sel_refs,ref_data):
+def update_output(new_model_btn,delete_model_btn, toggle_model_btn, sel_jobs,job_data,sel_refs,ref_data):
 
     # Create model on selected rows
     selected_rows = []
     import layouts
     ref_df = layouts.ref_df
-    # New model was pressed recently
-    if int(new_model_btn) > int(delete_model_btn):
+    # Create model
+    if int(new_model_btn) > int(delete_model_btn) and int(new_model_btn) > int(toggle_model_btn):
         if sel_jobs:
             selected_rows=[str(job_data[i]['job id']) for i in sel_jobs]
             logger.info("Selected jobs {}".format(selected_rows))
             # Generate new refs for each of selected jobs
             import pandas as pd
             from json import dumps
+            # Make_refs returns a list of 
             from refs import make_refs
             refa = make_refs(1,name='t',jobs=selected_rows)
-            refa = pd.DataFrame(refa, columns=['Model','Tags','Jobs','Features','Active'])
-            refa['Jobs'] = refa['Jobs'].apply(dumps)
-            refa['Tags'] = refa['Tags'].apply(dumps)
-            refa['Features'] = refa['Features'].apply(dumps)
+            refa = pd.DataFrame(refa, columns=['name','date created','tags','jobs','features','active'])
+            refa['jobs'] = refa['jobs'].apply(dumps)
+            refa['tags'] = refa['tags'].apply(dumps)
+            refa['features'] = refa['features'].apply(dumps)
             logger.info("Creating new model with \n{}".format(refa))
             layouts.ref_df = pd.concat([ref_df,refa], ignore_index=True, sort=False)
-            logger.info(repr(ref_df))
+            #logger.info(repr(ref_df))
             return [selected_rows, layouts.ref_df.to_dict('records')]
         return ["None selected", ref_df.to_dict('records')]
     
-    # Delete was pressed after new_model
     # Delete Model
-    elif int(new_model_btn) < int(delete_model_btn):
+    elif int(delete_model_btn) > int(new_model_btn) and int(delete_model_btn) > int(toggle_model_btn):
         if sel_refs and len(sel_refs)>0:
-            selected_refs=[ref_data[i]['Model'] for i in sel_refs]
+            selected_refs=[ref_data[i]['name'] for i in sel_refs]
             logger.info("Delete Model {}".format(selected_refs))
             for n in selected_refs:
-                layouts.ref_df = ref_df[ref_df.Model != n]
+                layouts.ref_df = ref_df[ref_df.name != n]
             return [selected_rows, layouts.ref_df.to_dict('records')]
-    return [selected_rows, layouts.ref_df.to_dict('records')]
+    # Toggle Active Status
+    elif int(toggle_model_btn) > int(delete_model_btn) and int(toggle_model_btn) > int(new_model_btn):
+        if sel_refs and len(sel_refs)>0:
+            selected_refs = ref_data[sel_refs[0]]['name']
+            logger.info("Toggle model name {} pre-invert active {}".format(selected_refs, ref_df[ref_df.name == selected_refs].active))
+            # Where the 'name' is selected set 'active' as the np.invert of what it was
+            layouts.ref_df.loc[(ref_df.name == selected_refs),'active'] = ~ref_df[ref_df.name == selected_refs].active
+            logger.info("post-invert active {}".format(layouts.ref_df[ref_df.name == selected_refs].active ))
+
+    return [selected_rows, ref_df.to_dict('records')]
     
 
 ######################## Select rows Callbacks ######################## 
 @app.callback(
     Output('content','children'),
-    [Input('table-multicol-sorting', 'data'),
-    Input('table-multicol-sorting', 'selected_rows')])
-def f(data,rows):
-    selected_rows = []
-    if rows:
-        selected_rows=[data[i] for i in rows]
+    [
+        Input('table-multicol-sorting', 'data'),
+        Input('table-multicol-sorting', 'selected_rows'),
+        #Input('table-multicol-sorting', '')
+    ])
+def f(data,selected_rows):
+    selected_jobs = []
+    if selected_rows:
+        selected_jobs=[data[i] for i in selected_rows]
             #or
             #selected_rows=pd.DataFrame(rows).iloc[i] 
         
     #print([i['job id'] for i in selected_rows])
-    return ("Selected Jobs: "+str([i['job id'] for i in selected_rows]))
+    return ("Selected Jobs: "+str([i['job id'] for i in selected_jobs]))
 
 # Custom Select all
 # This callback 
@@ -155,6 +173,7 @@ from components import convtounit, get_unit, power_labels
 # Global click counter hack to track button click changes in single instance
 nclick = 0
 
+
 # Recent jobs data table callback
 # inputs:
 #   raw-switch - the toggle for converting datatypes
@@ -168,20 +187,42 @@ nclick = 0
 #   content2 - This text area displays the search inputs interpretation of a query
 @app.callback(
     [Output('table-multicol-sorting', 'data'),
-    Output('table-multicol-sorting', 'columns'),
-    Output(component_id='content2', component_property='children'),
-    Output('page-selector', 'children')],
+     Output('table-multicol-sorting', 'columns'),
+     Output(component_id='content2', component_property='children'),
+     Output('page-selector', 'children'),
+     Output('table-multicol-sorting', "page_size")],
     [Input('raw-switch', 'value'),
-    Input(component_id='searchdf', component_property='value'),
-    Input(component_id='jobs-date-picker', component_property='start_date'),
-    Input(component_id='jobs-date-picker', component_property='end_date'),
-    Input(component_id='row-count-dropdown', component_property='value')])
-def update_output(raw_toggle, search_value,start,end,rows_per_page):
+     Input(component_id='searchdf', component_property='value'),
+     Input(component_id='jobs-date-picker', component_property='start_date'),
+     Input(component_id='jobs-date-picker', component_property='end_date'),
+     Input(component_id='row-count-dropdown', component_property='value'), # Requested row limiter
+     Input('table-multicol-sorting', "page_current"),  # Page Number - 1
+     #Input('table-multicol-sorting', "page_size"),  # How many rows the table wants to have per page
+     Input('table-multicol-sorting', "sort_by")  # What is requested to sort on
+     ])
+def update_output(raw_toggle, search_value, start, end, rows_per_page, page_current, sort_by):
     logger.info("Update_output started")
+    ctx = dash.callback_context
+    # Debug Context due to this callback being huge
+    logger.debug("Callback Context info:\nTriggered:\n{}\nInputs: {}\nStates: {}\n".format(ctx.triggered,ctx.inputs,ctx.states))
     from jobs import job_gen
     logger.debug("Rows requested per page:{}".format(rows_per_page))
     offset = 0
-    job_df = job_gen().df.iloc[:int(rows_per_page)]
+    # Grab df
+    job_df = job_gen().df
+    # Sort
+    if len(sort_by):
+        job_df = job_df.sort_values(
+            sort_by[0]['column_id'], # Column to sort on
+            ascending=sort_by[0]['direction'] == 'asc', # Boolean eval.
+            inplace=False
+        )
+    # /sort
+    # Filter
+    #####
+    # Reduce
+    job_df = job_df.iloc[page_current*int(rows_per_page):(page_current+ 1)*int(rows_per_page)]
+    # /Reduce
     orig = job_df
     alt = orig.copy()
     # Limit by time
@@ -191,9 +232,6 @@ def update_output(raw_toggle, search_value,start,end,rows_per_page):
         mask = (job_df['start_day'] > datetime.strptime(start, "%Y-%m-%d").date() - timedelta(days=1)) & (job_df['start_day'] <= datetime.strptime(end, "%Y-%m-%d").date())
         logger.debug("{} {}".format(start,end))
         job_df = job_df.loc[mask]
-    ctx = dash.callback_context
-    # CTX Needs to be used... 
-    logger.info("{}{}{}".format(ctx.triggered,ctx.inputs,ctx.states))
     # Here nclick tracks how many times new data is pressed
     # this is used to update if it has changed
     global nclick
@@ -301,7 +339,8 @@ def update_output(raw_toggle, search_value,start,end,rows_per_page):
         alt.to_dict('records'),
         [{"name": i, "id": i} for i in alt.columns],
         'You\'ve entered: {}'.format(query),
-        [dcc.Link(str(n+1)+", ",href="?page="+str(n)) for n in range((job_df.shape[0]//DEFAULT_ROWS_PER_PAGE))]
+        [dcc.Link(str(n+1)+", ",href="?page="+str(n)) for n in range((job_df.shape[0]//DEFAULT_ROWS_PER_PAGE))],
+        int(rows_per_page)
     ]
 
 ######################## /Index Callbacks ######################## 

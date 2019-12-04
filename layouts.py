@@ -165,22 +165,24 @@ recent_jobs_page =  html.Div([
             ),"(Inclusive Date Selections)"]),
       ],width='auto'),
       dbc.Col([
-            dcc.Dropdown(
-        id='row-count-dropdown',
-        options=[
-            {'label': '5 Rows', 'value': '5'},
-            {'label': '30 Rows', 'value': '30'},
-            {'label': '50 Rows', 'value': '50'}
-        ],
-        clearable=False,
-        searchable=False,
-        value = DEFAULT_ROWS_PER_PAGE
-    )
+          dcc.Dropdown(
+              id='row-count-dropdown',
+              options=[
+                  {'label': '5 Rows', 'value': '5'},
+                  {'label': '30 Rows', 'value': '30'},
+                  {'label': '50 Rows', 'value': '50'},
+                  {'label': '1000 Rows', 'value': '1000'}
+              ],
+              clearable=False,
+              searchable=False,
+              value=DEFAULT_ROWS_PER_PAGE
+          )
       ], width=2),
       # df.shape[0]
-      dbc.Col(['Page:'], html.Div(id="page-selector", children=[dcc.Link(str(n+1)+", ",href="?page="+str(n)) for n in range((job_df.shape[0]//DEFAULT_ROWS_PER_PAGE))])
-        #','.join([str(n+1) for n in range((job_df.shape[0]//DEFAULT_ROWS_PER_PAGE))]),
-      , width='auto'),
+      # Old Page attempt
+      #dbc.Col(['Page:'], html.Div(id="page-selector", children=[dcc.Link(str(n+1)+", ",href="?page="+str(n)) for n in range((job_df.shape[0]//DEFAULT_ROWS_PER_PAGE))])
+      #, width='auto'),
+          #','.join([str(n+1) for n in range((job_df.shape[0]//DEFAULT_ROWS_PER_PAGE))]),
       dbc.Col([
         "[ ",
         job_df.shape[0],
@@ -205,7 +207,7 @@ recent_jobs_page =  html.Div([
           # The inline dropdowns are broken[not displayed] due to my sorting css work on column headers
           dash_table.DataTable(
                 id='table-ref-models',
-                row_selectable="multi",
+                row_selectable="single",
                 sort_action='native',
                 #sort_mode='multi', Keeping it simple now
                 #data=df.head(10).to_dict('records'), # Do not display data initially, callback will handle it
@@ -264,7 +266,8 @@ recent_jobs_page =  html.Div([
                     }
                 ],
             ),
-            html.Button(id='delete-Model-btn', children="Delete Model", n_clicks_timestamp=0),
+            html.Button(id='toggle-Model-btn', children="Toggle Model Status", n_clicks_timestamp=0),
+            html.Button(id='delete-Model-btn', children="Delete Model", n_clicks_timestamp=0, style={'background-color':'#ff0000','color':'#000000'}),
         ]),
 
         
