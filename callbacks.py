@@ -190,7 +190,8 @@ nclick = 0
      Output('table-multicol-sorting', 'columns'),
      Output(component_id='content2', component_property='children'),
      Output('page-selector', 'children'),
-     Output('table-multicol-sorting', "page_size")],
+     Output('table-multicol-sorting', "page_size"),
+     Output('table-multicol-sorting', "page_count")],
     [Input('raw-switch', 'value'),
      Input(component_id='searchdf', component_property='value'),
      Input(component_id='jobs-date-picker', component_property='start_date'),
@@ -221,6 +222,7 @@ def update_output(raw_toggle, search_value, start, end, rows_per_page, page_curr
     # Filter
     #####
     # Reduce
+    len_jobs = int(job_df.shape[0])
     job_df = job_df.iloc[page_current*int(rows_per_page):(page_current+ 1)*int(rows_per_page)]
     # /Reduce
     orig = job_df
@@ -334,13 +336,17 @@ def update_output(raw_toggle, search_value, start, end, rows_per_page, page_curr
             #logger.debug("The Query column is\n{}".format(alt[q[1][0]]))
         except Exception as e:
             logger.error("Threw exception on \nquery: ({})\nexception: ({})".format(q,e))
+    from math import ceil
+    num_pages = ceil(len_jobs/int(rows_per_page))
+    logger.debug("Pages = ceil({} / {}) = {}".format(len_jobs,int(rows_per_page),num_pages))
     logger.info("Update_output complete")
     return [
         alt.to_dict('records'),
         [{"name": i, "id": i} for i in alt.columns],
         'You\'ve entered: {}'.format(query),
         [dcc.Link(str(n+1)+", ",href="?page="+str(n)) for n in range((job_df.shape[0]//DEFAULT_ROWS_PER_PAGE))],
-        int(rows_per_page)
+        int(rows_per_page),
+        num_pages
     ]
 
 ######################## /Index Callbacks ######################## 
