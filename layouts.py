@@ -46,6 +46,42 @@ recent_jobs_page =  html.Div([
         # https://community.plot.ly/t/adjusting-height-of-tabs/13136/5
     dcc.Tabs(id="tabs", children=[
         dcc.Tab(label='Recent Jobs', children=[
+                dbc.Container([
+        dbc.Row(
+            [
+                dbc.Col(
+                        dcc.Input(
+                            id='searchdf',
+                            placeholder='Search/Filter...',
+                            type='text',
+                            value='',
+                            style={'display':'block','width':'100%'}
+                        ),
+                    width="auto",
+                    #md=3,
+                    lg=4
+                    ),
+                html.Div(id='switches', 
+                    children=[
+                    dbc.Col("Raw Data"),
+                    dbc.Col(
+                        daq.ToggleSwitch(
+                            id='raw-switch',
+                            #label='Raw Data',
+                            #labelPosition='left',
+                            #style={'display':'inline-block','fontsize':'medium'}, # Set font size so it's not randomly inherited between browsers
+                            value=False,
+                            color='Green'
+                        ),
+                    width="auto"
+                    )
+                    ]
+                ),
+            ],
+            justify="between",
+            align="center"
+            ),
+            # start
                 dbc.Row([
                   # Selected jobs notification
                   dbc.Col([
@@ -57,7 +93,9 @@ recent_jobs_page =  html.Div([
                           html.Div(id='recent-job-model-status',
                                    children='')
                           ])])
-                ]),
+                ]), # end
+    ], fluid=True),
+                
         #First Data Table
         html.Div([
             dash_table.DataTable(
@@ -197,7 +235,16 @@ recent_jobs_page =  html.Div([
             ]),
       # Reference model datatable tab
       dcc.Tab(label='Models', children=[
-        
+        dbc.Modal(
+            [
+                dbc.ModalHeader("Header"),
+                dbc.ModalBody("This is the content of the modal"),
+                dbc.ModalFooter(
+                    dbc.Button("Close", id="close", className="ml-auto")
+                ),
+            ],
+            id="modal",
+        ),
         html.Div([
           html.H6(["Reference Models"], className="gs-header gs-text-header padded",style={'marginTop': 15})
           ]),
@@ -209,6 +256,9 @@ recent_jobs_page =  html.Div([
                 id='table-ref-models',
                 row_selectable="single",
                 sort_action='native',
+                page_action='native',
+                page_current=0,
+                page_size=6,
                 #sort_mode='multi', Keeping it simple now
                 #data=df.head(10).to_dict('records'), # Do not display data initially, callback will handle it
                 #filter_action="native",
@@ -253,20 +303,43 @@ recent_jobs_page =  html.Div([
                 style_table={
                 'padding': '5px',
                 },
-                style_header_conditional=[
-                    {
-                    'if': {'column_id': 'job id'},
-                    'text-align': 'right',
+                # For some reason {active} != True or true or 0 wouldn't work
+                # Color all data rows pink then color good rows white
+                style_data_conditional=[ 
+                    {'if': {'filter_query': '{active} > 0'},
+                        'backgroundColor': '#ffffff'
                     }
                 ],
-                style_data_conditional=[
-                    {
-                      'if': {'column_id': 'job id'},
-                      'text-align': 'right',
-                    }
-                ],
+                style_data={'backgroundColor': '#FFc0b5'},
             ),
+            html.Div(id='edit-model-div', style={'display':'contents'}, children=[
+              # Containers have nice margins and internal spacing
+              dbc.Container([
+                dbc.Row(
+                  [
+                    dbc.Col(
+                      # Dropdown with jobs populated by callback
+                      dcc.Dropdown(
+                        options=[
+                            {'label': 'Job0', 'value': 'j0'},
+                            {'label': 'Job1', 'value': 'j1'}
+                        ],
+                        value=['j0', 'j1'],
+                        multi=True
+                      )
+                    ),
+                    dbc.Col([
+                      # Button for save
+                      html.Button(id='edit-Model-save-btn',children='Save',n_clicks_timestamp=0),
+                      # Button for close
+                      html.Button(id='edit-Model-close-btn',children='Cancel',n_clicks_timestamp=0)]
+                    )
+                  ]
+                )
+            ], fluid=True),
+            ]),
             html.Button(id='toggle-Model-btn', children="Toggle Model Status", n_clicks_timestamp=0),
+            html.Button(id='edit-Model-btn', children="Edit Reference Model", n_clicks_timestamp=0),
             html.Button(id='delete-Model-btn', children="Delete Model", n_clicks_timestamp=0, style={'background-color':'#ff0000','color':'#000000'}),
         ]),
 

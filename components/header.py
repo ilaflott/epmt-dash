@@ -9,7 +9,7 @@ def Header():
         get_header(),
         html.Br([]),
         html.Div(),
-        get_menu()
+        #get_menu()
     ])
 
 from jobs import get_version
@@ -44,42 +44,5 @@ def get_header():
     return header
 
 
-def get_menu():
-    menu = dbc.Container([
-        dbc.Row(
-            [
-                dbc.Col(
-                        dcc.Input(
-                            id='searchdf',
-                            placeholder='Search/Filter...',
-                            type='text',
-                            value='',
-                            style={'display':'block','width':'100%'}
-                        ),
-                    width="auto",
-                    #md=3,
-                    lg=4
-                    ),
-                html.Div(id='switches', 
-                    children=[
-                    dbc.Col("Raw Data"),
-                    dbc.Col(
-                        daq.ToggleSwitch(
-                            id='raw-switch',
-                            #label='Raw Data',
-                            #labelPosition='left',
-                            #style={'display':'inline-block','fontsize':'medium'}, # Set font size so it's not randomly inherited between browsers
-                            value=False,
-                            color='Green'
-                        ),
-                    width="auto"
-                    )
-                    ]
-                ),
-            ],
-            justify="between",
-            align="center"
-            )
-    ], fluid=True)
-    return menu
+
                     #dcc.Linhtml.Div(k('Overview - Unprocessed Jobs', href='/unprocessed/', className="tab"),

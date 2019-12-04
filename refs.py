@@ -17,7 +17,7 @@ def make_refs(x,name='',jobs=None):
     for n in range(x):
         # If jobs were not passed randomly create some 5 days ago
         from datetime import date, timedelta
-        ref_date = (date.today()-timedelta(days=5)).strftime("%b-%d-%Y")
+        ref_date = (date.today()-timedelta(days=500)+timedelta(days=n)).strftime("%b-%d-%Y")
         if not jobs:
             ref_jobs = [ joblist[i] for i in range(randint(1,1))]         #  setup 5-8 jobs per ref
             ref_active = bool(getrandbits(1)  < 0.95)                 #  95% Chance of being active
@@ -36,7 +36,7 @@ def make_refs(x,name='',jobs=None):
 # Generate a list of references
 class ref_gen:
     def __init__(self):
-        references = make_refs(3)
+        references = make_refs(60)
         self.df = pd.DataFrame(references, columns=['name', 'date created', 'tags','jobs','features','active'])
         #self.df['active'] = np.where(self.df['active'], 'Yes', 'No')
         # Reorder

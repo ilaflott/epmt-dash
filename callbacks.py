@@ -47,12 +47,16 @@ def display_page(pathname):
     [
         dash.dependencies.Output('recent-job-model-status', 'children'),
         dash.dependencies.Output('table-ref-models','data'),
+        dash.dependencies.Output('edit-model-div','style'),
         #dash.dependencies.Output('table-multicol-sorting', 'selected_rows')
     ],
     [
         dash.dependencies.Input('create-newModel-btn', 'n_clicks_timestamp'),
         dash.dependencies.Input('delete-Model-btn', 'n_clicks_timestamp'),
-        dash.dependencies.Input('toggle-Model-btn', 'n_clicks_timestamp')
+        dash.dependencies.Input('toggle-Model-btn', 'n_clicks_timestamp'),
+        dash.dependencies.Input('edit-Model-btn', 'n_clicks_timestamp'),
+        dash.dependencies.Input('edit-Model-close-btn', 'n_clicks_timestamp'),
+        dash.dependencies.Input('edit-Model-save-btn', 'n_clicks_timestamp')
     ],
     [
         dash.dependencies.State('table-multicol-sorting', 'selected_rows'),
@@ -60,14 +64,26 @@ def display_page(pathname):
         dash.dependencies.State('table-ref-models', 'selected_rows'),
         dash.dependencies.State('table-ref-models', 'data')
     ])
-def update_output(new_model_btn,delete_model_btn, toggle_model_btn, sel_jobs,job_data,sel_refs,ref_data):
-
-    # Create model on selected rows
+def update_output(new_model_btn,delete_model_btn, toggle_model_btn, edit_model_btn, edit_model_close_btn, edit_model_save_btn, sel_jobs,job_data,sel_refs,ref_data):
+    from datetime import datetime, timedelta
+    current_time = (datetime.now()- timedelta(seconds=1)).timestamp()
     selected_rows = []
     import layouts
     ref_df = layouts.ref_df
-    # Create model
-    if int(new_model_btn) > int(delete_model_btn) and int(new_model_btn) > int(toggle_model_btn):
+    from components import recent_button
+    recentbtn = recent_button(
+        {'new_model':new_model_btn,
+        'delete_model':delete_model_btn,
+        'toggle_model':toggle_model_btn,
+        'edit_model':edit_model_btn,
+        'close_edit':edit_model_close_btn,
+        'save_edit':edit_model_save_btn
+        }
+    )
+    logger.debug("Recent click {}".format(recentbtn))
+# Create model
+    current_time = (datetime.now()- timedelta(seconds=1)).timestamp()
+    if recentbtn is 'new_model':
         if sel_jobs:
             selected_rows=[str(job_data[i]['job id']) for i in sel_jobs]
             logger.info("Selected jobs {}".format(selected_rows))
@@ -84,27 +100,39 @@ def update_output(new_model_btn,delete_model_btn, toggle_model_btn, sel_jobs,job
             logger.info("Creating new model with \n{}".format(refa))
             layouts.ref_df = pd.concat([ref_df,refa], ignore_index=True, sort=False)
             #logger.info(repr(ref_df))
-            return [selected_rows, layouts.ref_df.to_dict('records')]
-        return ["None selected", ref_df.to_dict('records')]
+            return [selected_rows, layouts.ref_df.to_dict('records'),{'display':'none'}]
+        return ["None selected", ref_df.to_dict('records'),{'display':'none'}]
     
-    # Delete Model
-    elif int(delete_model_btn) > int(new_model_btn) and int(delete_model_btn) > int(toggle_model_btn):
+# Delete Model
+    if recentbtn is 'delete_model':
         if sel_refs and len(sel_refs)>0:
             selected_refs=[ref_data[i]['name'] for i in sel_refs]
             logger.info("Delete Model {}".format(selected_refs))
             for n in selected_refs:
                 layouts.ref_df = ref_df[ref_df.name != n]
-            return [selected_rows, layouts.ref_df.to_dict('records')]
-    # Toggle Active Status
-    elif int(toggle_model_btn) > int(delete_model_btn) and int(toggle_model_btn) > int(new_model_btn):
+            return [selected_rows, layouts.ref_df.to_dict('records'),{'display':'none'}]
+        return [selected_rows, ref_df.to_dict('records'),{'display':'none'}]
+# Toggle Active Status
+    if recentbtn is 'toggle_model':
         if sel_refs and len(sel_refs)>0:
             selected_refs = ref_data[sel_refs[0]]['name']
             logger.info("Toggle model name {} pre-invert active {}".format(selected_refs, ref_df[ref_df.name == selected_refs].active))
             # Where the 'name' is selected set 'active' as the np.invert of what it was
             layouts.ref_df.loc[(ref_df.name == selected_refs),'active'] = ~ref_df[ref_df.name == selected_refs].active
             logger.info("post-invert active {}".format(layouts.ref_df[ref_df.name == selected_refs].active ))
-
-    return [selected_rows, ref_df.to_dict('records')]
+        return [selected_rows, ref_df.to_dict('records'),{'display':'none'}]
+# Edit Model
+    if recentbtn is 'edit_model':
+        if sel_refs and len(sel_refs)>0:
+            selected_refs = ref_data[sel_refs[0]]['name']
+            return [selected_rows, layouts.ref_df.to_dict('records'),{'display':'contents'}]
+# Save and Close edit model
+    if recentbtn is 'save_edit':
+        return [selected_rows, layouts.ref_df.to_dict('records'),{'display':'none'}]
+# Close edit model
+    if recentbtn is 'close_edit':
+        return [selected_rows, layouts.ref_df.to_dict('records'),{'display':'none'}]
+    return [selected_rows, ref_df.to_dict('records'),{'display':'none'}]
     
 
 ######################## Select rows Callbacks ######################## 
@@ -223,6 +251,8 @@ def update_output(raw_toggle, search_value, start, end, rows_per_page, page_curr
     #####
     # Reduce
     len_jobs = int(job_df.shape[0])
+    import layouts
+    logger.debug(layouts.ref_df.loc[layouts.ref_df['name'] == 'ref0'].active)
     job_df = job_df.iloc[page_current*int(rows_per_page):(page_current+ 1)*int(rows_per_page)]
     # /Reduce
     orig = job_df

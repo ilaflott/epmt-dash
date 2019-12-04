@@ -20,8 +20,10 @@ def parseurl(i):
     logger.info("URL2Dict {}".format(res_dict))
     return res_dict
 
-
-
+# Takes dictionary button:timestamp
+# Returns most recent
+def recent_button(btn_dict):
+    return max(btn_dict, key=lambda key: btn_dict[key])
 
 
 # Check if string time has 1 or 2 colons and convert grabbing just time
