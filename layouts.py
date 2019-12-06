@@ -271,6 +271,10 @@ recent_jobs_page =  html.Div([
                     #{"name":"Jobs","id":"Jobs"},
                     #{"name":"Features","id":"Features"},
                 ],
+                style_table={
+                'padding': '5px',
+                'overflowX': 'scroll'
+                },
                 data=ref_df.to_dict('records'),
                 #editable=True,
                 dropdown={
@@ -300,17 +304,22 @@ recent_jobs_page =  html.Div([
                   'minWidth': '70px',#, 'maxWidth': '140px',
                   'height':'50px'
                 },
-                style_table={
-                'padding': '5px',
-                },
                 # For some reason {active} != True or true or 0 wouldn't work
                 # Color all data rows pink then color good rows white
                 style_data_conditional=[ 
                     {'if': {'filter_query': '{active} > 0'},
                         'backgroundColor': '#ffffff'
-                    }
+                    },
+                    # Shrink Narrow columns
+                    {
+                    'if': {'column_id': 'jobs'},
+                    'minWidth': '180px',
+                    },
                 ],
-                style_data={'backgroundColor': '#FFc0b5'},
+                style_data={'backgroundColor': '#FFc0b5',
+                'whiteSpace':'normal',
+                'minWidth': '0px', 'maxWidth': '180px',
+                'height':'auto'},
             ),
             html.Div(id='edit-model-div', style={'display':'contents'}, children=[
               # Containers have nice margins and internal spacing
@@ -320,20 +329,20 @@ recent_jobs_page =  html.Div([
                     dbc.Col(
                       # Dropdown with jobs populated by callback
                       dcc.Dropdown(
+                        multi=True,
                         id='edit-model-jobs-drdn',
                         options=[
                             {'label': 'Job0', 'value': 'j0'},
                             {'label': 'Job1', 'value': 'j1'}
                         ],
                         value=['j0', 'j1'],
-                        multi=True
                       )
                     ),
                     dbc.Col([
                       # Button for save
                       html.Button(id='edit-Model-save-btn',children='Save',n_clicks_timestamp=0),
                       # Button for close
-                      html.Button(id='edit-Model-close-btn',children='Cancel',n_clicks_timestamp=0)]
+                      html.Button(id='edit-Model-close-btn',children='Close',n_clicks_timestamp=0)]
                     )
                   ]
                 )
@@ -342,6 +351,7 @@ recent_jobs_page =  html.Div([
             html.Button(id='toggle-Model-btn', children="Toggle Model Status", n_clicks_timestamp=0),
             html.Button(id='edit-Model-btn', children="Edit Reference Model", n_clicks_timestamp=0),
             html.Button(id='delete-Model-btn', children="Delete Model", n_clicks_timestamp=0, style={'background-color':'#ff0000','color':'#000000'}),
+            html.Div(style={'display':'none'}, id='placeholderedit'),
         ]),
 
         

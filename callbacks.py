@@ -35,6 +35,27 @@ def display_page(pathname):
     df = joblist.df
     return df.to_dict('records')
 
+@app.callback(
+    dash.dependencies.Output('placeholderedit', 'children'),
+    [dash.dependencies.Input('edit-Model-save-btn', 'n_clicks_timestamp')],
+    [dash.dependencies.State('edit-model-jobs-drdn','value'),
+    dash.dependencies.State('table-ref-models', 'data'),
+    dash.dependencies.State('table-ref-models', 'selected_rows')]
+)
+def test_job_update(saveclick,sel_jobs,ref_data,sel_ref):
+    if sel_ref and len(sel_ref)>0:
+        from components import recent_button
+        recentbtn = recent_button({'save_model':saveclick})
+        if recentbtn == 'save_model':
+            from json import dumps
+            # Get Dropdown Selected
+            logger.debug("Test side callback sel jobs {} selected ref {}".format(sel_jobs,sel_ref))
+            selected_refs = ref_data[sel_ref[0]]
+            logger.debug("Model:{} Jobs:{}".format(selected_refs['name'], sel_jobs))
+            # Update DF with new Jobs
+            refs.ref_df.loc[(refs.ref_df.name == selected_refs['name']),'jobs'] = dumps(sel_jobs)
+            return "" # return placeholder dataframe has been updated
+
 
 # Callback for reference model table updating
 # Input: 
@@ -62,7 +83,7 @@ def display_page(pathname):
         dash.dependencies.Input('toggle-Model-btn', 'n_clicks_timestamp'),
         dash.dependencies.Input('edit-Model-btn', 'n_clicks_timestamp'),
         dash.dependencies.Input('edit-Model-close-btn', 'n_clicks_timestamp'),
-        dash.dependencies.Input('edit-Model-save-btn', 'n_clicks_timestamp')
+        #dash.dependencies.Input('edit-Model-save-btn', 'n_clicks_timestamp')
     ],
     [
         dash.dependencies.State('table-multicol-sorting', 'selected_rows'),
@@ -70,8 +91,7 @@ def display_page(pathname):
         dash.dependencies.State('table-ref-models', 'selected_rows'),
         dash.dependencies.State('table-ref-models', 'data')
     ])
-def update_output(new_model_btn,delete_model_btn, toggle_model_btn, edit_model_btn, edit_model_close_btn, edit_model_save_btn, sel_jobs,job_data,sel_refs,ref_data):
-    from datetime import datetime, timedelta
+def update_output(new_model_btn,delete_model_btn, toggle_model_btn, edit_model_btn, edit_model_close_btn, sel_jobs,job_data,sel_refs,ref_data):
     selected_rows = []
     
     # Default Return Values
@@ -87,7 +107,6 @@ def update_output(new_model_btn,delete_model_btn, toggle_model_btn, edit_model_b
         'toggle_model':toggle_model_btn,
         'edit_model':edit_model_btn,
         'close_edit':edit_model_close_btn,
-        'save_edit':edit_model_save_btn
         })
     logger.debug("Recent click {}".format(recentbtn))
 # Create model
@@ -147,14 +166,6 @@ def update_output(new_model_btn,delete_model_btn, toggle_model_btn, edit_model_b
             return [selected_rows, refs.ref_df.to_dict('records'),{'display':'contents'},
                 [{'label': i, 'value': i} for i in pos_ref_jobs_li],
                 [i for i in ref_jobs_li]]
-# Save and Close edit model
-    if recentbtn is 'save_edit':
-        # Get Dropdown Selected
-        selected_refs = ref_data[sel_refs[0]]
-        # Update DF with new Jobs
-        refs.ref_df.loc[(ref_df.name == selected_refs['name']),'jobs'] = "Updated jobs here"
-
-        return [selected_rows, refs.ref_df.to_dict('records'),edit_div_display_none,jobs_drpdn_options, jobs_drpdn_value]
 # Close edit model
     if recentbtn is 'close_edit':
         return [selected_rows, refs.ref_df.to_dict('records'),edit_div_display_none,jobs_drpdn_options, jobs_drpdn_value]
