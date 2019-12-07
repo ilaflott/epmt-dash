@@ -256,6 +256,7 @@ samplej = {'duration': 6460243317.0,
 # replace jobid with new number
 # return list of limit of jobs
 def get_jobs(limit, fmt='df', offset=0):
+    from datetime import datetime, timedelta
     result = []
     #if offset >= limit: offset = limit 
     if offset>0:
@@ -267,6 +268,8 @@ def get_jobs(limit, fmt='df', offset=0):
         job = dict(samplej)
         job['jobid'] = str(1234000 + n)
         job['Processed'] = 1
+        job['start'] = job['start'] + timedelta(days=n)
+        job['end'] = job['end'] + timedelta(days=n)
         result.append(job)
     return result[offset:]
 
@@ -281,7 +284,7 @@ def _unused_random_job_generator(x):
         Processed = bool(random.getrandbits(1))
         tag = dict(tags) if bool(random.getrandbits(1)) else {'Tags':'None'}
         timeformat="%m/%d/%Y %I:%M %p %Z"
-        start_datetime = random_date("11/1/2019 1:30 PM UTC", "11/5/2019 4:50 PM UTC", timeformat)
+        start_datetime = random_date("11/1/2019 1:30 PM UTC", "11/5/2019 4:50 PM UTC", timeformat) #+ timedelta(days=n)
         from datetime import datetime
         start_time = datetime.strptime(start_datetime, timeformat).time()
         start_day = datetime.strptime(start_datetime, timeformat).date()

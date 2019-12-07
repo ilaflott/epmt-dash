@@ -196,6 +196,7 @@ recent_jobs_page =  html.Div([
               id='jobs-date-picker',
               min_date_allowed=dt(1990, 1, 1),
               max_date_allowed=dt(2040, 12, 25),
+              initial_visible_month=dt(2019, 6, 5),
               clearable=True,
               with_portal=True,
               show_outside_days=True,

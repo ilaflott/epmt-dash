@@ -259,18 +259,18 @@ nclick = 0
      Output('table-multicol-sorting', "page_count")],
     [Input('raw-switch', 'value'),
      Input(component_id='searchdf', component_property='value'),
-     Input(component_id='jobs-date-picker', component_property='start_date'),
      Input(component_id='jobs-date-picker', component_property='end_date'),
      Input(component_id='row-count-dropdown', component_property='value'), # Requested row limiter
      Input('table-multicol-sorting', "page_current"),  # Page Number - 1
      #Input('table-multicol-sorting', "page_size"),  # How many rows the table wants to have per page
      Input('table-multicol-sorting', "sort_by")  # What is requested to sort on
-     ])
-def update_output(raw_toggle, search_value, start, end, rows_per_page, page_current, sort_by):
-    logger.info("Update_output started")
+     ],
+     [State(component_id='jobs-date-picker', component_property='start_date')])
+def update_output(raw_toggle, search_value, end, rows_per_page, page_current, sort_by,start):
+    logger.info("\nUpdate_output started")
     ctx = dash.callback_context
     # Debug Context due to this callback being huge
-    logger.debug("Callback Context info:\nTriggered:\n{}\nInputs: {}\nStates: {}\n".format(ctx.triggered,ctx.inputs,ctx.states))
+    logger.debug("Callback Context info:\nTriggered:\n{}\nInputs: {}\nStates: {}".format(ctx.triggered,ctx.inputs,ctx.states))
     from jobs import job_gen
     logger.debug("Rows requested per page:{}".format(rows_per_page))
     offset = 0
@@ -297,10 +297,10 @@ def update_output(raw_toggle, search_value, start, end, rows_per_page, page_curr
     # Limit by time
     if end:
         from datetime import datetime, timedelta
-        logger.info("Comparing start day {} with input {}".format(type(job_df['start_day']), datetime.strptime(start, "%Y-%m-%d").date() ))
+        logger.info("Comparing df start days {} with job-date-picker {}".format(type(job_df['start_day']), datetime.strptime(start, "%Y-%m-%d").date() ))
         mask = (job_df['start_day'] > datetime.strptime(start, "%Y-%m-%d").date() - timedelta(days=1)) & (job_df['start_day'] <= datetime.strptime(end, "%Y-%m-%d").date())
         logger.debug("{} {}".format(start,end))
-        job_df = job_df.loc[mask]
+        alt = job_df.loc[mask]
     # Here nclick tracks how many times new data is pressed
     # this is used to update if it has changed
     global nclick
