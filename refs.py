@@ -14,19 +14,21 @@ def make_refs(x,name='',jobs=None):
     refs = []
     joblist = job_df['job id'].sample(n = 1).tolist()
     featureli = ['duration','cpu_time','num_procs']
+    datefmt = "%Y-%m-%d"
     for n in range(x):
-        # If jobs were not passed randomly create some 5 days ago
+        # If jobs were not passed randomly create some 500 days ago
         from datetime import date, timedelta
-        ref_date = (date.today()-timedelta(days=500)+timedelta(days=n)).strftime("%b-%d-%Y")
+        ref_date = (date.today()-timedelta(days=500)+timedelta(days=n)).strftime(datefmt)
         if not jobs:
             ref_jobs = [ joblist[i] for i in range(randint(1,1))]         #  setup 5-8 jobs per ref
             ref_active = bool(getrandbits(1)  < 0.95)                 #  95% Chance of being active
             features = [featureli[i] for i in range(randint(1,3))]    #  Setup random features
         else:
+            # User is building a reference with jobs selected today
             ref_jobs = jobs
             today = date.today()
             # Ref model is being generated now
-            ref_date = today.strftime("%b-%d-%Y")
+            ref_date = today.strftime(datefmt)
             ref_active = True   # Set active User Friendly
             features = featureli # Full Features
         refs.append(['ref'+str(n)+name, ref_date, {"taga":"tagb"}, ref_jobs,

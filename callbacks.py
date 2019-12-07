@@ -12,19 +12,15 @@ import pandas as pd
 # Index.py Configures logger debug level
 from logging import getLogger, basicConfig, DEBUG, ERROR, INFO, WARNING
 logger = getLogger(__name__)  # you can use other name
-
 # These are old example methods that were used by template..
 #from components import formatter_currency, formatter_currency_with_cents, formatter_percent, formatter_percent_2_digits, formatter_number
 #from components import update_first_datatable, update_first_download, update_second_datatable, update_graph
-
 #pd.options.mode.chained_assignment = None
 from layouts import DEFAULT_ROWS_PER_PAGE
 from layouts import dcc
-
 import refs
 #import jobs
 
-# 
 @app.callback(dash.dependencies.Output('content', 'data'),
               [dash.dependencies.Input('test', 'children')])
 def display_page(pathname):
@@ -34,6 +30,7 @@ def display_page(pathname):
     joblist = jobs.job_gen().df
     df = joblist.df
     return df.to_dict('records')
+
 
 @app.callback(
     dash.dependencies.Output('placeholderedit', 'children'),
@@ -57,6 +54,39 @@ def test_job_update(saveclick,sel_jobs,ref_data,sel_ref):
             return "" # return placeholder dataframe has been updated
 
 
+# Output
+#       alert dialog(style,text,visability) (select jobs, analysis running, no model found)
+# Input
+#       Run Analysis button
+# State
+#       selected jobs
+@app.callback(
+    [
+        dash.dependencies.Output('run-create-alert','children'),
+        dash.dependencies.Output('run-create-alert','is_open')
+    ],
+    [
+        dash.dependencies.Input('run-analysis-btn', 'n_clicks_timestamp'),
+    ],
+        [
+        dash.dependencies.State('table-multicol-sorting', 'selected_rows'),
+        dash.dependencies.State('table-multicol-sorting', 'data'),
+    ])
+def run_analysis(run_analysis_btn, sel_jobs, job_data):
+    from components import recent_button
+    recentbtn = recent_button({'run_analysis':run_analysis_btn})
+    if recentbtn is 'run_analysis':
+        if sel_jobs:
+            selected_rows=[str(job_data[i]['job id']) for i in sel_jobs]
+            logger.info("Find reference models for each job\nJobs:{}".format(selected_rows))
+            logger.debug("Models found {}".format("~model~"))
+            logger.info("Run Model against job")
+            return["Running Analysis on {}".format(selected_rows), True]
+        else:
+            # Pop Alert dialog
+            logger.info("Nothing selected")
+            return["Please Select Jobs", True]
+
 # Callback for reference model table updating
 # Input: 
 #   create new model button click
@@ -67,7 +97,7 @@ def test_job_update(saveclick,sel_jobs,ref_data,sel_ref):
 #   text area on recent jobs screen
 #   reference model table
 #
-# Output: 
+# Output:
 @app.callback(
     [
         dash.dependencies.Output('recent-job-model-status', 'children'),
@@ -108,7 +138,9 @@ def update_output(new_model_btn,delete_model_btn, toggle_model_btn, edit_model_b
         'edit_model':edit_model_btn,
         'close_edit':edit_model_close_btn,
         })
+    logger.debug("--------------------------------------------------------")
     logger.debug("Recent click {}".format(recentbtn))
+
 # Create model
     if recentbtn is 'new_model':
         if sel_jobs:
@@ -128,7 +160,8 @@ def update_output(new_model_btn,delete_model_btn, toggle_model_btn, edit_model_b
             refs.ref_df = pd.concat([ref_df,refa], ignore_index=True, sort=False)
             #logger.info(repr(ref_df))
             return [selected_rows, refs.ref_df.to_dict('records'), edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
-        return ["None selected", ref_df.to_dict('records'), edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
+        return ["None selected", ref_df.to_dict('records'),
+                edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
     
 # Delete Model
     if recentbtn is 'delete_model':
@@ -137,8 +170,10 @@ def update_output(new_model_btn,delete_model_btn, toggle_model_btn, edit_model_b
             logger.info("Delete Model {}".format(selected_refs))
             for n in selected_refs:
                 refs.ref_df = ref_df[ref_df.name != n]
-            return [selected_rows, refs.ref_df.to_dict('records'), edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
-        return [selected_rows, ref_df.to_dict('records'), edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
+            return [selected_rows, refs.ref_df.to_dict('records'),
+                    edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
+        return [selected_rows, ref_df.to_dict('records'),
+                edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
 # Toggle Active Status
     if recentbtn is 'toggle_model':
         if sel_refs and len(sel_refs)>0:
@@ -147,7 +182,8 @@ def update_output(new_model_btn,delete_model_btn, toggle_model_btn, edit_model_b
             # Where the 'name' is selected set 'active' as the np.invert of what it was
             refs.ref_df.loc[(ref_df.name == selected_refs),'active'] = ~ref_df[ref_df.name == selected_refs].active
             logger.info("post-invert active {}".format(refs.ref_df[ref_df.name == selected_refs].active ))
-        return [selected_rows, ref_df.to_dict('records'),edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
+        return [selected_rows, ref_df.to_dict('records'),
+                edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
 # Edit Model
     if recentbtn is 'edit_model':
         if sel_refs and len(sel_refs)>0:
@@ -163,13 +199,14 @@ def update_output(new_model_btn,delete_model_btn, toggle_model_btn, edit_model_b
             pos_ref_jobs_li = job_df['job id'].tolist()
             
             logger.debug("Model:{} Jobs:{}".format(selected_refs['name'], ref_jobs_li))
-            return [selected_rows, refs.ref_df.to_dict('records'),{'display':'contents'},
-                [{'label': i, 'value': i} for i in pos_ref_jobs_li],
-                [i for i in ref_jobs_li]]
+            return [selected_rows, refs.ref_df.to_dict('records'), {'display': 'contents'},
+                    [{'label': i, 'value': i} for i in pos_ref_jobs_li], [i for i in ref_jobs_li]]
 # Close edit model
     if recentbtn is 'close_edit':
-        return [selected_rows, refs.ref_df.to_dict('records'),edit_div_display_none,jobs_drpdn_options, jobs_drpdn_value]
-    return [selected_rows, ref_df.to_dict('records'),edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
+        return [selected_rows, refs.ref_df.to_dict('records'),
+                edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
+    return [selected_rows, ref_df.to_dict('records'),
+            edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
     
 
 ######################## Select rows Callbacks ######################## 

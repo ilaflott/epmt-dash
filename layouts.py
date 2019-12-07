@@ -182,6 +182,14 @@ recent_jobs_page =  html.Div([
                     ],
             ),
     dbc.Row([
+      dbc.Alert(
+            children="Hello! I am an alert",
+            id="run-create-alert",
+            is_open=False,
+            dismissable=True,
+        ),
+    ]),
+    dbc.Row([
       dbc.Col([
             html.Button(id='run-analysis-btn', children="Run Analysis", n_clicks_timestamp=0, style={'background-color':'#20c997','color':'#020080'}),
       ], width='auto'),
