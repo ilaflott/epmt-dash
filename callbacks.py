@@ -424,7 +424,8 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
                             'duration': 'duration (HH:MM:SS)'}, inplace=True)
         # Parse out wanted tag columns
         tags_df = pd.DataFrame.from_dict(alt['tags'].tolist())
-        logger.debug(tags_df)
+        from dash_config import tags_to_display
+        tags_df = tags_df[tags_to_display]
         alt = pd.merge(alt, tags_df, left_index=True, right_index=True)
         # Remove Tags
         alt = alt.drop(columns=['tags'])

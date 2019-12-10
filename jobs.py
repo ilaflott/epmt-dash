@@ -375,8 +375,7 @@ class job_gen:
         # Select specific tags for displaying
         # logger.info("Tags{}".format(self.df['tags']))
 
-        columns_to_print = ['jobid', 'exit_code', 'Processed', 'start', 'end', 'duration', 'usertime', 'systemtime',
-                            'cpu_time', 'write_bytes', 'read_bytes', 'tags']  # ,'exp_name','exp_time','atm_res','ocn_res','script_name'
+        from dash_config import columns_to_print
         self.df = self.df[columns_to_print]
         from json import dumps
         #self.df['tags'] = self.df['tags'].apply(dumps)
