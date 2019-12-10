@@ -51,13 +51,14 @@ recent_jobs_page = html.Div([
                     dbc.Row(
                         [
                             dbc.Col(
+                                ["Search:",
                                 dcc.Input(
                                     id='searchdf',
-                                    placeholder='Search/Filter...',
+                                    placeholder='(job id, component, exp name, tags)',
                                     type='text',
                                     value='',
                                     style={'display': 'block', 'width': '100%'}
-                                ),
+                                )],
                                 width="auto",
                                 # md=3,
                                 lg=4
@@ -87,8 +88,6 @@ recent_jobs_page = html.Div([
                         # Selected jobs notification
                         dbc.Col([
                             html.Div(id='content', style={'inline': 'true'}, children=[])]),
-                        # Search box query notification
-                        dbc.Col([html.Div(id='content2')]),
                         # Models created notification
                         dbc.Col([html.Div(style={'inline': 'true'}, children=["Model Status:",
                                                                               html.Div(id='recent-job-model-status',

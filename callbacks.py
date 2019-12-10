@@ -313,11 +313,9 @@ nclick = 0
 # outputs:
 #   table, data - This is the data in the main jobs table
 #   table, columns - The table column names can be changed
-#   content2 - This text area displays the search inputs interpretation of a query
 @app.callback(
     [Output('table-multicol-sorting', 'data'),
      Output('table-multicol-sorting', 'columns'),
-     Output(component_id='content2', component_property='children'),
      Output('page-selector', 'children'),
      Output('table-multicol-sorting', "page_size"),
      Output('table-multicol-sorting', "page_count")],
@@ -353,11 +351,9 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
     # Filter
     #####
     # Reduce
-    len_jobs = int(job_df.shape[0])
     import refs
     logger.debug(refs.ref_df.loc[refs.ref_df['name'] == 'ref0'].active)
-    job_df = job_df.iloc[page_current *
-                         int(rows_per_page):(page_current + 1) * int(rows_per_page)]
+
     # /Reduce
     orig = job_df
     alt = orig.copy()
@@ -366,10 +362,10 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
         from datetime import datetime, timedelta
         logger.debug("Comparing df start days ({},...) with job-date-picker {}".format(
             job_df['start'][0].date(), datetime.strptime(start, "%Y-%m-%d").date()))
-        mask = (job_df['start'].map(lambda x: x.date()) > datetime.strptime(start, "%Y-%m-%d").date() - timedelta(
+        time_mask = (job_df['start'].map(lambda x: x.date()) > datetime.strptime(start, "%Y-%m-%d").date() - timedelta(
             days=1)) & (job_df['start'].map(lambda x: x.date()) <= datetime.strptime(end, "%Y-%m-%d").date())
         logger.debug("Query: (Start:{} End:{})".format(start, end))
-        alt = job_df.loc[mask]
+        alt = job_df.loc[time_mask]
     # Here nclick tracks how many times new data is pressed
     # this is used to update if it has changed
     global nclick
@@ -381,9 +377,11 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
     # Convert usertime to percentage
     # Return alt df of abbreviated data
     if raw_toggle:
+        # Data for raw is not modified except for tags to text
         from json import dumps
         alt['tags'] = alt['tags'].apply(dumps)
     else:
+        # Data for abbreviated is changed
         alt['usertime'] = alt['usertime'] / orig['cpu_time']
         alt['usertime'] = pd.Series(
             [float("{0:.2f}".format(val * 100)) for val in alt['usertime']], index=alt.index)
@@ -430,80 +428,34 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
         # Remove Tags
         alt = alt.drop(columns=['tags'])
     # Run the search
-    query = []
-    separator = ","
-    equalities = ["==", "=", ">", "<"]
-    if any(n in search_value for n in equalities):  # Wait for user to enter comparison symbol
-        # Take user input into a query list
-        # Break query into subqueries on a sep
-        for item in search_value.split(separator):
-            for al in equalities:
-                # Setup equal searches
-                if len(item.split(al)) >= 2 and item.split(al)[1] is not '':
-                    #logger.debug("Comparison '{}' on Values:{}".format(al,item.split(al)))
-                    query.append([al, item.split(al)])
-        # Attempt to parse queries
-        try:
-            # Q[0] is Query Equality Type
-            # Q[1][0] is Column to search on
-            # Q[1][1] is Value to check column for
-            # Example:
-            # query = [['=', ['processing complete', 'Y']],]
-            for q in query:
-                logger.debug("Processing Query: {}".format(q))
-                logger.debug("Datatype is {}".format(alt[q[1][0]].dtype))
-                # Fuzzy
-                if q[0] == '=':
-                    logger.debug(
-                        "Checking for fuzzy '{}' '{}'".format(q[1][0], q[1][1]))
-                    # Should probably check if alt[q[1][0]] is string
-                    # Here I use np.object as a string comparison
-                    if alt[q[1][0]].dtype == np.object:
-                        alt = alt.loc[alt[q[1][0]].str.contains(q[1][1])]
-                    # If Searching on a integer column convert second param to int
-                    elif alt[q[1][0]].dtype == np.int64:
-                        alt = alt.loc[alt[q[1][0]] == int(q[1][1])]
-                    else:
-                        alt = alt.loc[alt[q[1][0]].str.contains(str(q[1][1]))]
-                if q[0] == '==':
-                    logger.debug(
-                        "Checking for exact '{}' '{}'".format(q[1][0], q[1][1]))
-                    # If Searching on a integer column convert second param to int
-                    if alt[q[1][0]].dtype == np.int64:
-                        alt = alt.loc[alt[q[1][0]] == int(q[1][1])]
-                    else:
-                        alt = alt.loc[alt[q[1][0]] == q[1][1]]
+    try:
+        # Similar searching
+        if raw_toggle:
+            # Raw search on job id only
+            results = alt[(alt['job id'].str.contains(search_value))
+                | (alt['tags'].str.contains(search_value))]
+        else:
+            results = alt[(alt['exp_name'].str.contains(search_value))
+                        | (alt['job id'].str.contains(search_value))
+                        | (alt['exp_component'].str.contains(search_value))]
+        logger.info("Found {} search results".format(int(results.shape[0])))
+        alt = results
+    except Exception as e:
+        logger.error(
+            "Threw exception on query\nexception: ({})".format(e))
 
-                if q[0] == '>':
-                    from components import conv_str_time
-                    if ':' in q[1][1]:
-                        t = conv_str_time(q[1][1])
-                        alt = alt.loc[alt[q[1][0]] > t]
-                    else:
-                        alt = alt.loc[alt[q[1][0]] > int(q[1][1])]
-
-                if q[0] == '<':
-                    from components import conv_str_time
-                    if ':' in q[1][1]:
-                        t = conv_str_time(q[1][1])
-                        alt = alt.loc[alt[q[1][0]] > t]
-                    else:
-                        alt = alt.loc[alt[q[1][0]] < int(q[1][1])]
-                logger.debug("DF has {} rows. \nFirst 5:\n{}".format(
-                    alt.shape[0], alt.head(5)))
-            #logger.debug("The Query column is\n{}".format(alt[q[1][0]]))
-        except Exception as e:
-            logger.error(
-                "Threw exception on \nquery: ({})\nexception: ({})".format(q, e))
+    # Recalculate number of rows
     from math import ceil
+    len_jobs = int(alt.shape[0])
     num_pages = ceil(len_jobs / int(rows_per_page))
     logger.debug("Pages = ceil({} / {}) = {}".format(len_jobs,
                                                      int(rows_per_page), num_pages))
     logger.info("Update_output complete")
+    alt = alt.iloc[page_current *
+                         int(rows_per_page):(page_current + 1) * int(rows_per_page)]
     return [
         alt.to_dict('records'),
         [{"name": i, "id": i} for i in alt.columns],
-        'You\'ve entered: {}'.format(query),
         [dcc.Link(str(n + 1) + ", ", href="?page=" + str(n))
          for n in range((job_df.shape[0] // DEFAULT_ROWS_PER_PAGE))],
         int(rows_per_page),
