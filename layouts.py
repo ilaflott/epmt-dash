@@ -216,7 +216,7 @@ recent_jobs_page = html.Div([
                                     html.Button(id='save-newModel-btn',
                                                 children='Create Model from Selected Jobs', n_clicks_timestamp=0),
                                     # Button for close
-                                    html.Button(id='create-Model-close-btn', children='Cancel', n_clicks_timestamp=0)],
+                                    html.Button(id='create-Model-close-btn', children='Close', n_clicks_timestamp=0)],
                                 width=6,
                                 align="center"
                                 )

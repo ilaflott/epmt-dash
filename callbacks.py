@@ -171,7 +171,6 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
             selected_rows = [str(job_data[i]['job id']) for i in sel_jobs]
             logger.info("Selected jobs {}".format(selected_rows))
             # Generate new refs for each of selected jobs
-            import pandas as pd
             from json import dumps
             # Make_refs returns a list of
             from refs import make_refs
@@ -381,7 +380,10 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
     # If Raw toggle is switched
     # Convert usertime to percentage
     # Return alt df of abbreviated data
-    if not raw_toggle:
+    if raw_toggle:
+        from json import dumps
+        alt['tags'] = alt['tags'].apply(dumps)
+    else:
         alt['usertime'] = alt['usertime'] / orig['cpu_time']
         alt['usertime'] = pd.Series(
             [float("{0:.2f}".format(val * 100)) for val in alt['usertime']], index=alt.index)
@@ -420,7 +422,12 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
             alt['cpu_time'], format="%H:%M:%S").dt.time
         alt.rename(columns={'cpu_time': 'cpu_time (HH:MM:SS)',
                             'duration': 'duration (HH:MM:SS)'}, inplace=True)
-
+        # Parse out wanted tag columns
+        tags_df = pd.DataFrame.from_dict(alt['tags'].tolist())
+        logger.debug(tags_df)
+        alt = pd.merge(alt, tags_df, left_index=True, right_index=True)
+        # Remove Tags
+        alt = alt.drop(columns=['tags'])
     # Run the search
     query = []
     separator = ","

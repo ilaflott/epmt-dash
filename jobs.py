@@ -376,9 +376,10 @@ class job_gen:
         # logger.info("Tags{}".format(self.df['tags']))
 
         columns_to_print = ['jobid', 'exit_code', 'Processed', 'start', 'end', 'duration', 'usertime', 'systemtime',
-                            'cpu_time', 'write_bytes', 'read_bytes']  # ,'exp_name','exp_time','atm_res','ocn_res','script_name'
+                            'cpu_time', 'write_bytes', 'read_bytes', 'tags']  # ,'exp_name','exp_time','atm_res','ocn_res','script_name'
         self.df = self.df[columns_to_print]
-
+        from json import dumps
+        #self.df['tags'] = self.df['tags'].apply(dumps)
         # Convert True into 'Yes' for user friendly display
         import numpy as np
         self.df['Processed'] = np.where(self.df['Processed'], 'Yes', 'No')
