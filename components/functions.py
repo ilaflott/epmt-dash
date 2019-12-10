@@ -23,7 +23,11 @@ def parseurl(i):
 # Takes dictionary button:timestamp
 # Returns most recent
 def recent_button(btn_dict):
-    return max(btn_dict, key=lambda key: btn_dict[key])
+    if sum(btn_dict.values()) > 0:
+        recent = max(btn_dict, key=lambda key: btn_dict[key])
+        logger.debug("Button click {}".format(recent))
+        return recent
+    return None
 
 
 # Check if string time has 1 or 2 colons and convert grabbing just time
