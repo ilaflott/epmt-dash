@@ -88,8 +88,9 @@ def open_create_model_div(create_model_btn, close_model_btn):
     [
         dash.dependencies.State('table-multicol-sorting', 'selected_rows'),
         dash.dependencies.State('table-multicol-sorting', 'data'),
+        dash.dependencies.State('model-selector-dropdown', 'value')
     ])
-def run_analysis(run_analysis_btn, sel_jobs, job_data):
+def run_analysis(run_analysis_btn, sel_jobs, job_data, selected_model):
     from components import recent_button
     recentbtn = recent_button({'run_analysis': run_analysis_btn})
     if recentbtn is 'run_analysis':
@@ -112,6 +113,8 @@ def run_analysis(run_analysis_btn, sel_jobs, job_data):
             # Detect outliers/Run analysis
             from jobs import detect_outlier_jobs
             analysis = detect_outlier_jobs([j[0] for j in selected_rows])
+            if not str(selected_model) == "None":
+                analysis = analysis + " With Model: " + selected_model
             return[analysis, True]
         else:
             # Pop Alert dialog
@@ -199,6 +202,12 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
             logger.info("Creating new model with \n{}".format(refa))
             refs.ref_df = pd.concat(
                 [ref_df, refa], ignore_index=True, sort=False)
+            # Sort by date to push new model to top
+            refs.ref_df = refs.ref_df.sort_values(
+                "date created",  # Column to sort on
+                ascending = False,  # Boolean eval.
+                inplace=False
+            )
             return [model_name_input + " model created", refs.ref_df.to_dict('records'), edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
         return ["", ref_df.to_dict('records'),
                 edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
@@ -260,7 +269,8 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
 
 ######################## Select rows Callbacks ########################
 @app.callback(
-    Output('content', 'children'),
+    [Output('model-selector-dropdown', 'options'),
+    Output('model-selector-dropdown', 'value')],
     [
         Input('table-multicol-sorting', 'data'),
         Input('table-multicol-sorting', 'selected_rows'),
@@ -279,22 +289,23 @@ def f(job_data, sel_jobs):
         model_tags = dumps(model_tags)
         import refs
         ref_df = refs.ref_df
+        drdn_options = [{'label': "Run Without Model",
+                         'value': "None"}]
         for model in ref_df.to_dict('records'):
             if model['tags'] == model_tags:
                 logger.debug("Found a matching model {}".format(model))
-                drdn = dcc.Dropdown(
-                    id='demo-dropdown',
-                    options=[
-                        {'label': model['name'], 'value': model['name']},
-                        {'label': model['name'], 'value': model['name']},
-                        {'label': model['name'], 'value': model['name']}
-                    ],
-                    value=None
-                ),
-                return ("Available Models: ", drdn )
+                drdn_options.append({'label': model['name'],
+                                 'value': model['name']})
+                drdn_value = model['name']
+        if len(drdn_options) > 1:
+            return (drdn_options, drdn_value)
+    else:
+        return [[{'label': "No Jobs Selected",
+             'value': "None"}], "None"]
         # or
         # selected_rows=pd.DataFrame(rows).iloc[i]
-    return ("Available Models: ")
+    return [[{'label': "No Models Available",
+             'value': "None"}], "None"]
 
 # Custom Select all
 # This callback

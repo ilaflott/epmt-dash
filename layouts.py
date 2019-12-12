@@ -85,9 +85,6 @@ recent_jobs_page = html.Div([
                     ),
                     # start
                     dbc.Row([
-                        # Selected jobs notification
-                        dbc.Col([
-                            html.Div(id='content', style={'inline': 'true'}, children=[])]),
                         # Models created notification
                         dbc.Col([html.Div(style={'inline': 'true'}, children=["Model Status:",
                                                                               html.Div(id='recent-job-model-status',
@@ -156,6 +153,17 @@ recent_jobs_page = html.Div([
                         ),
                     ]),
                     dbc.Row([
+                        # Selected jobs notification
+                        dbc.Col([
+                            html.Div(style={'inline': 'true'}, children=[
+                                "Available Models: ",
+                                dcc.Dropdown(
+                                id='model-selector-dropdown',
+                                options=[
+                                    {'label': "No Model", 'value': "None"}
+                                ],
+                                value="None"
+                            )])]),
                       html.Div(id='name-model-div', style={'display': 'none'}, children=[
                     # Containers have nice margins and internal spacing
                     dbc.Container([
@@ -273,8 +281,6 @@ recent_jobs_page = html.Div([
                     page_action='native',
                     page_current=0,
                     page_size=6,
-                    hidden_columns=[],
-                    css=[{"selector": ".show-hide", "rule": "display: none"}],
                     # sort_mode='multi', Keeping it simple now
                     # data=df.head(10).to_dict('records'), # Do not display data initially, callback will handle it
                     # filter_action="native",

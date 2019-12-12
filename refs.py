@@ -89,7 +89,7 @@ def make_refs(x, name='', jobs=None, tags={}):
 
 class ref_gen:
     def __init__(self):
-        references = make_refs(60)
+        references = make_refs(5)
         self.df = pd.DataFrame(references, columns=[
                                'name', 'date created', 'tags', 'jobs', 'features', 'active'])
         # self.df['active'] = np.where(self.df['active'], 'Yes', 'No')

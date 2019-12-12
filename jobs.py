@@ -468,6 +468,6 @@ def detect_outlier_jobs(jobs, trained_model=None, features=['cpu_time', 'duratio
                    [])}
     """
     returns = ('df', {'feature' : (['job','job2'], ['joboutlier'])})
-    return "Running outlier analysis on jobs" + str(jobs)
+    return "Running outlier analysis on Jobs: " + str(jobs)
 
 df = pd.DataFrame()
