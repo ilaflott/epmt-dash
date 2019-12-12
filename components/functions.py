@@ -66,7 +66,7 @@ def contrasting_color(color):
         return self.first_track_color;
 
     # How much to jump in hue:
-    jump = .37
+    jump = .16
     (r,g,b) = colorsys.hsv_to_rgb(color[0] + jump,
                                   color[1],
                                   color[2])
@@ -75,11 +75,11 @@ def contrasting_color(color):
 ((r,g,b), hex)= contrasting_color(colorsys.rgb_to_hsv(50, 100, 200))
 
 
-def list_of_contrast(start,length):
+def list_of_contrast(length, start=(0,0,0)):
     l = []
     for n in range(length):
-        ((r,g,b),hex) = contrasting_color(start)
+        ((r,g,b),hex) = contrasting_color(colorsys.rgb_to_hsv(start[0],start[1],start[2]))
         l.append(hex)
-        start = colorsys.rgb_to_hsv(r, g, b)
+        start = (r, g, b)
+    print(l)
     return l
-cont_colors = list_of_contrast(colorsys.rgb_to_hsv(50, 100, 200),10)

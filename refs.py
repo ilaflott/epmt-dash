@@ -48,7 +48,7 @@ def create_refmodel(jobs=[], name=None, tag={}, op_tags=[],
 
 
 # Returns a list of model data to be converted into a dataframe
-def make_refs(x, name='', jobs=None):
+def make_refs(x, name='', jobs=None, tags={}):
     from random import randint, getrandbits
     from jobs import job_gen
     # Our generated references need to pull jobids and tags from jobs
@@ -80,7 +80,7 @@ def make_refs(x, name='', jobs=None):
             ref_date = today.strftime(datefmt)
             ref_active = True   # Set active User Friendly
             features = featureli  # Full Features
-        refs.append([jname, ref_date, {"taga": "tagb"}, ref_jobs,
+        refs.append([jname, ref_date, tags, ref_jobs,
                      features, ref_active])                       # Append each ref to refs list
     return refs
 

@@ -311,6 +311,8 @@ def get_jobs(limit, fmt='df', offset=0):
     logger.info("Getting jobs...Limit{} Offset{}".format(limit, offset))
     sample_component = '_annual_rho2_1x1deg'
     component_list = ['ocean','land','mountian']
+    sample_name = '_historical'
+    name_list = ['ESM0','ESM1']
     from copy import deepcopy
     for n in range(limit):
         job = dict(samplej)
@@ -318,7 +320,9 @@ def get_jobs(limit, fmt='df', offset=0):
         job['Processed'] = 1
         job['start'] = job['start'] + timedelta(days=n)
         job['end'] = job['end'] + timedelta(days=n)
-        comp = component_list[n%3]
+        name = name_list[n%2]
+        job['tags']['exp_name'] = name + sample_name
+        comp = component_list[n%3] + sample_component
         job['tags']['exp_component'] = str(comp)
         result.append(deepcopy(job))
     return result[offset:]
@@ -424,8 +428,10 @@ def comparable_job_partitions(jobs, matching_keys = ['exp_name', 'exp_component'
     tags_df = pd.DataFrame.from_dict(alt['tags'].tolist())
     # Only Display Specific tags from dash_config
     tags_df = tags_df[['exp_name','exp_component']]
-    logger.debug(alt)
-    logger.debug(tags_df)
+    # Dataframe of jobs
+    #logger.debug(alt)
+    # Dataframe of Tags of jobs
+    #logger.debug(tags_df)
     alt = pd.merge(alt, tags_df, left_index=True, right_index=True)
     #alt.drop('tags',axis=1)
     # Now Calculate comparable jobs
@@ -433,14 +439,13 @@ def comparable_job_partitions(jobs, matching_keys = ['exp_name', 'exp_component'
     cdict = {}
     for rec in recs:
         if (rec['exp_name'],rec['exp_component']) in cdict:
-            logger.debug("Updating")
             cdict[(rec['exp_name'],rec['exp_component'])].update({rec['job id']})
         else:    
             cdict[(rec['exp_name'],rec['exp_component'])] = {str(rec['job id'])}
     # Reconfigure output format with out
     out = [ ((exp_name,exp_component),cdict[(exp_name,exp_component)]) for exp_name, exp_component in cdict]
     logger.debug(out)
-    return 0
+    return out
 
 
 # API Call
@@ -463,6 +468,6 @@ def detect_outlier_jobs(jobs, trained_model=None, features=['cpu_time', 'duratio
                    [])}
     """
     returns = ('df', {'feature' : (['job','job2'], ['joboutlier'])})
-    return 0
+    return "Running outlier analysis on jobs" + str(jobs)
 
 df = pd.DataFrame()
