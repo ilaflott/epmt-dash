@@ -119,8 +119,6 @@ def run_analysis(run_analysis_btn, sel_jobs, job_data):
 #   reference model table
 #
 # Output:
-
-
 @app.callback(
     [
         dash.dependencies.Output('recent-job-model-status', 'children'),
@@ -147,7 +145,6 @@ def run_analysis(run_analysis_btn, sel_jobs, job_data):
     ])
 def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model_btn, edit_model_close_btn, sel_jobs, job_data, sel_refs, ref_data, model_name_input):
     selected_rows = []
-
     # Default Return Values
     edit_div_display_none = {'display': 'none'}
     jobs_drpdn_options = [{'label': 'No Jobs', 'value': 'No'}]
@@ -316,9 +313,9 @@ nclick = 0
 @app.callback(
     [Output('table-multicol-sorting', 'data'),
      Output('table-multicol-sorting', 'columns'),
-     Output('page-selector', 'children'),
      Output('table-multicol-sorting', "page_size"),
-     Output('table-multicol-sorting', "page_count")],
+     Output('table-multicol-sorting', "page_count"),
+     Output('table-multicol-sorting', "style_data_conditional")],
     [Input('raw-switch', 'value'),
      Input(component_id='searchdf', component_property='value'),
      Input(component_id='jobs-date-picker', component_property='end_date'),
@@ -376,9 +373,9 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
     # If Raw toggle is switched
     # Convert usertime to percentage
     # Return alt df of abbreviated data
+    from json import dumps
     if raw_toggle:
         # Data for raw is not modified except for tags to text
-        from json import dumps
         alt['tags'] = alt['tags'].apply(dumps)
     else:
         # Data for abbreviated is changed
@@ -422,23 +419,26 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
                             'duration': 'duration (HH:MM:SS)'}, inplace=True)
         # Parse out wanted tag columns
         tags_df = pd.DataFrame.from_dict(alt['tags'].tolist())
+        # Only Display Specific tags from dash_config
         from dash_config import tags_to_display
         tags_df = tags_df[tags_to_display]
+        # Merge those changes into the end of the alt.df
         alt = pd.merge(alt, tags_df, left_index=True, right_index=True)
-        # Remove Tags
-        alt = alt.drop(columns=['tags'])
+        # Convert tags into a string that can be searched
+        alt['tags'] = alt['tags'].apply(dumps)
     # Run the search
     try:
-        # Similar searching
         if raw_toggle:
             # Raw search on job id only
             results = alt[(alt['job id'].str.contains(search_value))
                 | (alt['tags'].str.contains(search_value))]
         else:
+            # Search on abbreviated data and tags as columns
             results = alt[(alt['exp_name'].str.contains(search_value))
                         | (alt['job id'].str.contains(search_value))
-                        | (alt['exp_component'].str.contains(search_value))]
-        logger.info("Found {} search results".format(int(results.shape[0])))
+                        | (alt['exp_component'].str.contains(search_value))
+                        | (alt['tags'].str.contains(search_value))]
+        logger.info("Found {} search results on {}".format(int(results.shape[0]),search_value))
         alt = results
     except Exception as e:
         logger.error(
@@ -453,13 +453,28 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
     logger.info("Update_output complete")
     alt = alt.iloc[page_current *
                          int(rows_per_page):(page_current + 1) * int(rows_per_page)]
+    # Calculate Comparable jobs
+    from jobs import comparable_job_partitions
+    comparable_job_partitions(alt['job id'].tolist())
+    from components import cont_colors
     return [
-        alt.to_dict('records'),
-        [{"name": i, "id": i} for i in alt.columns],
-        [dcc.Link(str(n + 1) + ", ", href="?page=" + str(n))
-         for n in range((job_df.shape[0] // DEFAULT_ROWS_PER_PAGE))],
-        int(rows_per_page),
-        num_pages
+        alt.to_dict('records'),  # Return the table records
+        [{"name": i, "id": i} for i in alt.columns] if raw_toggle else [
+            {"name": i, "id": i} for i in alt.columns if i is not 'tags'],  # hide tags if raw_toggle false
+        int(rows_per_page),  # Custom page size
+        num_pages,  # Custom Page count
+        [
+            {
+                'if':
+                {'filter_query': '{exp_component} = "ocean" && {job id} = "1234000"'},
+                'backgroundColor': cont_colors[0]
+            },
+            {
+                'if':
+                {'filter_query': '{exp_component} = "land"'},
+                'backgroundColor': cont_colors[1]
+            }
+        ]   # Custom Highlighting on matching job tags
     ]
 
 ######################## /Index Callbacks ########################

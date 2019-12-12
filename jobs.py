@@ -309,13 +309,18 @@ def get_jobs(limit, fmt='df', offset=0):
         # df[offset:offset+limit]
         limit = offset + limit
     logger.info("Getting jobs...Limit{} Offset{}".format(limit, offset))
+    sample_component = '_annual_rho2_1x1deg'
+    component_list = ['ocean','land','mountian']
+    from copy import deepcopy
     for n in range(limit):
         job = dict(samplej)
         job['jobid'] = str(1234000 + n)
         job['Processed'] = 1
         job['start'] = job['start'] + timedelta(days=n)
         job['end'] = job['end'] + timedelta(days=n)
-        result.append(job)
+        comp = component_list[n%3]
+        job['tags']['exp_component'] = str(comp)
+        result.append(deepcopy(job))
     return result[offset:]
 
 
@@ -403,10 +408,61 @@ def get_version():
 
 # unproc_df = df.loc[df['Processing Complete'] == True].to_dict('records')
 
-# Grabs sample jobs
-# returns dataframe
-# def get_recent_jobs(limit):
-#    return job_gen(limit=limit).df
 
+# API Call
+def comparable_job_partitions(jobs, matching_keys = ['exp_name', 'exp_component']):
+    # Returns [ (('matchname','matchcomponent'), {set of matchjobids}), ...]
+    returns = [
+        (('ESM4_historical_D151', 'ocean_annual_z_1x1deg'), {
+         '625151', '627907', '633114', '629322', '685001'}),
+        (('ESM4_historical_D151', 'ocean_annual_rho2_1x1deg'), {'685000'}),
+        (('ESM4_historical_D151',  'ocean_cobalt_fdet_100'), {'685003'})
+    ]
+    # Typically jobids are only passed
+    # I need to get the jobids name and component
+    alt = job_gen().df[job_gen().df['job id'].isin(jobs)].reset_index()
+    tags_df = pd.DataFrame.from_dict(alt['tags'].tolist())
+    # Only Display Specific tags from dash_config
+    tags_df = tags_df[['exp_name','exp_component']]
+    logger.debug(alt)
+    logger.debug(tags_df)
+    alt = pd.merge(alt, tags_df, left_index=True, right_index=True)
+    #alt.drop('tags',axis=1)
+    # Now Calculate comparable jobs
+    recs = alt.to_dict('records')
+    cdict = {}
+    for rec in recs:
+        if (rec['exp_name'],rec['exp_component']) in cdict:
+            logger.debug("Updating")
+            cdict[(rec['exp_name'],rec['exp_component'])].update({rec['job id']})
+        else:    
+            cdict[(rec['exp_name'],rec['exp_component'])] = {str(rec['job id'])}
+    # Reconfigure output format with out
+    out = [ ((exp_name,exp_component),cdict[(exp_name,exp_component)]) for exp_name, exp_component in cdict]
+    logger.debug(out)
+    return 0
+
+
+# API Call
+def detect_outlier_jobs(jobs, trained_model=None, features=['cpu_time', 'duration', 'num_procs'], methods=['modified_z_score'], thresholds='thresholds', sanity_check=True):
+    """
+    (df, parts) = eod.detect_outlier_jobs(jobs)
+    pprint(parts)
+    {'cpu_time': ([u'kern-6656-20190614-190245',
+                   u'kern-6656-20190614-194024',
+                   u'kern-6656-20190614-191138'],
+                  [u'kern-6656-20190614-192044-outlier']),
+     'duration': ([u'kern-6656-20190614-190245',
+                   u'kern-6656-20190614-194024',
+                   u'kern-6656-20190614-191138'],
+                  [u'kern-6656-20190614-192044-outlier']),
+     'num_procs': ([u'kern-6656-20190614-190245',
+                    u'kern-6656-20190614-192044-outlier',
+                    u'kern-6656-20190614-194024',
+                    u'kern-6656-20190614-191138'],
+                   [])}
+    """
+    returns = ('df', {'feature' : (['job','job2'], ['joboutlier'])})
+    return 0
 
 df = pd.DataFrame()

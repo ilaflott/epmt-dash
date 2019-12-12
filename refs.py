@@ -1,8 +1,50 @@
 import pandas as pd
 import numpy as np
+import datetime
 
 from logging import getLogger, basicConfig, DEBUG, ERROR, INFO, WARNING
 logger = getLogger(__name__)  # you can use other name
+
+
+# Mock sample
+# create_ref returns
+def create_ref(jobs = []):
+    create_ref = {'jobs': jobs,
+                  'tags': {},
+                  'op_tags': [],
+                  'computed': {'modified_z_score': {'duration': (1.6944,
+                                                                 6615525773.0,
+                                                                 155282456.0),
+                                                    'num_procs': (3.0253, 3480.0, 68.0),
+                                                    'cpu_time': (10.8055, 113135329.0, 19597296.0)}},
+                  'enabled': True,
+                  'id': 1,
+                  'created_at': datetime.datetime(2019, 11, 26, 22, 53, 42, 447548)}
+    return create_ref
+
+# Mock sample
+# get_ref returns
+def get_ref():
+    get_ref = [{'tags': {},
+                'updated_at': None,
+                'created_at': datetime.datetime(2019, 11, 26, 22, 53, 42, 447548),
+                'info_dict': None,
+                'id': 1,
+                'op_tags': [],
+                'enabled': True,
+                'jobs': ['685000', '685003', '685016'],
+                'modified_z_score': {'duration': [1.6944, 6615525773.0, 155282456.0],
+                                    'num_procs': [3.0253, 3480.0, 68.0],
+                                    'cpu_time': [10.8055, 113135329.0, 19597296.0]}}]
+    return get_ref
+
+
+# API Call
+def create_refmodel(jobs=[], name=None, tag={}, op_tags=[],
+                    outlier_methods=["modified_z_score"],
+                    features=['duration', 'cpu_time', 'num_procs'], exact_tag_only=False,
+                    fmt='dict', sanity_check=True, enabled=True):
+    return 0
 
 
 # Returns a list of model data to be converted into a dataframe
@@ -64,8 +106,7 @@ def get_references():
     logger.debug("Refs({}):\n{}".format(id(ref_df), ref_df))
     # Ref model initialization data
     from json import dumps
-    ref_df['tags'] = ref_df['tags'].apply(
-        dumps)  # Dumps stringify's dictionaries
+    ref_df['tags'] = ref_df['tags'].apply(dumps)  # Dumps stringify's dictionaries
     ref_df['jobs'] = ref_df['jobs'].apply(dumps)  # Dumps stringify's lists
     ref_df['features'] = ref_df['features'].apply(
         dumps)  # Dumps stringify's lists

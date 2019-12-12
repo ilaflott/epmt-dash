@@ -59,3 +59,27 @@ def convtounit(val,reqUnit):
     # Letter to Unit reverse search
     unitp = list(power_labels.keys())[list(power_labels.values()).index(reqUnit)]
     return val/1000**unitp
+
+import colorsys
+def contrasting_color(color):
+    if not color:
+        return self.first_track_color;
+
+    # How much to jump in hue:
+    jump = .37
+    (r,g,b) = colorsys.hsv_to_rgb(color[0] + jump,
+                                  color[1],
+                                  color[2])
+    hexout = '#%02x%02x%02x' % (int(r),int(g),int(b))
+    return ((r,g,b),hexout)
+((r,g,b), hex)= contrasting_color(colorsys.rgb_to_hsv(50, 100, 200))
+
+
+def list_of_contrast(start,length):
+    l = []
+    for n in range(length):
+        ((r,g,b),hex) = contrasting_color(start)
+        l.append(hex)
+        start = colorsys.rgb_to_hsv(r, g, b)
+    return l
+cont_colors = list_of_contrast(colorsys.rgb_to_hsv(50, 100, 200),10)

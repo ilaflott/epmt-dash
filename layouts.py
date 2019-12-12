@@ -17,7 +17,7 @@ DEFAULT_ROWS_PER_PAGE = 5
 ########################Jobs & References ########################
 job_df = job_gen().df
 
-#ref_df = get_references()
+# ref_df = get_references()
 ######################## End Jobs & References ########################
 
 
@@ -145,41 +145,7 @@ recent_jobs_page = html.Div([
                             },
 
                         ],
-                        style_data_conditional=[
-                            {'if': {'filter_query': '{exit status} != 0'},
-                             'backgroundColor': '#FFc0b5'
-                             },
-                            # Shrink Narrow columns
-                            {
-                                'if': {'column_id': 'bytes_in (Gb)'},
-                                'minWidth': '75px',
-                            },
-                            {
-                                'if': {'column_id': 'job id'},
-                                'minWidth': '40px',
-                            },
-                            {
-                                'if': {'column_id': 'bytes_out (Gb)'},
-                                'minWidth': '75px',
-                            },
-                            {
-                                'if': {'column_id': 'exit status'},
-                                'minWidth': '50px',
-                            },
-                            {
-                                'if': {'column_id': 'processing complete'},
-                                'minWidth': '80px',
-                            },
-
-                            {
-                                'if': {'column_id': 'job id'},
-                                'text-align': 'right',
-                            },
-                            {
-                                'if': {'column_id': 'tags'},
-                                'text-align': 'left',
-                            }
-                        ],
+                        style_data_conditional=[],
                     ),
                     dbc.Row([
                         dbc.Alert(
@@ -307,6 +273,8 @@ recent_jobs_page = html.Div([
                     page_action='native',
                     page_current=0,
                     page_size=6,
+                    hidden_columns=[],
+                    css=[{"selector": ".show-hide", "rule": "display: none"}],
                     # sort_mode='multi', Keeping it simple now
                     # data=df.head(10).to_dict('records'), # Do not display data initially, callback will handle it
                     # filter_action="native",
