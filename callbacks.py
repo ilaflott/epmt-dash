@@ -184,7 +184,7 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
             j,n,c = selected_rows[0]
             for j in selected_rows:
                 if not (str(j[1]) == str(n) and str(j[2]) == str(c)):
-                    logger.debug(
+                    logger.info(
                         "Bad job set, Name Comparison{} Component Comparison{}".format(str(j[1]) == str(n), str(j[2]) == str(c)))
                     return ["Jobs are incompatible", ref_df.to_dict('records'),
                             edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
@@ -294,7 +294,7 @@ def f(job_data, sel_jobs):
         for model in ref_df.to_dict('records'):
             if model['tags'] == model_tags:
                 logger.debug("Found a matching model {}".format(model))
-                drdn_options.append({'label': model['name'],
+                drdn_options.append({'label': model['name'] + " Tags:" + model['tags'] + " Created on:" + model['date created'],
                                  'value': model['name']})
                 drdn_value = model['name']
         if len(drdn_options) > 1:
@@ -496,15 +496,21 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
                                                      int(rows_per_page), num_pages))
     # #################################################################
     # Calculate Comparable jobs and generate custom highlighting
-    from jobs import comparable_job_partitions
-    comparable_jobs = comparable_job_partitions(alt['job id'].tolist())
-    # Generate contrasting colors from length of comparable sets
-    from components import list_of_contrast
-    cont_colors = list_of_contrast(len(comparable_jobs), start = (200, 200, 120))
+    # Only attempt if there are jobs to run on
     custom_highlights = []
-    for color, n in enumerate(comparable_jobs,start=0):
-        custom_highlights.append({'if': {'filter_query': '{exp_component} = "' + n[0][1] + '" && {exp_name} = "' + n[0][0] + '"'},
-                                  'backgroundColor': cont_colors[color]})
+    if len_jobs>0:
+        from jobs import comparable_job_partitions
+        comparable_jobs = comparable_job_partitions(alt['job id'].tolist())
+        # Generate contrasting colors from length of comparable sets
+        from components import list_of_contrast
+        cont_colors = list_of_contrast(len(comparable_jobs), start = (200, 200, 120))
+        for color, n in enumerate(comparable_jobs, start=0):
+            # Only generate a rule if more than one job in rule
+            if len(n[1]) > 1:
+                custom_highlights.append({'if': {'filter_query': '{exp_component} = "' + n[0][1] + '" && {exp_name} = "' + n[0][0] + '"'},
+                                          'backgroundColor': cont_colors[color]})
+            else:
+                logger.debug("Not generating a highlight rule for {} not enough matching jobs".format(n))
     logger.debug("Custom Highlights: \n{}".format(custom_highlights))
     # #################################################################
     # Sort

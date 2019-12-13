@@ -7,22 +7,6 @@ logger = getLogger(__name__)  # you can use other name
 
 
 # Mock sample
-# create_ref returns
-def create_ref(jobs = []):
-    create_ref = {'jobs': jobs,
-                  'tags': {},
-                  'op_tags': [],
-                  'computed': {'modified_z_score': {'duration': (1.6944,
-                                                                 6615525773.0,
-                                                                 155282456.0),
-                                                    'num_procs': (3.0253, 3480.0, 68.0),
-                                                    'cpu_time': (10.8055, 113135329.0, 19597296.0)}},
-                  'enabled': True,
-                  'id': 1,
-                  'created_at': datetime.datetime(2019, 11, 26, 22, 53, 42, 447548)}
-    return create_ref
-
-# Mock sample
 # get_ref returns
 def get_ref():
     get_ref = [{'tags': {},
@@ -44,8 +28,18 @@ def create_refmodel(jobs=[], name=None, tag={}, op_tags=[],
                     outlier_methods=["modified_z_score"],
                     features=['duration', 'cpu_time', 'num_procs'], exact_tag_only=False,
                     fmt='dict', sanity_check=True, enabled=True):
-    return 0
-
+    create_ref = {'jobs': jobs,
+                  'tags': {},
+                  'op_tags': [],
+                  'computed': {'modified_z_score': {'duration': (1.6944,
+                                                                 6615525773.0,
+                                                                 155282456.0),
+                                                    'num_procs': (3.0253, 3480.0, 68.0),
+                                                    'cpu_time': (10.8055, 113135329.0, 19597296.0)}},
+                  'enabled': True,
+                  'id': 1,
+                  'created_at': datetime.datetime(2019, 11, 26, 22, 53, 42, 447548)}
+    return create_ref
 
 # Returns a list of model data to be converted into a dataframe
 def make_refs(x, name='', jobs=None, tags={}):
@@ -85,8 +79,7 @@ def make_refs(x, name='', jobs=None, tags={}):
     return refs
 
 # Generate a list of references
-
-
+# ref_gen does data cleanup and conversions for displaying reference models
 class ref_gen:
     def __init__(self):
         references = make_refs(5)

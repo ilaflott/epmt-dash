@@ -157,13 +157,16 @@ recent_jobs_page = html.Div([
                         dbc.Col([
                             html.Div(style={'inline': 'true'}, children=[
                                 "Available Models: ",
-                                dcc.Dropdown(
-                                id='model-selector-dropdown',
-                                options=[
-                                    {'label': "No Model", 'value': "None"}
-                                ],
-                                value="None"
-                            )])]),
+                                dbc.Col(
+                                    dcc.Dropdown(
+                                        id='model-selector-dropdown',
+                                        options=[
+                                            {'label': "No Model", 'value': "None"}
+                                        ],
+                                        value="None"
+                                ), width="auto")
+                            ])
+                        ]),
                       html.Div(id='name-model-div', style={'display': 'none'}, children=[
                     # Containers have nice margins and internal spacing
                     dbc.Container([

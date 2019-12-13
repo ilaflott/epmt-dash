@@ -9,32 +9,6 @@ import pandas as pd
 from logging import getLogger, basicConfig, DEBUG, ERROR, INFO, WARNING
 logger = getLogger(__name__)  # you can use other name
 
-
-def str_time_prop(start, end, format):
-    """Get a time at a proportion of a range of two formatted times.
-
-    start and end should be strings specifying times formated in the
-    given format (strftime-style), giving an interval [start, end].
-    prop specifies how a proportion of the interval to be taken after
-    start.  The returned time will be in the specified format.
-    """
-
-    stime = time.mktime(time.strptime(start, format))
-    etime = time.mktime(time.strptime(end, format))
-
-    ptime = stime + random.random() * (etime - stime)
-
-    return time.strftime(format, time.localtime(ptime))
-
-
-def random_date(start, end, dfmt):
-    return str_time_prop(start, end, dfmt)
-# Generate Random time,zone
-# random_date("1:30 PM UTC", "4:50 PM UTC", "%I:%M %p %Z", random.random())
-# Generate Random Date,time,zone
-# random_date("1/1/1990 1:30 PM UTC", "1/2/1990 4:50 PM UTC", "%m/%d/%Y %I:%M %p %Z", random.random())
-
-
 samplej = {'duration': 6460243317.0,
            'updated_at': datetime.datetime(2019, 11, 26, 22, 0, 22, 485979),
            'tags': {'exp_name': 'ESM4_historical_D151',
@@ -296,13 +270,12 @@ samplej = {'duration': 6460243317.0,
            'syscw': 897834,
            'vol_ctxsw': 770843}
 
-
 # Use samplej real job as template
 # replace jobid with new number
 # return list of limit of jobs
-def get_jobs(limit, fmt='df', offset=0):
+#def get_jobs(limit=None, fmt='df', offset=0):
+def get_jobs(jobs = [], tags=None, fltr = None, order = None, limit = None, offset = 0, when=None, before=None, after=None, hosts=[], fmt='dict', annotations=None, analyses=None, merge_proc_sums=True, exact_tag_only = False):
     from datetime import datetime, timedelta
-    result = []
     # if offset >= limit: offset = limit
     if offset > 0:
         # This isn't quite right..
@@ -314,6 +287,7 @@ def get_jobs(limit, fmt='df', offset=0):
     sample_name = '_historical'
     name_list = ['ESM0','ESM1']
     from copy import deepcopy
+    result = []
     for n in range(limit):
         job = dict(samplej)
         job['jobid'] = str(1234000 + n)
@@ -322,50 +296,18 @@ def get_jobs(limit, fmt='df', offset=0):
         job['end'] = job['end'] + timedelta(days=n)
         name = name_list[n%2]
         job['tags']['exp_name'] = name + sample_name
+        if job['jobid'] == str(1234002):
+            job['tags']['exp_name'] = "mismatch_test"
         comp = component_list[n%3] + sample_component
         job['tags']['exp_component'] = str(comp)
         result.append(deepcopy(job))
     return result[offset:]
 
 
-def _unused_random_job_generator(x):
-    # Old tags
-    tags = {'atm_res': 'c96l49',
-            'ocn_res': '0.5l75',
-            'exp_name': 'ESM4_historical_D151',
-            'exp_time': '18640101',
-            'script_name': 'ESM4_historical_D151_ocean_annual_rho2_1x1deg_18640101',
-            'exp_component': 'ocean_annual_rho2_1x1deg'}
-    result = []
-    for n in range(x):
-        jobid = "job-" + str(n)
-        import names
-        job_name = names.name_gen().name
-        Processed = bool(random.getrandbits(1))
-        tag = dict(tags) if bool(random.getrandbits(1)) else {'Tags': 'None'}
-        timeformat = "%m/%d/%Y %I:%M %p %Z"
-        start_datetime = random_date(
-            "11/1/2019 1:30 PM UTC", "11/5/2019 4:50 PM UTC", timeformat)  # + timedelta(days=n)
-        from datetime import datetime
-        start_time = datetime.strptime(start_datetime, timeformat).time()
-        start_day = datetime.strptime(start_datetime, timeformat).date()
-        usert = random.randrange(0, 8640000 * 0.5)
-        systemt = random.randrange(0, 8640000 * 0.5)
-        cput = usert + systemt
-        # 8640000 jiffies in 24 hours
-        duration = random.uniform(cput, cput * 1.3)
-        exit_code = int(1) if bool(random.random() < 0.3) else int(0)
-        result.append([jobid, job_name, Processed, tag, start_day, start_time,
-                       # Exit code, duration, user, system
-                       exit_code, duration, usert, systemt, cput,
-                       # Bytes in, Bytes out
-                       random.randrange(0, 1024**4), random.randrange(0, 1024**4)])
-    return result
-
-
 # Job_gen does data cleanup and conversions for displaying
 class job_gen:
     def __init__(self, limit=60, offset=0):
+        #from epmt_query import get_jobs as get_jobs_epmt
         sample = get_jobs(limit=limit, offset=offset)
         self.df = pd.DataFrame(sample)
 
@@ -401,27 +343,13 @@ class job_gen:
             'read_bytes': 'bytes_in'
         }, inplace=True)
 
-    def reset(self):
-        self.__init__()
-
 # ####################### End List of jobs ########################
-
-
-def get_version():
-    return "EPMT 1.1.1"
-
-# unproc_df = df.loc[df['Processing Complete'] == True].to_dict('records')
 
 
 # API Call
 def comparable_job_partitions(jobs, matching_keys = ['exp_name', 'exp_component']):
     # Returns [ (('matchname','matchcomponent'), {set of matchjobids}), ...]
-    returns = [
-        (('ESM4_historical_D151', 'ocean_annual_z_1x1deg'), {
-         '625151', '627907', '633114', '629322', '685001'}),
-        (('ESM4_historical_D151', 'ocean_annual_rho2_1x1deg'), {'685000'}),
-        (('ESM4_historical_D151',  'ocean_cobalt_fdet_100'), {'685003'})
-    ]
+
     # Typically jobids are only passed
     # I need to get the jobids name and component
     alt = job_gen().df[job_gen().df['job id'].isin(jobs)].reset_index()
@@ -471,3 +399,6 @@ def detect_outlier_jobs(jobs, trained_model=None, features=['cpu_time', 'duratio
     return "Running outlier analysis on Jobs: " + str(jobs)
 
 df = pd.DataFrame()
+
+def get_version():
+    return "EPMT 1.1.1"
