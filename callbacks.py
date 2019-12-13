@@ -248,12 +248,24 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
             # Possible Jobs
             from jobs import job_gen
             job_df = job_gen().df
-            pos_ref_jobs_li = job_df['job id'].tolist()
+            # Get Comparable jobs with tags 
+            from jobs import comparable_job_partitions
+            comparable_jobs = comparable_job_partitions(job_df['job id'].tolist())
+            # grab tag and find other jobs
+            logger.debug("Tags are: {}".format(ref_data[sel_refs[0]]['tags']))
+            from ast import literal_eval
+            ast_tags = literal_eval(ref_data[sel_refs[0]]['tags'])
+            tag_tup = (ast_tags['exp_name'],ast_tags['exp_component'])
+            pos_ref_jobs_li = []
+            for n in comparable_jobs:
+                if n[0] == tag_tup:
+                    pos_ref_jobs_li = n[1]
 
             logger.debug("Model:{} Jobs:{}".format(
                 selected_refs['name'], ref_jobs_li))
+            jobs_drpdn_options = [{'label': i, 'value': i} for i in pos_ref_jobs_li]
             return [selected_rows, refs.ref_df.to_dict('records'), {'display': 'contents'},
-                    [{'label': i, 'value': i} for i in pos_ref_jobs_li], [i for i in ref_jobs_li]]
+                    jobs_drpdn_options, [i for i in ref_jobs_li]]
 # Close edit model
     if recentbtn is 'close_edit':
         return [selected_rows, refs.ref_df.to_dict('records'),
@@ -488,12 +500,29 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
     except Exception as e:
         logger.error(
             "Threw exception on query\nexception: ({})".format(e))
+    
     # Recalculate number of rows after search complete
     from math import ceil
     len_jobs = int(alt.shape[0])
     num_pages = ceil(len_jobs / int(rows_per_page))
     logger.debug("Pages = ceil({} / {}) = {}".format(len_jobs,
                                                      int(rows_per_page), num_pages))
+    
+    # #################################################################
+    # Sort
+    if len(sort_by):
+        # Need to check if sorting on a existing column
+        if sort_by[0]['column_id'] in alt.columns.tolist():
+            alt = alt.sort_values(
+                sort_by[0]['column_id'],  # Column to sort on
+                ascending=sort_by[0]['direction'] == 'asc',  # Boolean eval.
+                inplace=False
+            )
+    # #################################################################
+    # Last reduce df down to 1 page view based on requested page and rows per page
+    alt = alt.iloc[page_current *
+                         int(rows_per_page):(page_current + 1) * int(rows_per_page)]
+
     # #################################################################
     # Calculate Comparable jobs and generate custom highlighting
     # Only attempt if there are jobs to run on
@@ -511,21 +540,10 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
                                           'backgroundColor': cont_colors[color]})
             else:
                 logger.debug("Not generating a highlight rule for {} not enough matching jobs".format(n))
+    else:
+        logger.debug("Not enough jobs to do highlighting Len Jobs = {}".format(len_jobs))
     logger.debug("Custom Highlights: \n{}".format(custom_highlights))
-    # #################################################################
-    # Sort
-    if len(sort_by):
-        # Need to check if sorting on a existing column
-        if sort_by[0]['column_id'] in alt.columns.tolist():
-            alt = alt.sort_values(
-                sort_by[0]['column_id'],  # Column to sort on
-                ascending=sort_by[0]['direction'] == 'asc',  # Boolean eval.
-                inplace=False
-            )
-    # #################################################################
-    # Last reduce df down to 1 page view based on requested page and rows per page
-    alt = alt.iloc[page_current *
-                         int(rows_per_page):(page_current + 1) * int(rows_per_page)]
+
     logger.info("Update_output complete")
     return [
         alt.to_dict('records'),  # Return the table records
