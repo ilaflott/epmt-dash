@@ -244,7 +244,7 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
             # Hack for selected jobs
             from ast import literal_eval
             ref_jobs_li = literal_eval(ref_data[sel_refs[0]]['jobs'])
-
+            logger.debug("evaled jobs are {}".format(ref_jobs_li))
             # Possible Jobs
             from jobs import job_gen
             job_df = job_gen().df
@@ -289,28 +289,33 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
         # Input('table-multicol-sorting', '')
     ])
 def f(job_data, sel_jobs):
-    if sel_jobs:
-        selected_rows = [(str(job_data[i]['job id']),job_data[i]['exp_name'],job_data[i]['exp_component']) for i in sel_jobs]
-        logger.info(
-            "Find reference models for each job\nJobs:{}".format([j[0] for j in selected_rows]))
-        logger.debug("Models found {}".format("~model~"))
-        logger.info("Run Model against job")
-        # Check for matching models
-        model_tags = {'exp_name':selected_rows[0][1], 'exp_component':selected_rows[0][2]}
-        from json import dumps
-        model_tags = dumps(model_tags)
-        import refs
-        ref_df = refs.ref_df
-        drdn_options = [{'label': "Run Without Model",
-                         'value': "None"}]
-        for model in ref_df.to_dict('records'):
-            if model['tags'] == model_tags:
-                logger.debug("Found a matching model {}".format(model))
-                drdn_options.append({'label': model['name'] + " Tags:" + model['tags'] + " Created on:" + model['date created'],
-                                 'value': model['name']})
-                drdn_value = model['name']
-        if len(drdn_options) > 1:
-            return (drdn_options, drdn_value)
+    logger.debug("Testing selected jobs {} job data len {}".format(sel_jobs,len(job_data)))
+    # Disregard selections that are stale
+    if sel_jobs and all([k <= len(job_data) for k in sel_jobs]):
+        try:
+            selected_rows = [(str(job_data[i]['job id']),job_data[i]['exp_name'],job_data[i]['exp_component']) for i in sel_jobs]
+            logger.info(
+                "Find reference models for each job\nJobs:{}".format([j[0] for j in selected_rows]))
+            logger.debug("Models found {}".format("~model~"))
+            logger.info("Run Model against job")
+            # Check for matching models
+            model_tags = {'exp_name':selected_rows[0][1], 'exp_component':selected_rows[0][2]}
+            from json import dumps
+            model_tags = dumps(model_tags)
+            import refs
+            ref_df = refs.ref_df
+            drdn_options = [{'label': "Run Without Model",
+                            'value': "None"}]
+            for model in ref_df.to_dict('records'):
+                if model['tags'] == model_tags:
+                    logger.debug("Found a matching model {}".format(model))
+                    drdn_options.append({'label': model['name'] + " Tags:" + model['tags'] + " Created on:" + model['date created'],
+                                    'value': model['name']})
+                    drdn_value = model['name']
+            if len(drdn_options) > 1:
+                return (drdn_options, drdn_value)
+        except KeyError:
+            logger.warn("Threw Key error stale data likely")
     else:
         return [[{'label': "No Jobs Selected",
              'value': "None"}], "None"]

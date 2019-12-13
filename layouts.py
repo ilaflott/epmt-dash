@@ -163,43 +163,44 @@ recent_jobs_page = html.Div([
                                         options=[
                                             {'label': "No Model", 'value': "None"}
                                         ],
-                                        value="None"
-                                ), width="auto")
+                                        value="None",
+                                        #style={'display': 'block', 'width': '100%'}
+                                    ), width="11")
                             ])
                         ]),
-                      html.Div(id='name-model-div', style={'display': 'none'}, children=[
-                    # Containers have nice margins and internal spacing
-                    dbc.Container([
-                        dbc.Row(
-                            [
-                                dbc.Col(
-                                    # model name input
-                                    dbc.FormGroup(
-                                        [
-                                            dbc.Label("Model"),
-                                            dbc.Input(
-                                                id='model-name-input',
-                                                placeholder="model name here", type="text"),
-                                            dbc.FormText(
-                                                "Enter a Reference Model Name"),
-                                        ]
-                                    ),
-                                width="auto"
+                        html.Div(id='name-model-div', style={'display': 'none'}, children=[
+                            # Containers have nice margins and internal spacing
+                            dbc.Container([
+                                dbc.Row(
+                                    [
+                                        dbc.Col(
+                                          # model name input
+                                          dbc.FormGroup(
+                                              [
+                                                  dbc.Label("Model"),
+                                                  dbc.Input(
+                                                      id='model-name-input',
+                                                      placeholder="model name here", type="text"),
+                                                  dbc.FormText(
+                                                      "Enter a Reference Model Name"),
+                                              ]
+                                          ),
+                                            width="auto"
 
-                                ),
-                                dbc.Col([
-                                    # Button for save
-                                    html.Button(id='save-newModel-btn',
-                                                children='Create Model from Selected Jobs', n_clicks_timestamp=0),
-                                    # Button for close
-                                    html.Button(id='create-Model-close-btn', children='Close', n_clicks_timestamp=0)],
-                                width=6,
-                                align="center"
+                                          ),
+                                        dbc.Col([
+                                            # Button for save
+                                            html.Button(id='save-newModel-btn',
+                                                        children='Create Model from Selected Jobs', n_clicks_timestamp=0),
+                                            # Button for close
+                                            html.Button(id='create-Model-close-btn', children='Close', n_clicks_timestamp=0)],
+                                            width=6,
+                                            align="center"
+                                        )
+                                    ]
                                 )
-                            ]
-                        )
-                    ], fluid=True),
-                ]),
+                            ], fluid=True),
+                        ]),
                     ]),
                     dbc.Row([
                         dbc.Col([
