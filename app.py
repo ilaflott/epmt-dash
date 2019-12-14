@@ -1,5 +1,8 @@
 import dash
 import dash_bootstrap_components as dbc
+# Import epmt parent folder
+import sys
+sys.path.append("./..")
 # Index.py Configures logger debug level
 
 external_stylesheets = [ # Remote Styles

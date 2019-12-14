@@ -41,10 +41,14 @@ def create_refmodel(jobs=[], name=None, tag={}, op_tags=[],
                   'created_at': datetime.datetime(2019, 11, 26, 22, 53, 42, 447548)}
     return create_ref
 
+def get_refs():
+    import epmt_query as eq
+    m = eq.get_refmodels()
+    return [[nm['name'], nm['created_at'], nm['tags'], nm['jobs'], ['duration', 'cpu_time', 'num_procs'], nm['enabled']] for nm in m]
+
+
+
 def make_refs(name='', jobs=None, tags={}):
-    import sys
-    sys.path.append("./..")
-    logger.debug(sys.path)
     import epmt_query as eq
     # eq.create_refmodel(jobs=['625133','693118','696085'], name='Sample', tag={'exp_name':'ESM4_historical_D151','exp_component': 'atmos_cmip'})
     try:
@@ -98,7 +102,7 @@ def _old_make_refs(x, name='', jobs=None, tags={}):
 class ref_gen:
     def __init__(self):
         #references = make_refs(2)
-        self.df = pd.DataFrame([], columns=[
+        self.df = pd.DataFrame(get_refs(), columns=[
                                'name', 'date created', 'tags', 'jobs', 'features', 'active'])
         # self.df['active'] = np.where(self.df['active'], 'Yes', 'No')
         # Reorder

@@ -307,11 +307,6 @@ def get_jobs(jobs = [], tags=None, fltr = None, order = None, limit = None, offs
 # Job_gen does data cleanup and conversions for displaying
 class job_gen:
     def __init__(self, limit=60, offset=0):
-        # Add epmt to path
-        import sys
-        sys.path.append("./..")
-        logger.debug(sys.path)
-        
         import epmt_query as eq
         sample = eq.get_jobs(fmt='dict', limit=limit, offset=offset)
 
