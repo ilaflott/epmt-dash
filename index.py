@@ -9,8 +9,8 @@ import callbacks
 # Index.py Configures logger debug level
 from logging import getLogger, basicConfig, DEBUG, ERROR, INFO, WARNING
 from epmtlib import set_logging
-logger = getLogger(__name__)  # you can use other name
-set_logging(intlvl=DEBUG, check=False)
+#logger = getLogger(__name__)  # you can use other name
+#set_logging(intlvl=DEBUG, check=True)
 
 # see https://dash.plot.ly/external-resources to alter header, footer and favicon
 app.index_string = ''' 

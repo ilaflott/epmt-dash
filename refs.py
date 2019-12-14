@@ -6,45 +6,10 @@ from logging import getLogger, basicConfig, DEBUG, ERROR, INFO, WARNING
 logger = getLogger(__name__)  # you can use other name
 
 
-# Mock sample
-# get_ref returns
-def get_ref():
-    get_ref = [{'tags': {},
-                'updated_at': None,
-                'created_at': datetime.datetime(2019, 11, 26, 22, 53, 42, 447548),
-                'info_dict': None,
-                'id': 1,
-                'op_tags': [],
-                'enabled': True,
-                'jobs': ['685000', '685003', '685016'],
-                'modified_z_score': {'duration': [1.6944, 6615525773.0, 155282456.0],
-                                    'num_procs': [3.0253, 3480.0, 68.0],
-                                    'cpu_time': [10.8055, 113135329.0, 19597296.0]}}]
-    return get_ref
-
-
-# API Call
-def create_refmodel(jobs=[], name=None, tag={}, op_tags=[],
-                    outlier_methods=["modified_z_score"],
-                    features=['duration', 'cpu_time', 'num_procs'], exact_tag_only=False,
-                    fmt='dict', sanity_check=True, enabled=True):
-    create_ref = {'jobs': jobs,
-                  'tags': {},
-                  'op_tags': [],
-                  'computed': {'modified_z_score': {'duration': (1.6944,
-                                                                 6615525773.0,
-                                                                 155282456.0),
-                                                    'num_procs': (3.0253, 3480.0, 68.0),
-                                                    'cpu_time': (10.8055, 113135329.0, 19597296.0)}},
-                  'enabled': True,
-                  'id': 1,
-                  'created_at': datetime.datetime(2019, 11, 26, 22, 53, 42, 447548)}
-    return create_ref
-
 def get_refs():
     import epmt_query as eq
     m = eq.get_refmodels()
-    return [[nm['name'], nm['created_at'], nm['tags'], nm['jobs'], ['duration', 'cpu_time', 'num_procs'], nm['enabled']] for nm in m]
+    return [[nm['id'], nm['name'], nm['created_at'], nm['tags'], nm['jobs'], ['duration', 'cpu_time', 'num_procs'], nm['enabled']] for nm in m]
 
 
 
@@ -53,7 +18,7 @@ def make_refs(name='', jobs=None, tags={}):
     # eq.create_refmodel(jobs=['625133','693118','696085'], name='Sample', tag={'exp_name':'ESM4_historical_D151','exp_component': 'atmos_cmip'})
     try:
         nm = eq.create_refmodel(jobs=jobs, name=name, tag=tags)
-        return [[nm['name'], nm['created_at'], nm['tags'], nm['jobs'], ['duration', 'cpu_time', 'num_procs'], nm['enabled']]]
+        return [[nm['id'], nm['name'], nm['created_at'], nm['tags'], nm['jobs'], ['duration', 'cpu_time', 'num_procs'], nm['enabled']]]
     except Exception as e:
         logger.error("Create model failed {}".format(e))
         return None
@@ -102,11 +67,11 @@ def _old_make_refs(x, name='', jobs=None, tags={}):
 class ref_gen:
     def __init__(self):
         #references = make_refs(2)
-        self.df = pd.DataFrame(get_refs(), columns=[
+        self.df = pd.DataFrame(get_refs(), columns=['id',
                                'name', 'date created', 'tags', 'jobs', 'features', 'active'])
         # self.df['active'] = np.where(self.df['active'], 'Yes', 'No')
         # Reorder
-        self.df = self.df[['name', 'active',
+        self.df = self.df[['id', 'name', 'active',
                            'date created', 'tags', 'jobs', 'features']]
 
 

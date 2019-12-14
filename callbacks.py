@@ -14,9 +14,10 @@ import numpy as np
 import pandas as pd
 # Index.py Configures logger debug level
 from logging import getLogger, basicConfig, DEBUG, ERROR, INFO, WARNING
+from epmtlib import set_logging
+set_logging(intlvl=2)
 logger = getLogger(__name__)  # you can use other name
 # pd.options.mode.chained_assignment = None
-
 import refs
 #import jobs
 
@@ -99,8 +100,6 @@ def run_analysis(run_analysis_btn, sel_jobs, job_data, selected_model):
             selected_rows = [(str(job_data[i]['job id']),job_data[i]['exp_name'],job_data[i]['exp_component']) for i in sel_jobs]
             logger.info(
                 "Find reference models for each job\nJobs:{}".format([j[0] for j in selected_rows]))
-            logger.debug("Models found {}".format("~model~"))
-            logger.info("Run Model against job")
             # Check for matching models
             model_tags = {'exp_name':selected_rows[0][1], 'exp_component':selected_rows[0][2]}
             from json import dumps
@@ -111,10 +110,12 @@ def run_analysis(run_analysis_btn, sel_jobs, job_data, selected_model):
                 if model['tags'] == model_tags:
                     logger.debug("Found a matching model {}".format(model))
             # Detect outliers/Run analysis
-            from jobs import detect_outlier_jobs
-            analysis = detect_outlier_jobs([j[0] for j in selected_rows])
+            #from jobs import detect_outlier_jobs
+            from epmt_outliers import detect_outlier_jobs
+            # Need to get the model from epmt and pass it in here
+            analysis = detect_outlier_jobs([j[0] for j in selected_rows], trained_model=selected_model)
             if not str(selected_model) == "None":
-                analysis = analysis + " With Model: " + selected_model
+                analysis = str(analysis) + " With Model: " + selected_model
             return[analysis, True]
         else:
             # Pop Alert dialog
@@ -198,7 +199,7 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
                 return ["Failed creating Reference Model", ref_df.to_dict('records'),
                             edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
             refa = pd.DataFrame(
-                refa, columns=['name', 'date created', 'tags', 'jobs', 'features', 'active'])
+                refa, columns=['id', 'name', 'date created', 'tags', 'jobs', 'features', 'active'])
             refa['jobs'] = refa['jobs'].apply(dumps)
             refa['tags'] = refa['tags'].apply(dumps)
             refa['features'] = refa['features'].apply(dumps)
@@ -299,20 +300,19 @@ def f(job_data, sel_jobs):
             selected_rows = [(str(job_data[i]['job id']),job_data[i]['exp_name'],job_data[i]['exp_component']) for i in sel_jobs]
             logger.info(
                 "Find reference models for each job\nJobs:{}".format([j[0] for j in selected_rows]))
-            logger.debug("Models found {}".format("~model~"))
-            logger.info("Run Model against job")
             # Check for matching models
-            model_tags = {'exp_name':selected_rows[0][1], 'exp_component':selected_rows[0][2]}
+            model_tags = {'exp_component':selected_rows[0][2], 'exp_name':selected_rows[0][1]}
             from json import dumps
             model_tags = dumps(model_tags)
-            import refs
-            ref_df = refs.ref_df
+            from refs import ref_gen
+            ref_df = ref_gen().df
             drdn_options = [{'label': "Run Without Model",
                             'value': "None"}]
             for model in ref_df.to_dict('records'):
-                if model['tags'] == model_tags:
+                logger.debug("{} vs {}".format(dumps(model['tags']), model_tags))
+                if dumps(model['tags']) == model_tags:
                     logger.debug("Found a matching model {}".format(model))
-                    drdn_options.append({'label': model['name'] + " Tags:" + model['tags'] + " Created on:" + str(model['date created']),
+                    drdn_options.append({'label': model['name'] + " Tags:" + dumps(model['tags']) + " Created on:" + str(model['date created']),
                                     'value': model['name']})
                     drdn_value = model['name']
             if len(drdn_options) > 1:
