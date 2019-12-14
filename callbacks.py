@@ -12,11 +12,18 @@ import io
 from datetime import datetime
 import numpy as np
 import pandas as pd
-# Index.py Configures logger debug level
-from logging import getLogger, basicConfig, DEBUG, ERROR, INFO, WARNING
+
+from logging import getLogger
+import epmt_settings as settings
+
+# do NOT do any epmt imports until logging is set up
+# using set_logging, other than import set_logging
 from epmtlib import set_logging
-set_logging(intlvl=2)
 logger = getLogger(__name__)  # you can use other name
+set_logging(settings.verbose if hasattr(settings, 'verbose') else 0, check=True)
+
+
+
 # pd.options.mode.chained_assignment = None
 import refs
 #import jobs

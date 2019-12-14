@@ -3,7 +3,11 @@ import dash_bootstrap_components as dbc
 # Import epmt parent folder
 import sys
 sys.path.append("./..")
-# Index.py Configures logger debug level
+from logging import getLogger
+from epmtlib import set_logging
+set_logging(intlvl=2, check=False)
+logger = getLogger(__name__)  # you can use other name
+logger.propagate = False
 
 external_stylesheets = [ # Remote Styles
                         dbc.themes.BOOTSTRAP,
