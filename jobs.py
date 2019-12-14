@@ -311,6 +311,11 @@ class job_gen:
         sample = eq.get_jobs(fmt='dict', limit=limit, offset=offset)
 
         self.df = pd.DataFrame(sample)
+        self.df = self.df.sort_values(
+                "start",  # Column to sort on
+                ascending = False,  # Boolean eval.
+                inplace=False
+            )
         # Extract the exit code to a column
         exit_codes = [d.get('status')['exit_code'] for d in self.df.info_dict]
         self.df['exit_code'] = exit_codes
