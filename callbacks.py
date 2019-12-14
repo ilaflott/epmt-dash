@@ -112,8 +112,10 @@ def run_analysis(run_analysis_btn, sel_jobs, job_data, selected_model):
             # Detect outliers/Run analysis
             #from jobs import detect_outlier_jobs
             from epmt_outliers import detect_outlier_jobs
-            # Need to get the model from epmt and pass it in here
-            analysis = detect_outlier_jobs([j[0] for j in selected_rows], trained_model=selected_model)
+            from epmt_query import get_refmodels
+            logger.debug("Model Selected is {}".format(selected_model))
+            hackmodel = get_refmodels(name=selected_model)[0]['id']
+            analysis = detect_outlier_jobs([j[0] for j in selected_rows], trained_model=hackmodel)
             if not str(selected_model) == "None":
                 analysis = str(analysis) + " With Model: " + selected_model
             return[analysis, True]
@@ -219,12 +221,12 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
 # Delete Model
     if recentbtn is 'delete_model':
         if sel_refs and len(sel_refs) > 0:
-            selected_refs = [ref_data[i]['name'] for i in sel_refs]
+            selected_refs = [(ref_data[i]['id'],ref_data[i]['name']) for i in sel_refs]
             logger.info("Delete Model {}".format(selected_refs))
             for n in selected_refs:
-                refs.ref_df = ref_df[ref_df.name != n]
-            return [selected_rows, refs.ref_df.to_dict('records'),
-                    edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
+                refs.ref_df = ref_df[ref_df.name != n[1]]
+                from epmt_query import delete_refmodels
+                delete_refmodels(n[0])
         return [selected_rows, ref_df.to_dict('records'),
                 edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
 # Toggle Active Status
