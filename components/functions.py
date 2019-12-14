@@ -81,5 +81,4 @@ def list_of_contrast(length, start=(0,0,0)):
         ((r,g,b),hex) = contrasting_color(colorsys.rgb_to_hsv(start[0],start[1],start[2]))
         l.append(hex)
         start = (r, g, b)
-    print(l)
     return l

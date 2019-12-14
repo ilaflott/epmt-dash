@@ -125,11 +125,14 @@ def run_analysis(run_analysis_btn, sel_jobs, job_data, selected_model):
                 hackmodel = None
             else:
                 hackmodel = get_refmodels(name=selected_model)[0]['id']
-            analysis = detect_outlier_jobs([j[0] for j in selected_rows], trained_model=hackmodel)
-            logger.debug("Analysis returned \n{}".format(analysis))
-            analysis_simplified = "Duration Outliers: " + str(analysis[1]['duration'][1]) +\
-            " CPU Time Outliers: " + str(analysis[1]['cpu_time'][1]) +\
-            " Number of Processes Outliers: " + str(analysis[1]['num_procs'][1])
+            try:
+                analysis = detect_outlier_jobs([j[0] for j in selected_rows], trained_model=hackmodel)
+                analysis_simplified = "Duration Outliers: " + str(analysis[1]['duration'][1]) +\
+                logger.debug("Analysis returned \n{}".format(analysis))
+                " CPU Time Outliers: " + str(analysis[1]['cpu_time'][1]) +\
+                " Number of Processes Outliers: " + str(analysis[1]['num_procs'][1])
+            except RuntimeError as e:
+                return["Analysis Failed {}".format(str(e)), True]
             if not str(selected_model) == "None":
                 logger.info("Analysis with model id:{} {}".format(hackmodel, selected_model))
                 analysis_simplified = str(analysis_simplified) + " With Model: " + selected_model
@@ -519,7 +522,7 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
                         | (alt['job id'].str.contains(search_value))
                         | (alt['exp_component'].str.contains(search_value))
                         | (alt['tags'].str.contains(search_value))]
-        logger.info("Found {} search results on {}".format(int(results.shape[0]),search_value))
+        logger.info("Found {} search results on \"{}\"".format(int(results.shape[0]),search_value))
         alt = results
     except Exception as e:
         logger.error(
