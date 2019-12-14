@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 # Index.py Configures logger debug level
 from logging import getLogger, basicConfig, DEBUG, ERROR, INFO, WARNING
-logger = getLogger(__name__)  # you can use other name
+logger = getLogger("dash_callbacks")  # you can use other name
 # pd.options.mode.chained_assignment = None
 
 import refs
@@ -412,7 +412,6 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
     # Grab df
     job_df = job_gen().df
     import refs
-    logger.debug(refs.ref_df.loc[refs.ref_df['name'] == 'ref0'].active)
     orig = job_df
     alt = orig.copy()
     # Limit by time
@@ -523,10 +522,6 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
                 ascending=sort_by[0]['direction'] == 'asc',  # Boolean eval.
                 inplace=False
             )
-    # #################################################################
-    # Last reduce df down to 1 page view based on requested page and rows per page
-    alt = alt.iloc[page_current *
-                         int(rows_per_page):(page_current + 1) * int(rows_per_page)]
 
     # #################################################################
     # Calculate Comparable jobs and generate custom highlighting
@@ -549,7 +544,14 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
         logger.debug("Not enough jobs to do highlighting Len Jobs = {}".format(len_jobs))
     logger.debug("Custom Highlights: \n{}".format(custom_highlights))
 
+    # #################################################################
+    # Last reduce df down to 1 page view based on requested page and rows per page
+    alt = alt.iloc[page_current *
+                         int(rows_per_page):(page_current + 1) * int(rows_per_page)]
     logger.info("Update_output complete")
+    # #################################################################
+    # #################################################################
+    # #################################################################
     return [
         alt.to_dict('records'),  # Return the table records
         [{"name": i, "id": i} for i in alt.columns] if raw_toggle else [

@@ -2,8 +2,10 @@ FROM python:3.6
 
 USER root
 WORKDIR /home/dash
-ADD . /home/dash
+ADD requirements_short.txt /home/dash
+ADD requirements_epmt.txt /home/dash
 RUN pip install --trusted-host pypi.python.org -r requirements_short.txt
+RUN pip install --trusted-host pypi.python.org -r requirements_epmt.txt
 
 EXPOSE 8050
 ENV NAME World

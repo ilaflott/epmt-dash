@@ -12,7 +12,7 @@ from datetime import date, timedelta
 from logging import getLogger, basicConfig, DEBUG, ERROR, INFO, WARNING
 logger = getLogger(__name__)  # you can use other name
 
-DEFAULT_ROWS_PER_PAGE = 5
+from dash_config import DEFAULT_ROWS_PER_PAGE
 
 ########################Jobs & References ########################
 job_df = job_gen().df
@@ -103,7 +103,7 @@ recent_jobs_page = html.Div([
                         page_action='custom',
                         sort_action='custom',
                         sort_by=[],
-                        # sort_mode='multi', Keeping it simple now
+                        sort_mode='multi', #Keeping it simple now
                         # data=df.head(10).to_dict('records'), # Do not display data initially, callback will handle it
                         # filter_action="native",
                         # style_as_list_view=True,
@@ -144,6 +144,7 @@ recent_jobs_page = html.Div([
                         ],
                         style_data_conditional=[],
                     ),
+                    dbc.Container([
                     dbc.Row([
                         dbc.Alert(
                             children="",
@@ -152,22 +153,7 @@ recent_jobs_page = html.Div([
                             dismissable=True,
                         ),
                     ]),
-                    dbc.Row([
-                        # Selected jobs notification
-                        dbc.Col([
-                            html.Div(style={'inline': 'true'}, children=[
-                                "Available Models: ",
-                                dbc.Col(
-                                    dcc.Dropdown(
-                                        id='model-selector-dropdown',
-                                        options=[
-                                            {'label': "No Model", 'value': "None"}
-                                        ],
-                                        value="None",
-                                        #style={'display': 'block', 'width': '100%'}
-                                    ), width="11")
-                            ])
-                        ]),
+                        dbc.Row([
                         html.Div(id='name-model-div', style={'display': 'none'}, children=[
                             # Containers have nice margins and internal spacing
                             dbc.Container([
@@ -201,7 +187,7 @@ recent_jobs_page = html.Div([
                                 )
                             ], fluid=True),
                         ]),
-                    ]),
+                        ]),
                     dbc.Row([
                         dbc.Col([
                             html.Button(id='run-analysis-btn', children="Run Analysis", n_clicks_timestamp=0,
@@ -227,7 +213,22 @@ recent_jobs_page = html.Div([
                                     minimum_nights=0
                                 ), "(Inclusive Date Selections)"]),
                         ], width='auto'),
+                    ]),
+                    dbc.Row([
+                        # Selected jobs notification
                         dbc.Col([
+                            html.Div(children=[
+                                "Available Models: ",
+                                dbc.Col(
+                                    dcc.Dropdown(
+                                        id='model-selector-dropdown',
+                                        options=[
+                                            {'label': "No Model", 'value': "None"}
+                                        ],
+                                        value="None",
+                                        #style={'display': 'block', 'width': '100%'}
+                                    ), width="11"),
+                                    dbc.Col([
                             dcc.Dropdown(
                                 id='row-count-dropdown',
                                 options=[
@@ -251,9 +252,10 @@ recent_jobs_page = html.Div([
                             job_df.shape[0],
                             " Jobs Total ]"
                         ], width='auto'),
-
-
-                    ],)
+                            ])
+                        ]),
+                        ]),
+                    ])
 
 
                 ], className="subpage"),

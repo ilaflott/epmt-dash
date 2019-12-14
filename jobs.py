@@ -307,14 +307,19 @@ def get_jobs(jobs = [], tags=None, fltr = None, order = None, limit = None, offs
 # Job_gen does data cleanup and conversions for displaying
 class job_gen:
     def __init__(self, limit=60, offset=0):
-        #from epmt_query import get_jobs as get_jobs_epmt
-        sample = get_jobs(limit=limit, offset=offset)
-        self.df = pd.DataFrame(sample)
+        # Add epmt to path
+        import sys
+        sys.path.append("./..")
+        logger.debug(sys.path)
+        
+        import epmt_query as eq
+        sample = eq.get_jobs(fmt='dict', limit=limit, offset=offset)
 
+        self.df = pd.DataFrame(sample)
         # Extract the exit code to a column
         exit_codes = [d.get('status')['exit_code'] for d in self.df.info_dict]
         self.df['exit_code'] = exit_codes
-
+        self.df['Processed'] = 0
         # Extract tags out and merge them in as columns
         # tags = pd.DataFrame.from_dict(self.df['tags'].tolist())
         # self.df = pd.merge(self.df,tags, left_index=True, right_index=True)

@@ -60,12 +60,12 @@ def make_refs(x, name='', jobs=None, tags={}):
                     timedelta(days=n)).strftime(datefmt)
         if not jobs:
             ref_jobs = [joblist[i]
-                        for i in range(randint(1, 3))]  # setup 5-8 jobs per ref
+                        for i in range(randint(1, 1))]  # setup 5-8 jobs per ref
             # 95% Chance of being active
-            ref_active = bool(getrandbits(1) < 0.95)
+            ref_active = False
             features = [featureli[i]
                         for i in range(randint(1, 3))]  # Setup random features
-            jname = 'ref' + str(n) + name
+            jname = 'Sample_Model_' + str(n) + name
             tags = {"exp_name": "ESM0_historical", "exp_component": "ocean_annual_rho2_1x1deg"}
         else:
             # User is building a reference with jobs selected today
@@ -84,7 +84,7 @@ def make_refs(x, name='', jobs=None, tags={}):
 # ref_gen does data cleanup and conversions for displaying reference models
 class ref_gen:
     def __init__(self):
-        references = make_refs(5)
+        references = make_refs(2)
         self.df = pd.DataFrame(references, columns=[
                                'name', 'date created', 'tags', 'jobs', 'features', 'active'])
         # self.df['active'] = np.where(self.df['active'], 'Yes', 'No')

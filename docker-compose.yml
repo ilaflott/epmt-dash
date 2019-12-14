@@ -2,7 +2,7 @@ version: '3.1'
 
 services:
   dash:
-    image: dash:latest
+    image: epmt-interface:latest
     restart: always
     environment:
       ENV PYTHONUNBUFFERED: 0

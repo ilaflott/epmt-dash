@@ -1,3 +1,5 @@
+DEFAULT_ROWS_PER_PAGE = 30
+
 # Job columns in order
 columns_to_print = ['jobid', 'exit_code', 'Processed', 'start', 'end', 'duration', 'usertime', 'systemtime',
                     'cpu_time', 'write_bytes', 'read_bytes', 'tags']
