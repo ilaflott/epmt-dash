@@ -114,11 +114,19 @@ def run_analysis(run_analysis_btn, sel_jobs, job_data, selected_model):
             from epmt_outliers import detect_outlier_jobs
             from epmt_query import get_refmodels
             logger.debug("Model Selected is {}".format(selected_model))
-            hackmodel = get_refmodels(name=selected_model)[0]['id']
+            if selected_model == 'None':
+                hackmodel = None
+            else:
+                hackmodel = get_refmodels(name=selected_model)[0]['id']
             analysis = detect_outlier_jobs([j[0] for j in selected_rows], trained_model=hackmodel)
+            logger.debug("Analysis returned \n{}".format(analysis))
+            analysis_simplified = "Duration Outliers: " + str(analysis[1]['duration'][1]) +\
+            " CPU Time Outliers: " + str(analysis[1]['cpu_time'][1]) +\
+            " Number of Processes Outliers: " + str(analysis[1]['num_procs'][1])
             if not str(selected_model) == "None":
-                analysis = str(analysis) + " With Model: " + selected_model
-            return[analysis, True]
+                logger.info("Analysis with model id:{} {}".format(hackmodel, selected_model))
+                analysis_simplified = str(analysis_simplified) + " With Model: " + selected_model
+            return[analysis_simplified, True]
         else:
             # Pop Alert dialog
             logger.info("Nothing selected")
