@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 # Index.py Configures logger debug level
 from logging import getLogger, basicConfig, DEBUG, ERROR, INFO, WARNING
-logger = getLogger("dash_callbacks")  # you can use other name
+logger = getLogger(__name__)  # you can use other name
 # pd.options.mode.chained_assignment = None
 
 import refs
@@ -193,9 +193,10 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
             from json import dumps
             # Make_refs returns a list of
             from refs import make_refs
-            refa = make_refs(1, name=model_name_input, jobs=[a for a,b,c in selected_rows], tags={"exp_name":n,"exp_component":c})
+            refa = make_refs(name=model_name_input, jobs=[str(a) for a,b,c in selected_rows], tags={"exp_name":n,"exp_component":c})
+            logger.debug("epmt refa {}".format(refa))
             refa = pd.DataFrame(
-                refa, columns=['name', 'date created', 'tags', 'jobs', 'features', 'active'])
+                [refa], columns=['name', 'date created', 'tags', 'jobs', 'features', 'active'])
             refa['jobs'] = refa['jobs'].apply(dumps)
             refa['tags'] = refa['tags'].apply(dumps)
             refa['features'] = refa['features'].apply(dumps)
@@ -309,7 +310,7 @@ def f(job_data, sel_jobs):
             for model in ref_df.to_dict('records'):
                 if model['tags'] == model_tags:
                     logger.debug("Found a matching model {}".format(model))
-                    drdn_options.append({'label': model['name'] + " Tags:" + model['tags'] + " Created on:" + model['date created'],
+                    drdn_options.append({'label': model['name'] + " Tags:" + model['tags'] + " Created on:" + str(model['date created']),
                                     'value': model['name']})
                     drdn_value = model['name']
             if len(drdn_options) > 1:

@@ -41,8 +41,17 @@ def create_refmodel(jobs=[], name=None, tag={}, op_tags=[],
                   'created_at': datetime.datetime(2019, 11, 26, 22, 53, 42, 447548)}
     return create_ref
 
+def make_refs(name='', jobs=None, tags={}):
+    import sys
+    sys.path.append("./..")
+    logger.debug(sys.path)
+    import epmt_query as eq
+    # eq.create_refmodel(jobs=['625133','693118','696085'], name='Sample', tag={'exp_name':'ESM4_historical_D151','exp_component': 'atmos_cmip'})
+    nm = eq.create_refmodel(jobs=jobs, name=name, tag=tags)
+    return [nm['name'], nm['created_at'], nm['tags'], nm['jobs'], 'duration', nm['enabled']]
+
 # Returns a list of model data to be converted into a dataframe
-def make_refs(x, name='', jobs=None, tags={}):
+def _old_make_refs(x, name='', jobs=None, tags={}):
     from random import randint, getrandbits
     from jobs import job_gen
     # Our generated references need to pull jobids and tags from jobs
@@ -80,12 +89,12 @@ def make_refs(x, name='', jobs=None, tags={}):
                      features, ref_active]))                       # Append each ref to refs list
     return refs
 
-# Generate a list of references
+# Generate a list of sample references
 # ref_gen does data cleanup and conversions for displaying reference models
 class ref_gen:
     def __init__(self):
-        references = make_refs(2)
-        self.df = pd.DataFrame(references, columns=[
+        #references = make_refs(2)
+        self.df = pd.DataFrame([], columns=[
                                'name', 'date created', 'tags', 'jobs', 'features', 'active'])
         # self.df['active'] = np.where(self.df['active'], 'Yes', 'No')
         # Reorder
