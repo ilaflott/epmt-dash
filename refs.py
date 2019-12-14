@@ -47,8 +47,12 @@ def make_refs(name='', jobs=None, tags={}):
     logger.debug(sys.path)
     import epmt_query as eq
     # eq.create_refmodel(jobs=['625133','693118','696085'], name='Sample', tag={'exp_name':'ESM4_historical_D151','exp_component': 'atmos_cmip'})
-    nm = eq.create_refmodel(jobs=jobs, name=name, tag=tags)
-    return [nm['name'], nm['created_at'], nm['tags'], nm['jobs'], 'duration', nm['enabled']]
+    try:
+        nm = eq.create_refmodel(jobs=jobs, name=name, tag=tags)
+        return [[nm['name'], nm['created_at'], nm['tags'], nm['jobs'], ['duration', 'cpu_time', 'num_procs'], nm['enabled']]]
+    except Exception as e:
+        logger.error("Create model failed {}".format(e))
+        return None
 
 # Returns a list of model data to be converted into a dataframe
 def _old_make_refs(x, name='', jobs=None, tags={}):

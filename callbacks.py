@@ -194,9 +194,11 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
             # Make_refs returns a list of
             from refs import make_refs
             refa = make_refs(name=model_name_input, jobs=[str(a) for a,b,c in selected_rows], tags={"exp_name":n,"exp_component":c})
-            logger.debug("epmt refa {}".format(refa))
+            if refa is None:
+                return ["Failed creating Reference Model", ref_df.to_dict('records'),
+                            edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
             refa = pd.DataFrame(
-                [refa], columns=['name', 'date created', 'tags', 'jobs', 'features', 'active'])
+                refa, columns=['name', 'date created', 'tags', 'jobs', 'features', 'active'])
             refa['jobs'] = refa['jobs'].apply(dumps)
             refa['tags'] = refa['tags'].apply(dumps)
             refa['features'] = refa['features'].apply(dumps)
