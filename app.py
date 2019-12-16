@@ -6,7 +6,7 @@ sys.path.append("./..")
 from logging import getLogger
 from epmtlib import set_logging
 logger = getLogger(__name__)  # you can use other name
-set_logging(intlvl=1, check=False)
+set_logging(intlvl=3, check=False)
 logger.propagate = False
 
 external_stylesheets = [ # Remote Styles

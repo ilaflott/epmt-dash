@@ -276,7 +276,9 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
             from jobs import job_gen
             job_df = job_gen().df
             # Get Comparable jobs with tags 
-            from jobs import comparable_job_partitions
+            #from jobs import comparable_job_partitions
+            #comparable_jobs = comparable_job_partitions(job_df['job id'].tolist())
+            from epmt_query import comparable_job_partitions
             comparable_jobs = comparable_job_partitions(job_df['job id'].tolist())
             # grab tag and find other jobs
             logger.debug("Tags are: {}".format(ref_data[sel_refs[0]]['tags']))
@@ -554,7 +556,8 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
     # Only attempt if there are jobs to run on
     custom_highlights = []
     if len_jobs>0:
-        from jobs import comparable_job_partitions
+        #from jobs import comparable_job_partitions
+        from epmt_query import comparable_job_partitions
         comparable_jobs = comparable_job_partitions(alt['job id'].tolist())
         # Generate contrasting colors from length of comparable sets
         from components import list_of_contrast
