@@ -267,9 +267,9 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
     if recentbtn is 'edit_model':
         if sel_refs and len(sel_refs) > 0:
             selected_refs = ref_data[sel_refs[0]]
-
             # Hack for selected jobs
             from ast import literal_eval
+            # These ref_jobs_li are the selected jobs in the selected model.jobs
             ref_jobs_li = literal_eval(ref_data[sel_refs[0]]['jobs'])
             logger.debug("evaled jobs are {}".format(ref_jobs_li))
             # Possible Jobs
@@ -277,9 +277,11 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
             job_df = job_gen().df
             # Get Comparable jobs with tags 
             #from jobs import comparable_job_partitions
-            #comparable_jobs = comparable_job_partitions(job_df['job id'].tolist())
             from epmt_query import comparable_job_partitions
+            logger.info("Seeking comparable jobs for {}".format(ref_jobs_li))
+            # Pass in all jobs for now then filter out what we need
             comparable_jobs = comparable_job_partitions(job_df['job id'].tolist())
+            logger.debug("Comparable jobs returns {}".format(comparable_jobs))
             # grab tag and find other jobs
             logger.debug("Tags are: {}".format(ref_data[sel_refs[0]]['tags']))
             from ast import literal_eval
@@ -288,9 +290,10 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
             pos_ref_jobs_li = []
             for n in comparable_jobs:
                 if n[0] == tag_tup:
+                    # Possible Reference jobs list
                     pos_ref_jobs_li = n[1]
-
-            logger.debug("Model:{} Jobs:{}".format(
+            logger.debug("Possible reference jobs {}".format(pos_ref_jobs_li))
+            logger.debug("Model:{} \nJobs:{}".format(
                 selected_refs['name'], ref_jobs_li))
             jobs_drpdn_options = [{'label': i, 'value': i} for i in pos_ref_jobs_li]
             return [selected_rows, refs.ref_df.to_dict('records'), {'display': 'contents'},
@@ -397,11 +400,6 @@ def strfdelta(tdelta, fmt="{hours}:{minutes}:{seconds}"):
     d["minutes"], d["seconds"] = divmod(rem, 60)
     return fmt.format(**d)
 
-
-# Global click counter hack to track button click changes in single instance
-nclick = 0
-
-
 # Recent jobs data table callback
 # inputs:
 #   raw-switch - the toggle for converting datatypes (abbreviated)
@@ -451,9 +449,7 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
             days=1)) & (job_df['start'].map(lambda x: x.date()) <= datetime.strptime(end, "%Y-%m-%d").date())
         logger.debug("Query: (Start:{} End:{})".format(start, end))
         alt = job_df.loc[time_mask]
-    # Here nclick tracks how many times new data is pressed
-    # this is used to update if it has changed
-    global nclick
+
 
     ctx = dash.callback_context
     # logger.info(value)
@@ -506,12 +502,13 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
         alt.rename(columns={'cpu_time': 'cpu_time (HH:MM:SS)',
                             'duration': 'duration (HH:MM:SS)'}, inplace=True)
         # Parse out wanted tag columns
-        tags_df = pd.DataFrame.from_dict(alt['tags'].tolist())
+        new = alt[['job id', 'tags']]
+        b =  new.tags.apply(pd.Series)
         # Only Display Specific tags from dash_config
         from dash_config import tags_to_display
-        tags_df = tags_df[tags_to_display]
+        #tags_df = c[tags_to_display]
         # Merge those changes into the end of the alt.df
-        alt = pd.merge(alt, tags_df, left_index=True, right_index=True)
+        alt = pd.merge(alt, b, left_index=True, right_index=True)
         # Convert tags into a string that can be searched
         alt['tags'] = alt['tags'].apply(dumps)
     # #################################################################
@@ -568,10 +565,11 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
                 custom_highlights.append({'if': {'filter_query': '{exp_component} = "' + n[0][1] + '" && {exp_name} = "' + n[0][0] + '"'},
                                           'backgroundColor': cont_colors[color]})
             else:
-                logger.debug("Not generating a highlight rule for {} not enough matching jobs".format(n))
+                #logger.debug("Not generating a highlight rule for {} not enough matching jobs".format(n))
+                pass
     else:
         logger.debug("Not enough jobs to do highlighting Len Jobs = {}".format(len_jobs))
-    logger.debug("Custom Highlights: \n{}".format(custom_highlights))
+    #logger.debug("Custom Highlights: \n{}".format(custom_highlights))
 
     # #################################################################
     # Last reduce df down to 1 page view based on requested page and rows per page
@@ -584,7 +582,7 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
     return [
         alt.to_dict('records'),  # Return the table records
         [{"name": i, "id": i} for i in alt.columns] if raw_toggle else [
-            {"name": i, "id": i} for i in alt.columns if i is not 'tags'],  # hide tags if raw_toggle false
+            {"name": i, "id": i} for i in alt.columns ],# if i is not 'tags'],  # hide tags if raw_toggle false
         int(rows_per_page),  # Custom page size
         num_pages,  # Custom Page count
         [] if raw_toggle else custom_highlights   # Custom Highlighting on matching job tags
