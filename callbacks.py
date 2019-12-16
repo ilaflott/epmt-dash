@@ -128,9 +128,12 @@ def run_analysis(run_analysis_btn, sel_jobs, job_data, selected_model):
             try:
                 analysis = detect_outlier_jobs([j[0] for j in selected_rows], trained_model=hackmodel)
                 analysis_simplified = "Duration Outliers: " + str(analysis[1]['duration'][1]) +\
-                logger.debug("Analysis returned \n{}".format(analysis))
                 " CPU Time Outliers: " + str(analysis[1]['cpu_time'][1]) +\
                 " Number of Processes Outliers: " + str(analysis[1]['num_procs'][1])
+                if analysis:
+                    logger.debug("Analysis returned \n{}".format(analysis))
+                else:
+                    return["Analysis returned None", True]
             except RuntimeError as e:
                 return["Analysis Failed {}".format(str(e)), True]
             if not str(selected_model) == "None":

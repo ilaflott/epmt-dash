@@ -1,13 +1,10 @@
-FROM python:3.6
+FROM python:3.7.4
 
 USER root
 WORKDIR /home/dash
-ADD requirements_short.txt /home/dash
-ADD requirements_epmt.txt /home/dash
-RUN pip install --trusted-host pypi.python.org -r requirements_short.txt
-RUN pip install --trusted-host pypi.python.org -r requirements_epmt.txt
+ADD requirements.txt requirements.txt.py3 /home/dash/
+RUN pip install --trusted-host pypi.python.org -r requirements.txt -r requirements.txt.py3
 
 EXPOSE 8050
-ENV NAME World
 ENV PYTHONUNBUFFERED 0
 CMD ["python","-u","index.py"]
