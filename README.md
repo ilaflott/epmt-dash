@@ -12,15 +12,25 @@ epmt$ ln -s dash/EPMT_DB_PONY.sqlite EPMT_DB_PONY.sqlite
 
 
 ├── EPMT
+
 │   ├── Dash
+
 │   │   ├── EPMT_DB_PONY.sqlite
+
 │   │   ├── app.py
+
 │   │   ├── index.py
+
 │   │   ├── layout.py
+
 │   │   ├── callbacks.py
+
 │   │   └── ...
+
 │   ├── EPMT_DB_PONY.sqlite (Symlink to dash/EPMT_DB_PONY.sqlite)
+
 │   ├── epmt
+
 │   └── ...
 
 Make and run the dash interface.
