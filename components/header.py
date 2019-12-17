@@ -12,7 +12,7 @@ def Header():
         #get_menu()
     ])
 
-from jobs import get_version
+from ..jobs import get_version
 def Footer():
     # https://gitlab.com/minimal-metrics-llc/epmt/epmt-dash/issues
     return html.Div(["Experiment Performance Management Tool - ", html.Div(id='version',children=[dcc.Link(get_version() + " Issue Tracker",href='https://gitlab.com/minimal-metrics-llc/epmt/epmt-dash/issues')],style={'width': '49%', 'display': 'inline-block'})])

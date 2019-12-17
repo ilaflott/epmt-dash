@@ -2,37 +2,39 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 # see https://community.plot.ly/t/nolayoutexception-on-deployment-of-multi-page-dash-app-example-code/12463/2?u=dcomfort
-from app import server
-from app import app
-from layouts import *
-import callbacks
+from .app import app
+from .layouts import *
+from .callbacks import *
 
-# see https://dash.plot.ly/external-resources to alter header, footer and favicon
-app.index_string = ''' 
-<!DOCTYPE html>
-<html>
-    <head>
-        {%metas%}
-        <title>EPMT Job Display</title>
-        {%favicon%}
-        {%css%}
-    </head>
-    <body>
-        {%app_entry%}
-        <footer>
-            {%config%}
-            {%scripts%}
-            {%renderer%}
-        </footer>
-    </body>
-</html>
-'''
-        #<img src="\\assets\\cc_logo.jpeg" width="120" height="120">
 
-app.layout = html.Div([
-    dcc.Location(id='url', refresh=False),
-    html.Div(id='page-content')
-])
+def init_app():
+    # see https://dash.plot.ly/external-resources to alter header, footer and favicon
+    app.index_string = ''' 
+    <!DOCTYPE html>
+    <html>
+        <head>
+            {%metas%}
+            <title>EPMT Job Display</title>
+            {%favicon%}
+            {%css%}
+        </head>
+        <body>
+            {%app_entry%}
+            <footer>
+                {%config%}
+                {%scripts%}
+                {%renderer%}
+            </footer>
+        </body>
+    </html>
+    '''
+    #<img src="\\assets\\cc_logo.jpeg" width="120" height="120">
+    
+    app.layout = html.Div([
+        dcc.Location(id='url', refresh=False),
+        html.Div(id='page-content')
+    ])
+
 # Update page
 # # # # # # # # #
 
@@ -40,7 +42,7 @@ app.layout = html.Div([
               [Input('url', 'pathname'),
               Input('url', 'href')])
 def display_page(pathname,pfullurl):
-    from app import fullurl
+    from .app import fullurl
     app.fullurl = pfullurl
     if pathname == '' or pathname == '/':
         return recent_jobs_page
@@ -76,4 +78,5 @@ def display_page(pathname,pfullurl):
 #    app.scripts.append_script({"external_url": js})
 
 if __name__ == '__main__':
+    init_app()
     app.run_server(debug=True, host='0.0.0.0')

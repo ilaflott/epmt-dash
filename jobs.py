@@ -331,7 +331,7 @@ class job_gen:
         # Select specific tags for displaying
         # logger.info("Tags{}".format(self.df['tags']))
 
-        from dash_config import columns_to_print
+        from .dash_config import columns_to_print
         self.df = self.df[columns_to_print]
         from json import dumps
         #self.df['tags'] = self.df['tags'].apply(dumps)
