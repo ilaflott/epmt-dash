@@ -17,9 +17,9 @@ import epmt_settings as settings
 
 # do NOT do any epmt imports until logging is set up
 # using set_logging, other than import set_logging
-from epmtlib import set_logging
+# from epmtlib import set_logging
 logger = getLogger(__name__)  # you can use other name
-set_logging(settings.verbose if hasattr(settings, 'verbose') else 0, check=True)
+# set_logging(settings.verbose if hasattr(settings, 'verbose') else 0, check=True)
 
 
 
