@@ -26,7 +26,7 @@ def make_refs(name='', jobs=None, tags={}):
 # Returns a list of model data to be converted into a dataframe
 def _old_make_refs(x, name='', jobs=None, tags={}):
     from random import randint, getrandbits
-    from jobs import job_gen
+    from .jobs import job_gen
     # Our generated references need to pull jobids and tags from jobs
     job_df = job_gen().df
     refs = []

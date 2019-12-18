@@ -630,7 +630,7 @@ layout_sample = html.Div([
 
 
 def layouts(pfullurl):
-    from components import parseurl
+    from .components import parseurl
     # offset = page * DEFAULT_ROWS_PER_PAGE
     q = parseurl(pfullurl)
     # Grab jobid values from query dict
