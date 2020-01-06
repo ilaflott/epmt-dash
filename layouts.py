@@ -1,18 +1,18 @@
-from .refs import ref_df
-from .jobs import job_gen
+from refs import ref_df
+from jobs import job_gen
 import dash_bootstrap_components as dbc
 import dash_daq as daq
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_table
 import dash
-from .components import Header, Footer  # , print_button
+from components import Header, Footer  # , print_button
 from datetime import datetime as dt
 from datetime import date, timedelta
 from logging import getLogger, basicConfig, DEBUG, ERROR, INFO, WARNING
 logger = getLogger(__name__)  # you can use other name
 
-from .dash_config import DEFAULT_ROWS_PER_PAGE
+from dash_config import DEFAULT_ROWS_PER_PAGE
 
 ########################Jobs & References ########################
 job_df = job_gen().df
@@ -630,7 +630,7 @@ layout_sample = html.Div([
 
 
 def layouts(pfullurl):
-    from .components import parseurl
+    from components import parseurl
     # offset = page * DEFAULT_ROWS_PER_PAGE
     q = parseurl(pfullurl)
     # Grab jobid values from query dict

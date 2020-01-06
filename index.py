@@ -2,9 +2,9 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 # see https://community.plot.ly/t/nolayoutexception-on-deployment-of-multi-page-dash-app-example-code/12463/2?u=dcomfort
-from .app import app
-from .layouts import *
-from .callbacks import *
+from app import app
+from layouts import *
+from callbacks import *
 
 
 def init_app():
@@ -42,7 +42,7 @@ def init_app():
               [Input('url', 'pathname'),
               Input('url', 'href')])
 def display_page(pathname,pfullurl):
-    from .app import fullurl
+    from app import fullurl
     app.fullurl = pfullurl
     if pathname == '' or pathname == '/':
         return recent_jobs_page

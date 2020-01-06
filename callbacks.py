@@ -1,8 +1,8 @@
-from .components import convtounit, get_unit, power_labels
-from .layouts import dcc, DEFAULT_ROWS_PER_PAGE
+from components import convtounit, get_unit, power_labels
+from layouts import dcc, DEFAULT_ROWS_PER_PAGE
 import dash
 from dash.dependencies import Input, Output, State
-from .app import app
+from app import app
 import plotly.graph_objs as go
 from plotly import tools
 from datetime import datetime as dt
@@ -24,14 +24,14 @@ logger = getLogger(__name__)  # you can use other name
 
 
 # pd.options.mode.chained_assignment = None
-import ui.refs as refs
+import refs
 #import jobs
 
 @app.callback(dash.dependencies.Output('content', 'data'),
               [dash.dependencies.Input('test', 'children')])
 def display_page(pathname):
     logger.debug("Pathname is {}".format(pathname))
-    from .jobs import job_gen
+    from jobs import job_gen
     joblist = job_gen().df
     df = joblist.df
     return df.to_dict('records')
@@ -46,7 +46,7 @@ def display_page(pathname):
 )
 def test_job_update(saveclick, sel_jobs, ref_data, sel_ref):
     if sel_ref and len(sel_ref) > 0:
-        from .components import recent_button
+        from components import recent_button
         recentbtn = recent_button({'save_model': saveclick})
         if recentbtn == 'save_model':
             #from json import dumps
@@ -56,7 +56,7 @@ def test_job_update(saveclick, sel_jobs, ref_data, sel_ref):
                 "Test side callback sel jobs {} selected ref {}".format(sel_jobs, selected_refs))
             logger.debug("Saving Update with Model:{} Jobs:{}".format(
                 selected_refs['name'], sel_jobs))
-            from .refs import edit_model
+            from refs import edit_model
             edit_model(model_name=selected_refs['name'], new_jobs=sel_jobs)
             #from ast import literal_eval
             #refa = make_refs(name=selected_refs['name'], jobs=sel_jobs, tags=literal_eval(selected_refs['tags']))
@@ -70,7 +70,7 @@ def test_job_update(saveclick, sel_jobs, ref_data, sel_ref):
     [dash.dependencies.State('table-multicol-sorting', 'selected_rows')]
 )
 def open_create_model_div(create_model_btn, close_model_btn,jobs_selected):
-    from .components import recent_button
+    from components import recent_button
     recentbtn = recent_button({'create_model_open_div': create_model_btn,
     'close':close_model_btn})
     if recentbtn == 'create_model_open_div':
@@ -104,7 +104,7 @@ def open_create_model_div(create_model_btn, close_model_btn,jobs_selected):
         dash.dependencies.State('model-selector-dropdown', 'value')
     ])
 def run_analysis(run_analysis_btn, sel_jobs, job_data, selected_model):
-    from .components import recent_button
+    from components import recent_button
     recentbtn = recent_button({'run_analysis': run_analysis_btn})
     if recentbtn is 'run_analysis':
         if sel_jobs:
@@ -116,7 +116,7 @@ def run_analysis(run_analysis_btn, sel_jobs, job_data, selected_model):
             model_tags = {'exp_name':selected_rows[0][1], 'exp_component':selected_rows[0][2]}
             from json import dumps
             model_tags = dumps(model_tags)
-            import ui.refs as refs
+            import refs
             ref_df = refs.ref_df
             for model in ref_df.to_dict('records'):
                 if model['tags'] == model_tags:
@@ -194,10 +194,10 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
     jobs_drpdn_options = [{'label': 'No Jobs', 'value': 'No'}]
     jobs_drpdn_value = 'No'
     logger.debug("Starting update_output for models")
-    from .refs import get_references
+    from refs import get_references
     return_models = get_references().to_dict('records')
     ref_df = refs.ref_df
-    from .components import recent_button
+    from components import recent_button
     recentbtn = recent_button(
         {'save_model': save_model_btn,
          'delete_model': delete_model_btn,
@@ -223,7 +223,7 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
             # Generate new refs for each of selected jobs
             from json import dumps
             # Make_refs returns a list of
-            from .refs import make_refs
+            from refs import make_refs
             refa = make_refs(name=model_name_input, jobs=[str(a) for a,b,c in selected_rows], tags={"exp_name":n,"exp_component":c})
             if refa is None:
                 return ["Failed creating Reference Model", ref_df.to_dict('records'),
@@ -287,7 +287,7 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
             ref_jobs_li = literal_eval(ref_data[sel_refs[0]]['jobs'])
             logger.debug("evaled jobs are {}".format(ref_jobs_li))
             # Possible Jobs
-            from .jobs import job_gen
+            from jobs import job_gen
             job_df = job_gen().df
             # Get Comparable jobs with tags 
             #from jobs import comparable_job_partitions
@@ -354,7 +354,7 @@ def f(job_data, sel_jobs):
             model_tags = {'exp_component':selected_rows[0][2], 'exp_name':selected_rows[0][1]}
             from json import dumps
             # model_tags = dumps(model_tags)
-            from .refs import ref_gen
+            from refs import ref_gen
             ref_df = ref_gen().df
             drdn_options = [{'label': "Run Without Model",
                             'value': "None"}]
@@ -455,12 +455,12 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
     # Debug Context due to this callback being huge
     logger.debug("Callback Context info:\nTriggered:\n{}\nInputs:\n{}\nStates:\n{}".format(
         ctx.triggered, ctx.inputs, ctx.states))
-    from .jobs import job_gen
+    from jobs import job_gen
     logger.debug("Rows requested per page:{}".format(rows_per_page))
     offset = 0
     # Grab df
     job_df = job_gen().df
-    import ui.refs as refs
+    import refs
     orig = job_df
     alt = orig.copy()
     # Limit by time
@@ -532,7 +532,7 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
         new = alt[['job id', 'tags']]
         b =  new.tags.apply(pd.Series)
         # Only Display Specific tags from dash_config
-        from .dash_config import tags_to_display
+        from dash_config import tags_to_display
         #tags_df = c[tags_to_display]
         # Merge those changes into the end of the alt.df
         alt = pd.merge(alt, b, left_index=True, right_index=True)
@@ -586,7 +586,7 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
         from epmt_query import comparable_job_partitions
         comparable_jobs = comparable_job_partitions(alt['job id'].tolist())
         # Generate contrasting colors from length of comparable sets
-        from .components import list_of_contrast
+        from components import list_of_contrast
         cont_colors = list_of_contrast(len(comparable_jobs), start = (200, 200, 120))
         for color, n in enumerate(comparable_jobs, start=0):
             # Only generate a rule if more than one job in rule

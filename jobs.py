@@ -308,7 +308,7 @@ def get_jobs(jobs = [], tags=None, fltr = None, order = None, limit = None, offs
 class job_gen:
     def __init__(self, limit=60, offset=0):
         import epmt_query as eq
-        from .dash_config import columns_to_print
+        from dash_config import columns_to_print
 
         sample = eq.get_jobs(fmt='dict', limit=limit, offset=offset)
         if sample:
