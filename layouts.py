@@ -45,8 +45,8 @@ recent_jobs_page = html.Div([
     ]),
     # These tabs are huge
     # https://community.plot.ly/t/adjusting-height-of-tabs/13136/5
-    dcc.Tabs(id="tabs", children=[
-        dcc.Tab(label='Recent Jobs', children=[
+    dcc.Tabs(id="tabs", value='jobs', children=[
+        dcc.Tab(label='Recent Jobs', value='jobs', children=[
                 dbc.Container([
                     dbc.Row(
                         [
@@ -103,7 +103,7 @@ recent_jobs_page = html.Div([
                         page_action='custom',
                         sort_action='custom',
                         sort_by=[],
-                        sort_mode='multi', #Keeping it simple now
+                        #sort_mode='multi', #Keeping it simple now
                         # data=df.head(10).to_dict('records'), # Do not display data initially, callback will handle it
                         # filter_action="native",
                         # style_as_list_view=True,
@@ -177,7 +177,7 @@ recent_jobs_page = html.Div([
                                         dbc.Col([
                                             # Button for save
                                             html.Button(id='save-newModel-btn',
-                                                        children='Create Model from Selected Jobs', n_clicks_timestamp=0),
+                                                        children='Save Model', n_clicks_timestamp=0),
                                             # Button for close
                                             html.Button(id='create-Model-close-btn', children='Close', n_clicks_timestamp=0)],
                                             width=6,
@@ -195,7 +195,7 @@ recent_jobs_page = html.Div([
                         ], width='auto'),
                         dbc.Col([
                             html.Button(id='create-newModel-btn',
-                                        children="Create Model", n_clicks_timestamp=0),
+                                        children="Create Model from Selected Jobs", n_clicks_timestamp=0),
                         ], width='auto'),
                         dbc.Col([
                             html.Button(id='index-select-all',
@@ -261,7 +261,7 @@ recent_jobs_page = html.Div([
                 ], className="subpage"),
                 ]),
         # Reference model datatable tab
-        dcc.Tab(label='Models', children=[
+        dcc.Tab(label='Models', value='models', children=[
             dbc.Modal(
                 [
                     dbc.ModalHeader("Header"),

@@ -12,12 +12,13 @@ def get_refs():
     return [[nm['id'], nm['name'], nm['created_at'], nm['tags'], nm['jobs'], ['duration', 'cpu_time', 'num_procs'], nm['enabled']] for nm in m]
 
 
-
-def make_refs(name='', jobs=None, tags={}):
+# Allows for the facilitation of turning EPMT_MOCK on and off
+# import EPMT_MOCK as eq
+def make_refs(name='', jobs=None, tags={}, active=True):
     import epmt_query as eq
     # eq.create_refmodel(jobs=['625133','693118','696085'], name='Sample', tag={'exp_name':'ESM4_historical_D151','exp_component': 'atmos_cmip'})
     try:
-        nm = eq.create_refmodel(jobs=jobs, name=name, tag=tags)
+        nm = eq.create_refmodel(jobs=jobs, name=name, tag=tags, enabled=active)
         return [[nm['id'], nm['name'], nm['created_at'], nm['tags'], nm['jobs'], ['duration', 'cpu_time', 'num_procs'], nm['enabled']]]
     except Exception as e:
         logger.error("Create model failed {}".format(e))
@@ -89,5 +90,25 @@ def get_references():
         dumps)  # Dumps stringify's lists
     return ref_df
 
+# Accepts primary key model_name and new jobs
+# Deletes original model then creates new one
+# Returns ID of new model
+def edit_model(model_name, new_jobs, del_original=True):
+    from epmt_query import get_refmodels
+    
+    orig_model = get_refmodels(model_name)[0]
+    mname = orig_model['name']
+    mid = orig_model['id']
+    mtags = orig_model['tags']
+    menabled = orig_model['enabled']
+    mjobs = new_jobs
+
+    if del_original:
+        from epmt_query import delete_refmodels
+        # Silly lookup for id since delete only takes ids
+        delete_refmodels(mid)
+    ret = make_refs(name=mname, jobs=mjobs, tags=mtags,active=menabled)
+    return ret[0][0]
+    
 
 ref_df = get_references()

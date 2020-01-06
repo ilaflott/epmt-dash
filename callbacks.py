@@ -49,30 +49,36 @@ def test_job_update(saveclick, sel_jobs, ref_data, sel_ref):
         from .components import recent_button
         recentbtn = recent_button({'save_model': saveclick})
         if recentbtn == 'save_model':
-            from json import dumps
+            #from json import dumps
             # Get Dropdown Selected
-            logger.debug(
-                "Test side callback sel jobs {} selected ref {}".format(sel_jobs, sel_ref))
             selected_refs = ref_data[sel_ref[0]]
-            logger.debug("Model:{} Jobs:{}".format(
+            logger.debug(
+                "Test side callback sel jobs {} selected ref {}".format(sel_jobs, selected_refs))
+            logger.debug("Saving Update with Model:{} Jobs:{}".format(
                 selected_refs['name'], sel_jobs))
-            # Update DF with new Jobs
-            refs.ref_df.loc[(refs.ref_df.name == selected_refs['name']), 'jobs'] = dumps(
-                sel_jobs)
+            from .refs import edit_model
+            edit_model(model_name=selected_refs['name'], new_jobs=sel_jobs)
+            #from ast import literal_eval
+            #refa = make_refs(name=selected_refs['name'], jobs=sel_jobs, tags=literal_eval(selected_refs['tags']))
             return ""  # return placeholder dataframe has been updated
 
 
 @app.callback(
     dash.dependencies.Output('name-model-div', 'style'),
     [dash.dependencies.Input('create-newModel-btn', 'n_clicks_timestamp'),
-    dash.dependencies.Input('create-Model-close-btn', 'n_clicks_timestamp')]
+    dash.dependencies.Input('create-Model-close-btn', 'n_clicks_timestamp')],
+    [dash.dependencies.State('table-multicol-sorting', 'selected_rows')]
 )
-def open_create_model_div(create_model_btn, close_model_btn):
+def open_create_model_div(create_model_btn, close_model_btn,jobs_selected):
     from .components import recent_button
     recentbtn = recent_button({'create_model_open_div': create_model_btn,
     'close':close_model_btn})
     if recentbtn == 'create_model_open_div':
-        return {'display': 'contents'}
+        if jobs_selected:
+            return {'display': 'contents'}
+        else:
+            logger.info("No jobs are selected, dont open creation pane")
+            return {'display': 'none'}
     elif recentbtn == 'close':
         return {'display': 'none'}
     else:
@@ -171,6 +177,7 @@ def run_analysis(run_analysis_btn, sel_jobs, job_data, selected_model):
         dash.dependencies.Input('toggle-Model-btn', 'n_clicks_timestamp'),
         dash.dependencies.Input('edit-Model-btn', 'n_clicks_timestamp'),
         dash.dependencies.Input('edit-Model-close-btn', 'n_clicks_timestamp'),
+        dash.dependencies.Input('tabs','value')
         # dash.dependencies.Input('edit-Model-save-btn', 'n_clicks_timestamp')
     ],
     [
@@ -180,13 +187,15 @@ def run_analysis(run_analysis_btn, sel_jobs, job_data, selected_model):
         dash.dependencies.State('table-ref-models', 'data'),
         dash.dependencies.State('model-name-input', 'value'),
     ])
-def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model_btn, edit_model_close_btn, sel_jobs, job_data, sel_refs, ref_data, model_name_input):
+def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model_btn, edit_model_close_btn, current_tab, sel_jobs, job_data, sel_refs, ref_data, model_name_input):
     selected_rows = []
     # Default Return Values
     edit_div_display_none = {'display': 'none'}
     jobs_drpdn_options = [{'label': 'No Jobs', 'value': 'No'}]
     jobs_drpdn_value = 'No'
-
+    logger.debug("Starting update_output for models")
+    from .refs import get_references
+    return_models = get_references().to_dict('records')
     ref_df = refs.ref_df
     from .components import recent_button
     recentbtn = recent_button(
@@ -196,7 +205,6 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
          'edit_model': edit_model_btn,
          'close_edit': edit_model_close_btn,
          })
-    logger.debug("--------------------------------------------------------")
     
 # Create model
     if recentbtn is 'save_model':
@@ -234,20 +242,27 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
                 ascending = False,  # Boolean eval.
                 inplace=False
             )
-            return [model_name_input + " model created", refs.ref_df.to_dict('records'), edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
-        return ["", ref_df.to_dict('records'),
+            return [model_name_input + " model created", return_models, edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
+        return ["", return_models,
                 edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
 
 # Delete Model
     if recentbtn is 'delete_model':
         if sel_refs and len(sel_refs) > 0:
-            selected_refs = [(ref_data[i]['id'],ref_data[i]['name']) for i in sel_refs]
+            try:
+                selected_refs = [(ref_data[i]['id'],ref_data[i]['name']) for i in sel_refs]
+            except IndexError as e:
+                logger.warn("Model was selected when they were all removed")
+                return [selected_rows, return_models,
+                        edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
             logger.info("Delete Model {}".format(selected_refs))
             for n in selected_refs:
                 refs.ref_df = ref_df[ref_df.name != n[1]]
                 from epmt_query import delete_refmodels
                 delete_refmodels(n[0])
-        return [selected_rows, ref_df.to_dict('records'),
+            # Update our models since changes were likely made
+            return_models = get_references().to_dict('records')
+        return [selected_rows, return_models,
                 edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
 # Toggle Active Status
     if recentbtn is 'toggle_model':
@@ -260,7 +275,7 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
                             'active'] = ~ref_df[ref_df.name == selected_refs].active
             logger.info(
                 "post-invert active {}".format(refs.ref_df[ref_df.name == selected_refs].active))
-        return [selected_rows, ref_df.to_dict('records'),
+        return [selected_rows, return_models,
                 edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
 # Edit Model
     if recentbtn is 'edit_model':
@@ -295,18 +310,26 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
             logger.debug("Model:{} \nJobs:{}".format(
                 selected_refs['name'], ref_jobs_li))
             jobs_drpdn_options = [{'label': i, 'value': i} for i in pos_ref_jobs_li]
-            return [selected_rows, refs.ref_df.to_dict('records'), {'display': 'contents'},
+            refs.ref_df = refs.ref_df.sort_values(
+                "date created",  # Column to sort on
+                ascending = False,  # Boolean eval.
+                inplace=False
+            )
+            return [selected_rows, return_models, {'display': 'contents'},
                     jobs_drpdn_options, [i for i in ref_jobs_li]]
 # Close edit model
     if recentbtn is 'close_edit':
-        return [selected_rows, refs.ref_df.to_dict('records'),
+        # Update our models since changes were likely made
+        return_models = get_references().to_dict('records')
+        return [selected_rows, return_models,
                 edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
     ref_df = ref_df.sort_values(
                 "date created",  # Column to sort on
                 ascending = False,  # Boolean eval.
                 inplace=False
             )
-    return [selected_rows, ref_df.to_dict('records'),
+    logger.debug("Finished update_output for models table")
+    return [selected_rows, return_models,
             edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
 
 
@@ -442,13 +465,17 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
     alt = orig.copy()
     # Limit by time
     if end:
-        from datetime import datetime, timedelta
-        logger.debug("Comparing df start days ({},...) with job-date-picker {}".format(
-            job_df['start'][0].date(), datetime.strptime(start, "%Y-%m-%d").date()))
-        time_mask = (job_df['start'].map(lambda x: x.date()) > datetime.strptime(start, "%Y-%m-%d").date() - timedelta(
-            days=1)) & (job_df['start'].map(lambda x: x.date()) <= datetime.strptime(end, "%Y-%m-%d").date())
-        logger.debug("Query: (Start:{} End:{})".format(start, end))
-        alt = job_df.loc[time_mask]
+        # Only filter on date if jobs exist
+        if int(alt.shape[0]) > 0:
+            from datetime import datetime, timedelta
+            logger.debug("Comparing df start days ({},...) with job-date-picker {}".format(
+                job_df['start'][0].date(), datetime.strptime(start, "%Y-%m-%d").date()))
+            time_mask = (job_df['start'].map(lambda x: x.date()) > datetime.strptime(start, "%Y-%m-%d").date() - timedelta(
+                days=1)) & (job_df['start'].map(lambda x: x.date()) <= datetime.strptime(end, "%Y-%m-%d").date())
+            logger.debug("Query: (Start:{} End:{})".format(start, end))
+            alt = job_df.loc[time_mask]
+        else:
+            logger.info("No jobs exist, not filtering on date")
 
 
     ctx = dash.callback_context
@@ -510,7 +537,9 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
         # Merge those changes into the end of the alt.df
         alt = pd.merge(alt, b, left_index=True, right_index=True)
         # Convert tags into a string that can be searched
-        alt['tags'] = alt['tags'].apply(dumps)
+        # Only convert tags to string if jobs exist
+        if int(alt.shape[0]) > 0:
+            alt['tags'] = alt['tags'].apply(dumps)
     # #################################################################
     # Run the search
     try:
@@ -573,6 +602,10 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
 
     # #################################################################
     # Last reduce df down to 1 page view based on requested page and rows per page
+    # Check if on second page while searching for less than 2 pages of results
+    if alt.shape[0] < rows_per_page:
+        logger.debug("Reducing page_current to 0 since results are less than rows_per_page")
+        page_current=0
     alt = alt.iloc[page_current *
                          int(rows_per_page):(page_current + 1) * int(rows_per_page)]
     logger.info("Update_output complete")
