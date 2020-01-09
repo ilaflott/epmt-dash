@@ -11,6 +11,7 @@ from datetime import datetime as dt
 from datetime import date, timedelta
 from logging import getLogger, basicConfig, DEBUG, ERROR, INFO, WARNING
 logger = getLogger(__name__)  # you can use other name
+basicConfig(level=DEBUG)
 
 from dash_config import DEFAULT_ROWS_PER_PAGE
 
@@ -218,7 +219,7 @@ recent_jobs_page = html.Div([
                         # Selected jobs notification
                         dbc.Col([
                             html.Div(children=[
-                                "Available Models: ",
+                                "Available test Models: ",
                                 dbc.Col(
                                     dcc.Dropdown(
                                         id='model-selector-dropdown',

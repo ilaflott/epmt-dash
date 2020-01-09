@@ -11,6 +11,9 @@ body {
 	  box-sizing: border-box;
 	  -moz-box-sizing: border-box;
  }
+ #table-multicol-sorting > div.previous-next-container > div > input {
+	 width: fit-content;
+ }
  footer+div {
     margin: 20px;
 	display: flow-root;

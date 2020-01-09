@@ -78,5 +78,8 @@ def display_page(pathname,pfullurl):
 #    app.scripts.append_script({"external_url": js})
 
 if __name__ == '__main__':
+    from logging import getLogger, basicConfig, DEBUG, ERROR, INFO, WARNING
+    logger = getLogger(__name__)  # you can use other name
+    basicConfig(level=DEBUG)
     init_app()
     app.run_server(debug=True, host='0.0.0.0')

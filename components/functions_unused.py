@@ -59,3 +59,43 @@ def _unused_random_job_generator(x):
 
     def reset(self):
         self.__init__()
+
+
+# Returns a list of model data to be converted into a dataframe
+def _old_make_refs(x, name='', jobs=None, tags={}):
+    from random import randint, getrandbits
+    from jobs import job_gen
+    # Our generated references need to pull jobids and tags from jobs
+    job_df = job_gen().df
+    refs = []
+    joblist = job_df['job id'].tolist()
+    featureli = ['duration', 'cpu_time', 'num_procs']
+    datefmt = "%Y-%m-%d"
+    from copy import deepcopy
+    for n in range(x):
+        # If jobs were not passed randomly create some 500 days ago
+        # subsequent jobs will be incrementally sooner
+        from datetime import date, timedelta
+        ref_date = (date.today() - timedelta(days=500) +
+                    timedelta(days=n)).strftime(datefmt)
+        if not jobs:
+            ref_jobs = [joblist[i]
+                        for i in range(randint(1, 1))]  # setup 5-8 jobs per ref
+            # 95% Chance of being active
+            ref_active = False
+            features = [featureli[i]
+                        for i in range(randint(1, 3))]  # Setup random features
+            jname = 'Sample_Model_' + str(n) + name
+            tags = {"exp_name": "ESM0_historical", "exp_component": "ocean_annual_rho2_1x1deg"}
+        else:
+            # User is building a reference with jobs selected today
+            jname = name
+            ref_jobs = jobs
+            today = date.today()
+            # Ref model is being generated now
+            ref_date = today.strftime(datefmt)
+            ref_active = True   # Set active User Friendly
+            features = featureli  # Full Features
+        refs.append(deepcopy([jname, ref_date, tags, ref_jobs,
+                     features, ref_active]))                       # Append each ref to refs list
+    return refs

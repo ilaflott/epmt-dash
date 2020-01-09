@@ -13,15 +13,18 @@ import numpy as np
 import pandas as pd
 
 from logging import getLogger
-import epmt_settings as settings
-
-# do NOT do any epmt imports until logging is set up
-# using set_logging, other than import set_logging
-# from epmtlib import set_logging
 logger = getLogger(__name__)  # you can use other name
-# set_logging(settings.verbose if hasattr(settings, 'verbose') else 0, check=True)
 
-
+#if (__name__ != "__main__"):
+from pathlib import Path
+curdir = Path.cwd().stem
+if (curdir == "ui"):
+    import epmt_query_mock as eq
+    from epmt_query_mock import comparable_job_partitions, get_refmodels, delete_refmodels
+    from epmt_outliers_mock import detect_outlier_jobs
+else:
+    from epmt_query import comparable_job_partitions, get_refmodels, delete_refmodels
+    from epmt_outliers import detect_outlier_jobs
 
 # pd.options.mode.chained_assignment = None
 import refs
@@ -122,9 +125,6 @@ def run_analysis(run_analysis_btn, sel_jobs, job_data, selected_model):
                 if model['tags'] == model_tags:
                     logger.debug("Found a matching model {}".format(model))
             # Detect outliers/Run analysis
-            #from jobs import detect_outlier_jobs
-            from epmt_outliers import detect_outlier_jobs
-            from epmt_query import get_refmodels
             logger.debug("Model Selected is {}".format(selected_model))
             if selected_model == 'None':
                 hackmodel = None
@@ -193,7 +193,7 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
     edit_div_display_none = {'display': 'none'}
     jobs_drpdn_options = [{'label': 'No Jobs', 'value': 'No'}]
     jobs_drpdn_value = 'No'
-    logger.debug("Starting update_output for models")
+    logger.debug("Updating Models table and friends")
     from refs import get_references
     return_models = get_references().to_dict('records')
     ref_df = refs.ref_df
@@ -245,9 +245,8 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
             return [model_name_input + " model created", return_models, edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
         return ["", return_models,
                 edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
-
 # Delete Model
-    if recentbtn is 'delete_model':
+    elif recentbtn is 'delete_model':
         if sel_refs and len(sel_refs) > 0:
             try:
                 selected_refs = [(ref_data[i]['id'],ref_data[i]['name']) for i in sel_refs]
@@ -258,14 +257,13 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
             logger.info("Delete Model {}".format(selected_refs))
             for n in selected_refs:
                 refs.ref_df = ref_df[ref_df.name != n[1]]
-                from epmt_query import delete_refmodels
                 delete_refmodels(n[0])
             # Update our models since changes were likely made
             return_models = get_references().to_dict('records')
         return [selected_rows, return_models,
                 edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
 # Toggle Active Status
-    if recentbtn is 'toggle_model':
+    elif recentbtn is 'toggle_model':
         if sel_refs and len(sel_refs) > 0:
             selected_refs = ref_data[sel_refs[0]]['name']
             logger.info("Toggle model name {} pre-invert active {}".format(
@@ -278,7 +276,7 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
         return [selected_rows, return_models,
                 edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
 # Edit Model
-    if recentbtn is 'edit_model':
+    elif recentbtn is 'edit_model':
         if sel_refs and len(sel_refs) > 0:
             selected_refs = ref_data[sel_refs[0]]
             # Hack for selected jobs
@@ -290,11 +288,9 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
             from jobs import job_gen
             job_df = job_gen().df
             # Get Comparable jobs with tags 
-            #from jobs import comparable_job_partitions
-            from epmt_query import comparable_job_partitions
             logger.info("Seeking comparable jobs for {}".format(ref_jobs_li))
             # Pass in all jobs for now then filter out what we need
-            comparable_jobs = comparable_job_partitions(job_df['job id'].tolist())
+            comparable_jobs = eq.comparable_job_partitions(job_df['job id'].tolist())
             logger.debug("Comparable jobs returns {}".format(comparable_jobs))
             # grab tag and find other jobs
             logger.debug("Tags are: {}".format(ref_data[sel_refs[0]]['tags']))
@@ -318,11 +314,13 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
             return [selected_rows, return_models, {'display': 'contents'},
                     jobs_drpdn_options, [i for i in ref_jobs_li]]
 # Close edit model
-    if recentbtn is 'close_edit':
+    elif recentbtn is 'close_edit':
         # Update our models since changes were likely made
         return_models = get_references().to_dict('records')
         return [selected_rows, return_models,
                 edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
+    else:
+        logger.debug("No button clicked")
     ref_df = ref_df.sort_values(
                 "date created",  # Column to sort on
                 ascending = False,  # Boolean eval.
@@ -582,8 +580,6 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
     # Only attempt if there are jobs to run on
     custom_highlights = []
     if len_jobs>0:
-        #from jobs import comparable_job_partitions
-        from epmt_query import comparable_job_partitions
         comparable_jobs = comparable_job_partitions(alt['job id'].tolist())
         # Generate contrasting colors from length of comparable sets
         from components import list_of_contrast
@@ -603,7 +599,7 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
     # #################################################################
     # Last reduce df down to 1 page view based on requested page and rows per page
     # Check if on second page while searching for less than 2 pages of results
-    if alt.shape[0] < rows_per_page:
+    if alt.shape[0] < int(rows_per_page):
         logger.debug("Reducing page_current to 0 since results are less than rows_per_page")
         page_current=0
     alt = alt.iloc[page_current *
