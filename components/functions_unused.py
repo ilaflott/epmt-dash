@@ -1,3 +1,9 @@
+""" Methods previously used for random job generation
+"""
+# pylint: disable-all
+
+from datetime import date, timedelta
+
 def str_time_prop(start, end, format):
     """Get a time at a proportion of a range of two formatted times.
 
@@ -23,7 +29,7 @@ def random_date(start, end, dfmt):
 # random_date("1/1/1990 1:30 PM UTC", "1/2/1990 4:50 PM UTC", "%m/%d/%Y %I:%M %p %Z", random.random())
 
 
-def _unused_random_job_generator(x):
+def _unused_random_JobGenerator(x):
     # Old tags
     tags = {'atm_res': 'c96l49',
             'ocn_res': '0.5l75',
@@ -34,7 +40,7 @@ def _unused_random_job_generator(x):
     result = []
     for n in range(x):
         jobid = "job-" + str(n)
-        import names
+        from .. import names
         job_name = names.name_gen().name
         Processed = bool(random.getrandbits(1))
         tag = dict(tags) if bool(random.getrandbits(1)) else {'Tags': 'None'}
@@ -64,9 +70,9 @@ def _unused_random_job_generator(x):
 # Returns a list of model data to be converted into a dataframe
 def _old_make_refs(x, name='', jobs=None, tags={}):
     from random import randint, getrandbits
-    from jobs import job_gen
+    from .. import Jobs as j
     # Our generated references need to pull jobids and tags from jobs
-    job_df = job_gen().df
+    job_df = j.JobGen().df
     refs = []
     joblist = job_df['job id'].tolist()
     featureli = ['duration', 'cpu_time', 'num_procs']
@@ -75,7 +81,6 @@ def _old_make_refs(x, name='', jobs=None, tags={}):
     for n in range(x):
         # If jobs were not passed randomly create some 500 days ago
         # subsequent jobs will be incrementally sooner
-        from datetime import date, timedelta
         ref_date = (date.today() - timedelta(days=500) +
                     timedelta(days=n)).strftime(datefmt)
         if not jobs:

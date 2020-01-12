@@ -1,20 +1,21 @@
 import pandas as pd
-import numpy as np
 import datetime
 
-from logging import getLogger, basicConfig, DEBUG, ERROR, INFO, WARNING
-logger = getLogger(__name__)  # you can use other name
+from logging import getLogger, DEBUG, ERROR, INFO, WARNING  # pylint: disable=unused-import
+logger = getLogger(__name__)  # pylint: disable=invalid-name
 
-# if (__name__ != "__main__"):
+# Hack
 from pathlib import Path
-curdir = Path.cwd().stem
-if (curdir == "ui"):
+if Path.cwd().stem == "ui":
     import epmt_query_mock as eq
 else:
     import epmt_query as eq
 
 
 def get_refs():
+    """
+    Returns list of references for displaying in table
+    """
     m = eq.get_refmodels()
     return [[nm['id'], nm['name'], nm['created_at'], nm['tags'], nm['jobs'], ['duration', 'cpu_time', 'num_procs'], nm['enabled']] for nm in m]
 
@@ -28,9 +29,10 @@ def make_refs(name='', jobs=None, tags={}, active=True):
         logger.error("Create model failed {}".format(e))
         return None
 
-# Generate a list of sample references
-# ref_gen does data cleanup and conversions for displaying reference models
+
 class ref_gen:
+    """Generate a list of sample references
+    ref_gen does data cleanup and conversions for displaying reference models"""
     def __init__(self):
         #references = make_refs(2)
         self.df = pd.DataFrame(get_refs(), columns=['id',

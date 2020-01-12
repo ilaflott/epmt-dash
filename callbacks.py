@@ -1,3 +1,5 @@
+# pylint: disable=import-error,logging-format-interpolation
+from pathlib import Path
 from components import convtounit, get_unit, power_labels
 from layouts import dcc, DEFAULT_ROWS_PER_PAGE
 import dash
@@ -8,18 +10,18 @@ from plotly import tools
 from datetime import datetime as dt
 from datetime import date, timedelta
 import io
-from datetime import datetime
 import numpy as np
 import pandas as pd
-
+from json import dumps
 from logging import getLogger
-logger = getLogger(__name__)  # you can use other name
+import refs
+from jobs import JobGen
+from components import recent_button
+logger = getLogger(__name__)  # pylint: disable=invalid-name
+
 
 #if (__name__ != "__main__"):
-from pathlib import Path
-curdir = Path.cwd().stem
-if (curdir == "ui"):
-    import epmt_query_mock as eq
+if Path.cwd().stem == "ui":
     from epmt_query_mock import comparable_job_partitions, get_refmodels, delete_refmodels
     from epmt_outliers_mock import detect_outlier_jobs
 else:
@@ -27,15 +29,17 @@ else:
     from epmt_outliers import detect_outlier_jobs
 
 # pd.options.mode.chained_assignment = None
-import refs
+
 #import jobs
 
 @app.callback(dash.dependencies.Output('content', 'data'),
               [dash.dependencies.Input('test', 'children')])
 def display_page(pathname):
+    """Callback
+    Possibly unused
+    """
     logger.debug("Pathname is {}".format(pathname))
-    from jobs import job_gen
-    joblist = job_gen().df
+    joblist = JobGen().df
     df = joblist.df
     return df.to_dict('records')
 
@@ -48,8 +52,10 @@ def display_page(pathname):
      dash.dependencies.State('table-ref-models', 'selected_rows')]
 )
 def test_job_update(saveclick, sel_jobs, ref_data, sel_ref):
+    """Callback
+    Updates model from selected model & updated jobs list
+    """
     if sel_ref and len(sel_ref) > 0:
-        from components import recent_button
         recentbtn = recent_button({'save_model': saveclick})
         if recentbtn == 'save_model':
             #from json import dumps
@@ -59,8 +65,7 @@ def test_job_update(saveclick, sel_jobs, ref_data, sel_ref):
                 "Test side callback sel jobs {} selected ref {}".format(sel_jobs, selected_refs))
             logger.debug("Saving Update with Model:{} Jobs:{}".format(
                 selected_refs['name'], sel_jobs))
-            from refs import edit_model
-            edit_model(model_name=selected_refs['name'], new_jobs=sel_jobs)
+            refs.edit_model(model_name=selected_refs['name'], new_jobs=sel_jobs)
             #from ast import literal_eval
             #refa = make_refs(name=selected_refs['name'], jobs=sel_jobs, tags=literal_eval(selected_refs['tags']))
             return ""  # return placeholder dataframe has been updated
@@ -72,27 +77,21 @@ def test_job_update(saveclick, sel_jobs, ref_data, sel_ref):
     dash.dependencies.Input('create-Model-close-btn', 'n_clicks_timestamp')],
     [dash.dependencies.State('table-multicol-sorting', 'selected_rows')]
 )
-def open_create_model_div(create_model_btn, close_model_btn,jobs_selected):
-    from components import recent_button
+def open_create_model_div(create_model_btn, close_model_btn, jobs_selected):
+    """Callback
+    Closes div on button click
+    """
     recentbtn = recent_button({'create_model_open_div': create_model_btn,
     'close':close_model_btn})
     if recentbtn == 'create_model_open_div':
         if jobs_selected:
             return {'display': 'contents'}
-        else:
-            logger.info("No jobs are selected, dont open creation pane")
-            return {'display': 'none'}
-    elif recentbtn == 'close':
+        logger.info("No jobs are selected, dont open creation pane")
         return {'display': 'none'}
-    else:
+    if recentbtn == 'close':
         return {'display': 'none'}
+    return {'display': 'none'}
 
-# Output
-#       alert dialog(style,text,visability) (select jobs, analysis running, no model found)
-# Input
-#       Run Analysis button
-# State
-#       selected jobs
 @app.callback(
     [
         dash.dependencies.Output('run-create-alert', 'children'),
@@ -107,19 +106,25 @@ def open_create_model_div(create_model_btn, close_model_btn,jobs_selected):
         dash.dependencies.State('model-selector-dropdown', 'value')
     ])
 def run_analysis(run_analysis_btn, sel_jobs, job_data, selected_model):
-    from components import recent_button
+    """Callback
+    Output
+        alert dialog(style,text,visability) (select jobs, analysis running, no model found)
+    Input
+        Run Analysis button
+    State
+        selected jobs
+    """
     recentbtn = recent_button({'run_analysis': run_analysis_btn})
-    if recentbtn is 'run_analysis':
+    if recentbtn == 'run_analysis':
         if sel_jobs:
             #selected_rows = [str(job_data[i]['job id']) for i in sel_jobs]
-            selected_rows = [(str(job_data[i]['job id']),job_data[i]['exp_name'],job_data[i]['exp_component']) for i in sel_jobs]
+            selected_rows = [(str(job_data[i]['job id']), job_data[i]['exp_name'],
+                              job_data[i]['exp_component']) for i in sel_jobs]
             logger.info(
                 "Find reference models for each job\nJobs:{}".format([j[0] for j in selected_rows]))
             # Check for matching models
             model_tags = {'exp_name':selected_rows[0][1], 'exp_component':selected_rows[0][2]}
-            from json import dumps
             model_tags = dumps(model_tags)
-            import refs
             ref_df = refs.ref_df
             for model in ref_df.to_dict('records'):
                 if model['tags'] == model_tags:
@@ -131,7 +136,8 @@ def run_analysis(run_analysis_btn, sel_jobs, job_data, selected_model):
             else:
                 hackmodel = get_refmodels(name=selected_model)[0]['id']
             try:
-                analysis = detect_outlier_jobs([j[0] for j in selected_rows], trained_model=hackmodel)
+                analysis = detect_outlier_jobs(
+                    [j[0] for j in selected_rows], trained_model=hackmodel)
                 analysis_simplified = "Duration Outliers: " + str(analysis[1]['duration'][1]) +\
                 " CPU Time Outliers: " + str(analysis[1]['cpu_time'][1]) +\
                 " Number of Processes Outliers: " + str(analysis[1]['num_procs'][1])
@@ -139,9 +145,9 @@ def run_analysis(run_analysis_btn, sel_jobs, job_data, selected_model):
                     logger.debug("Analysis returned \n{}".format(analysis))
                 else:
                     return["Analysis returned None", True]
-            except RuntimeError as e:
-                return["Analysis Failed {}".format(str(e)), True]
-            if not str(selected_model) == "None":
+            except RuntimeError as runerr:
+                return["Analysis Failed {}".format(str(runerr)), True]
+            if str(selected_model) != "None":
                 logger.info("Analysis with model id:{} {}".format(hackmodel, selected_model))
                 analysis_simplified = str(analysis_simplified) + " With Model: " + selected_model
             return[analysis_simplified, True]
@@ -151,17 +157,6 @@ def run_analysis(run_analysis_btn, sel_jobs, job_data, selected_model):
             return["Please Select Jobs", True]
     return["", False]
 
-# Callback for reference model table updating
-# Input:
-#   create new model button click
-#   delete model button click
-# State:
-#   recent jobs table selected and data
-# Output:
-#   text area on recent jobs screen
-#   reference model table
-#
-# Output:
 @app.callback(
     [
         dash.dependencies.Output('recent-job-model-status', 'children'),
@@ -177,7 +172,7 @@ def run_analysis(run_analysis_btn, sel_jobs, job_data, selected_model):
         dash.dependencies.Input('toggle-Model-btn', 'n_clicks_timestamp'),
         dash.dependencies.Input('edit-Model-btn', 'n_clicks_timestamp'),
         dash.dependencies.Input('edit-Model-close-btn', 'n_clicks_timestamp'),
-        dash.dependencies.Input('tabs','value')
+        dash.dependencies.Input('tabs', 'value')
         # dash.dependencies.Input('edit-Model-save-btn', 'n_clicks_timestamp')
     ],
     [
@@ -187,17 +182,29 @@ def run_analysis(run_analysis_btn, sel_jobs, job_data, selected_model):
         dash.dependencies.State('table-ref-models', 'data'),
         dash.dependencies.State('model-name-input', 'value'),
     ])
-def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model_btn, edit_model_close_btn, current_tab, sel_jobs, job_data, sel_refs, ref_data, model_name_input):
+def update_output(save_model_btn, delete_model_btn, toggle_model_btn,
+                  edit_model_btn, edit_model_close_btn, current_tab,
+                  sel_jobs, job_data, sel_refs, ref_data, model_name_input):
+    """ Callback
+        Everything to do with editing models
+        Callback for reference model table updating
+    Input:
+          create new model button click
+          delete model button click
+    State:
+          recent jobs table selected and data
+    Output:
+          text area on recent jobs screen
+          reference model table
+    """
     selected_rows = []
     # Default Return Values
     edit_div_display_none = {'display': 'none'}
     jobs_drpdn_options = [{'label': 'No Jobs', 'value': 'No'}]
     jobs_drpdn_value = 'No'
     logger.debug("Updating Models table and friends")
-    from refs import get_references
-    return_models = get_references().to_dict('records')
+    return_models = refs.get_references().to_dict('records')
     ref_df = refs.ref_df
-    from components import recent_button
     recentbtn = recent_button(
         {'save_model': save_model_btn,
          'delete_model': delete_model_btn,
@@ -221,10 +228,8 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
                             edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
             logger.info("Selected jobs {}".format(selected_rows))
             # Generate new refs for each of selected jobs
-            from json import dumps
             # Make_refs returns a list of
-            from refs import make_refs
-            refa = make_refs(name=model_name_input, jobs=[str(a) for a,b,c in selected_rows], tags={"exp_name":n,"exp_component":c})
+            refa = refs.make_refs(name=model_name_input, jobs=[str(a) for a,b,c in selected_rows], tags={"exp_name":n,"exp_component":c})
             if refa is None:
                 return ["Failed creating Reference Model", ref_df.to_dict('records'),
                             edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
@@ -259,7 +264,7 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
                 refs.ref_df = ref_df[ref_df.name != n[1]]
                 delete_refmodels(n[0])
             # Update our models since changes were likely made
-            return_models = get_references().to_dict('records')
+            return_models = refs.get_references().to_dict('records')
         return [selected_rows, return_models,
                 edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
 # Toggle Active Status
@@ -285,12 +290,12 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
             ref_jobs_li = literal_eval(ref_data[sel_refs[0]]['jobs'])
             logger.debug("evaled jobs are {}".format(ref_jobs_li))
             # Possible Jobs
-            from jobs import job_gen
-            job_df = job_gen().df
+            from jobs import JobGen
+            job_df = JobGen().df
             # Get Comparable jobs with tags 
             logger.info("Seeking comparable jobs for {}".format(ref_jobs_li))
             # Pass in all jobs for now then filter out what we need
-            comparable_jobs = eq.comparable_job_partitions(job_df['job id'].tolist())
+            comparable_jobs = comparable_job_partitions(job_df['job id'].tolist())
             logger.debug("Comparable jobs returns {}".format(comparable_jobs))
             # grab tag and find other jobs
             logger.debug("Tags are: {}".format(ref_data[sel_refs[0]]['tags']))
@@ -316,7 +321,7 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
 # Close edit model
     elif recentbtn is 'close_edit':
         # Update our models since changes were likely made
-        return_models = get_references().to_dict('records')
+        return_models = refs.get_references().to_dict('records')
         return [selected_rows, return_models,
                 edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
     else:
@@ -341,9 +346,13 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn, edit_model
         # Input('table-multicol-sorting', '')
     ])
 def f(job_data, sel_jobs):
-    logger.debug("Testing selected jobs {} job data len {}".format(sel_jobs,len(job_data)))
+    """ Callback 
+    Input: job table data & job table selected jobs
+    Output: model selector dropdown options & active value
+    """
     # Disregard selections that are stale
     if sel_jobs and all([k <= len(job_data) for k in sel_jobs]):
+        logger.debug("Testing selected jobs {} job data len {}".format(sel_jobs,len(job_data)))
         try:
             selected_rows = [(str(job_data[i]['job id']),job_data[i]['exp_name'],job_data[i]['exp_component']) for i in sel_jobs]
             logger.info(
@@ -453,23 +462,21 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
     # Debug Context due to this callback being huge
     logger.debug("Callback Context info:\nTriggered:\n{}\nInputs:\n{}\nStates:\n{}".format(
         ctx.triggered, ctx.inputs, ctx.states))
-    from jobs import job_gen
+    from jobs import JobGen
     logger.debug("Rows requested per page:{}".format(rows_per_page))
     offset = 0
     # Grab df
-    job_df = job_gen().df
-    import refs
+    job_df = JobGen().df
     orig = job_df
     alt = orig.copy()
     # Limit by time
     if end:
         # Only filter on date if jobs exist
         if int(alt.shape[0]) > 0:
-            from datetime import datetime, timedelta
             logger.debug("Comparing df start days ({},...) with job-date-picker {}".format(
-                job_df['start'][0].date(), datetime.strptime(start, "%Y-%m-%d").date()))
-            time_mask = (job_df['start'].map(lambda x: x.date()) > datetime.strptime(start, "%Y-%m-%d").date() - timedelta(
-                days=1)) & (job_df['start'].map(lambda x: x.date()) <= datetime.strptime(end, "%Y-%m-%d").date())
+                job_df['start'][0].date(), dt.strptime(start, "%Y-%m-%d").date()))
+            time_mask = (job_df['start'].map(lambda x: x.date()) > dt.strptime(start, "%Y-%m-%d").date() - timedelta(
+                days=1)) & (job_df['start'].map(lambda x: x.date()) <= dt.strptime(end, "%Y-%m-%d").date())
             logger.debug("Query: (Start:{} End:{})".format(start, end))
             alt = job_df.loc[time_mask]
         else:
@@ -579,7 +586,7 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
     # Calculate Comparable jobs and generate custom highlighting
     # Only attempt if there are jobs to run on
     custom_highlights = []
-    if len_jobs>0:
+    if len_jobs > 0:
         comparable_jobs = comparable_job_partitions(alt['job id'].tolist())
         # Generate contrasting colors from length of comparable sets
         from components import list_of_contrast
@@ -601,7 +608,7 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
     # Check if on second page while searching for less than 2 pages of results
     if alt.shape[0] < int(rows_per_page):
         logger.debug("Reducing page_current to 0 since results are less than rows_per_page")
-        page_current=0
+        page_current = 0
     alt = alt.iloc[page_current *
                          int(rows_per_page):(page_current + 1) * int(rows_per_page)]
     logger.info("Update_output complete")
@@ -611,7 +618,7 @@ def update_output(raw_toggle, search_value, end, rows_per_page, page_current, so
     return [
         alt.to_dict('records'),  # Return the table records
         [{"name": i, "id": i} for i in alt.columns] if raw_toggle else [
-            {"name": i, "id": i} for i in alt.columns ],# if i is not 'tags'],  # hide tags if raw_toggle false
+            {"name": i, "id": i} for i in alt.columns],# if i is not 'tags'],  # hide tags if raw_toggle false
         int(rows_per_page),  # Custom page size
         num_pages,  # Custom Page count
         [] if raw_toggle else custom_highlights   # Custom Highlighting on matching job tags
