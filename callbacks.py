@@ -16,6 +16,7 @@ import pandas as pd
 import dash
 from dash.dependencies import Input, Output, State
 
+from dash_config import MOCK_EPMT_API
 import refs
 from components import convtounit, get_unit, power_labels, recent_button, list_of_contrast
 from app import app
@@ -31,12 +32,14 @@ logger = getLogger(__name__)
 
 
 # if (__name__ != "__main__"):
-if Path.cwd().stem == "epmt":
-    from epmt_query import comparable_job_partitions, get_refmodels, delete_refmodels
-    from epmt_outliers import detect_outlier_jobs
-else:
+if MOCK_EPMT_API:
+    logger.info("Using Mock API")
     from epmt_outliers_mock import detect_outlier_jobs
     from epmt_query_mock import comparable_job_partitions, get_refmodels, delete_refmodels
+else:
+    logger.info("Using EPMT API")
+    from epmt_query import comparable_job_partitions, get_refmodels, delete_refmodels
+    from epmt_outliers import detect_outlier_jobs
 
 # pd.options.mode.chained_assignment = None
 
@@ -152,6 +155,7 @@ def run_analysis(run_analysis_btn, sel_jobs, job_data, selected_model):
             try:
                 analysis = detect_outlier_jobs(
                     [j[0] for j in selected_rows], trained_model=hackmodel)
+                logger.debug("Detect_outlier_jobs returned analysis {}".format(analysis))
                 analysis_simplified = "Duration Outliers: " + str(analysis[1]['duration'][1]) +\
                     " CPU Time Outliers: " + str(analysis[1]['cpu_time'][1]) +\
                     " Number of Processes Outliers: " + \
@@ -557,12 +561,10 @@ def update_jobs_table(raw_toggle, search_value, end, rows_per_page, page_current
         }, inplace=True)
 
     # Convert durations
-        alt['duration'] = pd.to_timedelta(alt['duration'], unit='us').apply(
-            lambda x: x*10000).apply(strfdelta)
+        alt['duration'] = pd.to_timedelta(alt['duration'], unit='us').apply(strfdelta)
         alt['duration'] = pd.to_datetime(
             alt['duration'], format="%H:%M:%S").dt.time
-        alt['cpu_time'] = pd.to_timedelta(alt['cpu_time'], unit='us').apply(
-            lambda x: x * 10000).apply(strfdelta)
+        alt['cpu_time'] = pd.to_timedelta(alt['cpu_time'], unit='us').apply(strfdelta)
         alt['cpu_time'] = pd.to_datetime(
             alt['cpu_time'], format="%H:%M:%S").dt.time
         alt.rename(columns={'cpu_time': 'cpu_time (HH:MM:SS)',

@@ -7,15 +7,16 @@ from logging import getLogger
 from json import dumps
 import pandas as pd
 
+from dash_config import MOCK_EPMT_API
+
+if MOCK_EPMT_API:
+    import epmt_query_mock as eq
+else:
+    import epmt_query as eq
+
 # We log how we want
 # pylint: disable=invalid-name, logging-format-interpolation
 logger = getLogger(__name__)  
-
-# Hack
-if Path.cwd().stem == "epmt":
-    import epmt_query as eq
-else:
-    import epmt_query_mock as eq
 
 
 def get_refs():

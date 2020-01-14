@@ -6,14 +6,14 @@ from logging import getLogger
 from pathlib import Path
 import pandas as pd
 import numpy as np
-from dash_config import columns_to_print
+from dash_config import columns_to_print, MOCK_EPMT_API
 logger = getLogger(__name__)  # pylint: disable=invalid-name
 
 # if (__name__ != "__main__"):
-if Path.cwd().stem == "epmt":
-    import epmt_query as eq
-else:
+if MOCK_EPMT_API:
     import epmt_query_mock as eq
+else:
+    import epmt_query as eq
 
 
 class JobGen:

@@ -1,3 +1,11 @@
+"""dash_config.py
+Used to configure aspects of dash gui
+"""
+from os import environ
+
+
+MOCK_EPMT_API = environ.get('MOCK_EPMT', 'False') == 'True'
+
 DEFAULT_ROWS_PER_PAGE = 30
 
 # Job columns in order
