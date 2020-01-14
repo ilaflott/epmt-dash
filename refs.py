@@ -1,15 +1,21 @@
-import pandas as pd
-import datetime
+"""refs.py
+handles reference models
+"""
 
-from logging import getLogger, DEBUG, ERROR, INFO, WARNING  # pylint: disable=unused-import
-logger = getLogger(__name__)  # pylint: disable=invalid-name
+from pathlib import Path
+from logging import getLogger
+from json import dumps
+import pandas as pd
+
+# We log how we want
+# pylint: disable=invalid-name, logging-format-interpolation
+logger = getLogger(__name__)  
 
 # Hack
-from pathlib import Path
-if Path.cwd().stem == "ui":
-    import epmt_query_mock as eq
-else:
+if Path.cwd().stem == "epmt":
     import epmt_query as eq
+else:
+    import epmt_query_mock as eq
 
 
 def get_refs():
@@ -20,7 +26,9 @@ def get_refs():
     return [[nm['id'], nm['name'], nm['created_at'], nm['tags'], nm['jobs'], ['duration', 'cpu_time', 'num_procs'], nm['enabled']] for nm in m]
 
 
-def make_refs(name='', jobs=None, tags={}, active=True):
+def make_refs(name='', jobs=None, tags=None, active=True):
+    """trash, duplicate unnecissary 
+    """
     # eq.create_refmodel(jobs=['625133','693118','696085'], name='Sample', tag={'exp_name':'ESM4_historical_D151','exp_component': 'atmos_cmip'})
     try:
         nm = eq.create_refmodel(jobs=jobs, name=name, tag=tags, enabled=active)
@@ -47,15 +55,14 @@ class ref_gen:
 # formats them
 # returns dataframe
 def get_references():
-    ref_df = ref_gen().df
-    logger.debug("Refs({}):\n{}".format(id(ref_df), ref_df))
+    models = ref_gen().df
+    logger.debug("Refs({}):\n{}".format(id(models), models))
     # Ref model initialization data
-    from json import dumps
-    ref_df['tags'] = ref_df['tags'].apply(dumps)  # Dumps stringify's dictionaries
-    ref_df['jobs'] = ref_df['jobs'].apply(dumps)  # Dumps stringify's lists
-    ref_df['features'] = ref_df['features'].apply(
+    models['tags'] = models['tags'].apply(dumps)  # Dumps stringify's dictionaries
+    models['jobs'] = models['jobs'].apply(dumps)  # Dumps stringify's lists
+    models['features'] = models['features'].apply(
         dumps)  # Dumps stringify's lists
-    return ref_df
+    return models
 
 # Accepts primary key model_name and new jobs
 # Deletes original model then creates new one

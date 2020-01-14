@@ -3,14 +3,13 @@ bootstrap and css are included here
 """
 
 from logging import getLogger
-import dash
 import dash_bootstrap_components as dbc
-# pylint: disable=import-error,invalid-name
+import dash
+
+# We log how we want
+# pylint: disable=invalid-name, logging-format-interpolation
 logger = getLogger(__name__)  # you can use other name
 logger.propagate = False
-
-
-
 
 
 external_stylesheets = [  # Remote Styles
@@ -23,12 +22,13 @@ external_stylesheets = [  # Remote Styles
     "https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css",
 
     # Locally saved /assets/*
-    #"https://codepen.io/bcd/pen/KQrXdb.css", # Bordering & Theming
-    #"https://codepen.io/dmcomfort/pen/JzdzEZ.css", # Data table theming
-    #'https://codepen.io/chriddyp/pen/bWLwgP.css', # Plotly Css
+    # "https://codepen.io/bcd/pen/KQrXdb.css", # Bordering & Theming
+    # "https://codepen.io/dmcomfort/pen/JzdzEZ.css", # Data table theming
+    # 'https://codepen.io/chriddyp/pen/bWLwgP.css', # Plotly Css
 ]
 
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets, url_base_pathname='/')
+app = dash.Dash(
+    __name__, external_stylesheets=external_stylesheets, url_base_pathname='/')
 server = app.server
 app.config.suppress_callback_exceptions = True
 fullurl = ''

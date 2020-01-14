@@ -72,7 +72,7 @@ def _old_make_refs(x, name='', jobs=None, tags={}):
     from random import randint, getrandbits
     from .. import Jobs as j
     # Our generated references need to pull jobids and tags from jobs
-    job_df = j.JobGen().df
+    job_df = j.JobGen().jobs_df
     refs = []
     joblist = job_df['job id'].tolist()
     featureli = ['duration', 'cpu_time', 'num_procs']

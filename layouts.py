@@ -13,7 +13,7 @@ import dash_table
 from dash_config import DEFAULT_ROWS_PER_PAGE
 from refs import ref_df
 from jobs import JobGen
-from components import Header, Footer  # , print_button
+from components import Header, Footer, parseurl
 logger = getLogger(__name__)  # pylint: disable=invalid-name
 basicConfig(level=DEBUG)
 
@@ -98,8 +98,8 @@ recent_jobs_page = html.Div([
                     ]),  # end
                 ], fluid=True),
 
-                # First Data Table
-                html.Div([
+            # First Data Table
+            html.Div([
                     dash_table.DataTable(
                         id='table-multicol-sorting',
                         row_selectable="multi",
@@ -113,7 +113,7 @@ recent_jobs_page = html.Div([
                         # filter_action="native",
                         # style_as_list_view=True,
                         columns=[
-                            {"name": i, "id": i} for i in JobGen().df.columns
+                            {"name": i, "id": i} for i in JobGen().jobs_df.columns
                         ],
                         fixed_rows={'headers': True, 'data': 0},
                         # fixed_columns={ 'headers': True, 'data': 1 },#, Css is not setup for this
@@ -258,7 +258,7 @@ recent_jobs_page = html.Div([
                                     # ','.join([str(n+1) for n in range((job_df.shape[0]//DEFAULT_ROWS_PER_PAGE))]),
                                     dbc.Col([
                                         "[ ",
-                                        JobGen().df.shape[0],
+                                        JobGen().jobs_df.shape[0],
                                         " Jobs Total ]"
                                     ], width='auto'),
                                 ])
@@ -403,8 +403,8 @@ recent_jobs_page = html.Div([
 
 ######################## END index Layout ########################
 
-unproc = JobGen().df.loc[JobGen().df['processing complete']
-                         == "No"].to_dict('records')
+unproc = JobGen().jobs_df.loc[JobGen().jobs_df['processing complete']
+                              == "No"].to_dict('records')
 # logger.info(unproc)
 ######################## START unprocessed Layout ########################
 layout_unprocessed = html.Div([
@@ -425,7 +425,7 @@ layout_unprocessed = html.Div([
             dash_table.DataTable(
                 id='table-multicol-sorting',
                 columns=[
-                    {"name": i, "id": i} for i in sorted(JobGen().df.columns)
+                    {"name": i, "id": i} for i in sorted(JobGen().jobs_df.columns)
                 ],
                 data=unproc
             )
@@ -548,9 +548,9 @@ layout_display = html.Div([
             dash_table.DataTable(
                 id='table-multicol-sorting',
                 columns=[
-                    {"name": i, "id": i} for i in sorted(JobGen().df.columns)
+                    {"name": i, "id": i} for i in sorted(JobGen().jobs_df.columns)
                 ],
-                data=JobGen().df.to_dict('records')
+                data=JobGen().jobs_df.to_dict('records')
             )
         ]),
         # Download Button
@@ -594,9 +594,9 @@ layout_alerts = html.Div([
             dash_table.DataTable(
                 id='table-multicol-sorting',
                 columns=[
-                    {"name": i, "id": i} for i in sorted(JobGen().df.columns)
+                    {"name": i, "id": i} for i in sorted(JobGen().jobs_df.columns)
                 ],
-                data=JobGen().df.to_dict('records')
+                data=JobGen().jobs_df.to_dict('records')
             )
         ]),
         # Download Button
@@ -630,7 +630,7 @@ layout_sample = html.Div([
             dash_table.DataTable(
                 id='custom-table',
                 columns=[
-                    {"name": i, "id": i} for i in sorted(JobGen().df.columns)
+                    {"name": i, "id": i} for i in sorted(JobGen().jobs_df.columns)
                 ],
                 # data=df.to_dict('records')
             )
@@ -640,21 +640,18 @@ layout_sample = html.Div([
 
 
 def layouts(pfullurl):
-    from components import parseurl
     # offset = page * DEFAULT_ROWS_PER_PAGE
     q = parseurl(pfullurl)
     # Grab jobid values from query dict
     page = int(q['page'][0])
     job_df = JobGen(limit=DEFAULT_ROWS_PER_PAGE,
-                    offset=page*DEFAULT_ROWS_PER_PAGE).df
+                    offset=page*DEFAULT_ROWS_PER_PAGE).jobs_df
     jobids = q.get('jobid', None)
     logger.info(jobids)
     if jobids:
-        logger.debug("{}\n{}".format(
-            jobids, job_df.loc[job_df['job id'].isin(jobids)]))
-        tableData = job_df.loc[job_df['job id'].isin(jobids)]
+        table_data = job_df.loc[job_df['job id'].isin(jobids)]
     else:
-        tableData = job_df
+        table_data = job_df
 
     return html.Div([
         html.Div([
@@ -663,10 +660,10 @@ def layouts(pfullurl):
                 dash_table.DataTable(
                     id='custom-table',
                     columns=[
-                        {"name": i, "id": i} for i in sorted(tableData.columns)
+                        {"name": i, "id": i} for i in sorted(table_data.columns)
                     ],
                     sort_action='native',
-                    data=tableData.to_dict('records'),
+                    data=table_data.to_dict('records'),
                     fixed_rows={'headers': True, 'data': 0},
                     # fixed_columns={ 'headers': True, 'data': 1 },#, Css is not setup for this
                     style_table={
