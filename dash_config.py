@@ -2,9 +2,7 @@
 Used to configure aspects of dash gui
 """
 from os import environ
-
-
-MOCK_EPMT_API = environ.get('MOCK_EPMT', 'False') == 'True'
+MOCK_EPMT_API = environ.get('EPMT_GUI_MOCK')
 
 DEFAULT_ROWS_PER_PAGE = 30
 

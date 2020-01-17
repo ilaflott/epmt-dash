@@ -20,6 +20,17 @@ def str_time_prop(start, end, format):
 
     return time.strftime(format, time.localtime(ptime))
 
+# Check if string time has 1 or 2 colons and convert grabbing just time
+def conv_str_time(st):
+    logger.info("Convert to time")
+    import datetime
+    if st.count(':') == 1:
+        return datetime.datetime.strptime(st[1][1],"%H:%M").time()
+    # limit functionality for now
+    #if st.count(':') == 2:
+    #    return datetime.datetime.strptime(st[1][1],"%H:%M:%S").time()
+    else:
+        return None
 
 def random_date(start, end, dfmt):
     return str_time_prop(start, end, dfmt)

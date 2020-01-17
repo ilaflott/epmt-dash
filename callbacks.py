@@ -6,7 +6,6 @@ All the event firing happens here
 
 from datetime import datetime as dt
 from datetime import timedelta
-from pathlib import Path
 from json import dumps
 from ast import literal_eval
 from logging import getLogger
@@ -224,6 +223,10 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn,
     edit_div_display_none = {'display': 'none'}
     jobs_drpdn_options = [{'label': 'No Jobs', 'value': 'No'}]
     jobs_drpdn_value = 'No'
+    ctx = dash.callback_context
+    # Debug Context due to this callback being huge
+    logger.debug("Callback Context info:\nTriggered:\n{}\nInputs:\n{}\nStates:\n{}".format(
+        ctx.triggered, ctx.inputs, ctx.states))
     logger.debug("Updating Models table and friends")
     return_models = refs.get_references().to_dict('records')
     ref_df = refs.ref_df
@@ -233,6 +236,7 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn,
          'toggle_model': toggle_model_btn,
          'edit_model': edit_model_btn,
          'close_edit': edit_model_close_btn,
+         'tabs': ctx.triggered[0]['value'] if ctx.triggered[0]['prop_id']=='tabs.value' else None
          })
 
 # Create model

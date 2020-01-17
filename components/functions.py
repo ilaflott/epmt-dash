@@ -1,18 +1,18 @@
 from datetime import datetime as dt
-from datetime import date, timedelta
-from datetime import datetime
-import plotly.graph_objs as go
-from plotly import tools
-import numpy as np
-import pandas as pd
+from datetime import datetime, timedelta
+from logging import getLogger
 
-from logging import getLogger, basicConfig, DEBUG, ERROR, INFO, WARNING
+#import pandas as pd
+
 logger = getLogger(__name__)  # you can use other name
-pd.options.mode.chained_assignment = None
+#pd.options.mode.chained_assignment = None
 
 
 # Return dictionary query results
 def parseurl(i):
+    """ parseurl
+    Accepts url & returns query parameter
+    """
     logger.info("Given URL {}".format(i))
     # convert url into dictionary
     from urllib.parse import parse_qs, urlparse
@@ -20,9 +20,23 @@ def parseurl(i):
     logger.info("URL2Dict {}".format(res_dict))
     return res_dict
 
-# Takes dictionary button:timestamp
-# Returns most recent
+
+
 def recent_button(btn_dict):
+    """ recent_button
+    Input: dictionary of buttons timestamps
+    If Model tab was clicked:
+     {'button1':0, 'button2':0, 'button3':0, 'tabs':'model'}
+    If Button2 was clicked recently:
+      {'button1':352512, 'button2':952512, 'button3':152512, 'tabs':None}
+    Returns: Recent button clicked or None
+    """
+    # If Tab was clicked return none
+    if btn_dict.get('tabs'):
+        return None
+    else:
+        # Tab was not clicked remove it from dictionary for latter max calculation
+        btn_dict.pop('tabs', None)
     if sum(btn_dict.values()) > 0:
         recent = max(btn_dict, key=lambda key: btn_dict[key])
         logger.debug("Button click {}".format(recent))
@@ -30,21 +44,9 @@ def recent_button(btn_dict):
     return None
 
 
-# Check if string time has 1 or 2 colons and convert grabbing just time
-def conv_str_time(st):
-    logger.info("Convert to time")
-    import datetime
-    if st.count(':') == 1:
-        return datetime.datetime.strptime(st[1][1],"%H:%M").time()
-    # limit functionality for now
-    #if st.count(':') == 2:
-    #    return datetime.datetime.strptime(st[1][1],"%H:%M:%S").time()
-    else:
-        return None
-
-# Get greatest unit from df
 power_labels = {0: '', 1: 'K', 2: 'M', 3: 'G', 4: 'T', 5: 'P'}
 def get_unit(alist):
+    # Get greatest unit from df
     if len(alist) > 0:
         hi = max(alist)
     else:
@@ -62,8 +64,13 @@ def convtounit(val,reqUnit):
 
 import colorsys
 def contrasting_color(color):
+    """contrasting_color
+    This helper function returns a shifted hsv color.
+    Input: color list [h,s,v]
+    Output: (r,g,b), hex of color
+    """
     if not color:
-        return self.first_track_color;
+        return None
 
     # How much to jump in hue:
     jump = .16
@@ -76,6 +83,9 @@ def contrasting_color(color):
 
 
 def list_of_contrast(length, start=(0,0,0)):
+    """ list_of_contrast
+    Returns a list of colors of requested length with requested starting r,g,b value
+    """
     l = []
     for n in range(length):
         ((r,g,b),hex) = contrasting_color(colorsys.rgb_to_hsv(start[0],start[1],start[2]))
