@@ -29,6 +29,8 @@ from refs import ref_gen
 # pylint: disable=invalid-name, logging-format-interpolation
 logger = getLogger(__name__)
 
+# Pylint doesn't understand input callbacks are used to fire the event
+# pylint: disable=unused-argument
 
 # if (__name__ != "__main__"):
 if MOCK_EPMT_API:
@@ -236,7 +238,7 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn,
          'toggle_model': toggle_model_btn,
          'edit_model': edit_model_btn,
          'close_edit': edit_model_close_btn,
-         'tabs': ctx.triggered[0]['value'] if ctx.triggered[0]['prop_id']=='tabs.value' else None
+         'tabs': ctx.triggered[0]['value'] if ctx.triggered[0]['prop_id'] == 'tabs.value' else None
          })
 
 # Create model
@@ -403,7 +405,9 @@ def f(job_data, sel_jobs):
                 if model['tags'] == model_tags:
                     # if dumps(model['tags']) == model_tags:
                     logger.debug("Found a matching model {}".format(model))
-                    drdn_options.append({'label': model['name'] + " Tags:" + dumps(model['tags']) + " Created on:" + str(model['date created']),
+                    drdn_options.append({'label': model['name'] + " Tags:"
+                                                  + dumps(model['tags']) + " Created on:"
+                                                  + str(model['date created']),
                                          'value': model['name']})
                     drdn_value = model['name']
             if len(drdn_options) > 1:
@@ -495,7 +499,6 @@ def strfdelta(tdelta, fmt="{hours}:{minutes}:{seconds}"):
      Input(component_id='row-count-dropdown',
            component_property='value'),  # Requested row limiter
      Input('table-multicol-sorting', "page_current"),  # Page Number - 1
-     # Input('table-multicol-sorting', "page_size"),  # How many rows the table wants to have per page
      Input('table-multicol-sorting', "sort_by")  # What is requested to sort on
      ],
     [State(component_id='jobs-date-picker', component_property='start_date')])
@@ -519,8 +522,10 @@ def update_jobs_table(raw_toggle, search_value, end, rows_per_page, page_current
         if int(alt.shape[0]) > 0:
             logger.debug("Comparing df start days ({},...) with job-date-picker {}".format(
                 job_df['start'][0].date(), dt.strptime(start, "%Y-%m-%d").date()))
-            time_mask = (job_df['start'].map(lambda x: x.date()) > dt.strptime(start, "%Y-%m-%d").date() - timedelta(
-                days=1)) & (job_df['start'].map(lambda x: x.date()) <= dt.strptime(end, "%Y-%m-%d").date())
+            time_mask = (job_df['start'].map(lambda x: x.date())
+                         > dt.strptime(start, "%Y-%m-%d").date() - timedelta(
+                             days=1)) & (job_df['start'].map(lambda x: x.date())
+                                         <= dt.strptime(end, "%Y-%m-%d").date())
             logger.debug("Query: (Start:{} End:{})".format(start, end))
             alt = job_df.loc[time_mask]
         else:
@@ -586,23 +591,23 @@ def update_jobs_table(raw_toggle, search_value, end, rows_per_page, page_current
             alt['tags'] = alt['tags'].apply(dumps)
     # #################################################################
     # Run the search
-    try:
-        if raw_toggle:
-            # Raw search on job id only
-            results = alt[(alt['job id'].str.contains(search_value))
-                          | (alt['tags'].str.contains(search_value))]
-        else:
-            # Search on abbreviated data and tags as columns
-            results = alt[(alt['exp_name'].str.contains(search_value))
-                          | (alt['job id'].str.contains(search_value))
-                          | (alt['exp_component'].str.contains(search_value))
-                          | (alt['tags'].str.contains(search_value))]
-        logger.info("Found {} search results on \"{}\"".format(
-            int(results.shape[0]), search_value))
-        alt = results
-    except Exception as e:
-        logger.error(
-            "Threw exception on query\nexception: ({})".format(e))
+    # todo: Catch these exceptions
+    #try:
+    if raw_toggle:
+        # Raw search on job id only
+        results = alt[(alt['job id'].str.contains(search_value))
+                      | (alt['tags'].str.contains(search_value))]
+    else:
+        # Search on abbreviated data and tags as columns
+        results = alt[(alt['exp_name'].str.contains(search_value))
+                      | (alt['job id'].str.contains(search_value))
+                      | (alt['exp_component'].str.contains(search_value))
+                      | (alt['tags'].str.contains(search_value))]
+    logger.info("Found {} search results on \"{}\"".format(
+        int(results.shape[0]), search_value))
+    alt = results
+    #except:
+    #    logger.error("Threw exception on query")
 
     # Recalculate number of rows after search complete
     len_jobs = int(alt.shape[0])
@@ -633,10 +638,15 @@ def update_jobs_table(raw_toggle, search_value, end, rows_per_page, page_current
         for color, n in enumerate(comparable_jobs, start=0):
             # Only generate a rule if more than one job in rule
             if len(n[1]) > 1:
-                custom_highlights.append({'if': {'filter_query': '{exp_component} = "' + n[0][1] + '" && {exp_name} = "' + n[0][0] + '"'},
+                custom_highlights.append({'if': {'filter_query': '{exp_component} = "'
+                                                                 + n[0][1]
+                                                                 + '" && {exp_name} = "'
+                                                                 + n[0][0]
+                                                                 + '"'},
                                           'backgroundColor': cont_colors[color]})
             else:
-                #logger.debug("Not generating a highlight rule for {} not enough matching jobs".format(n))
+                #logger.debug("Not generating a highlight rule for {} not enough matching
+                # jobs".format(n))
                 pass
     else:
         logger.debug(
@@ -659,7 +669,8 @@ def update_jobs_table(raw_toggle, search_value, end, rows_per_page, page_current
     return [
         alt.to_dict('records'),  # Return the table records
         [{"name": i, "id": i} for i in alt.columns] if raw_toggle else [
-            {"name": i, "id": i} for i in alt.columns],  # if i is not 'tags'],  # hide tags if raw_toggle false
+            # if i is not 'tags'],  # hide tags if raw_toggle false
+            {"name": i, "id": i} for i in alt.columns],
         int(rows_per_page),  # Custom page size
         num_pages,  # Custom Page count
         # Custom Highlighting on matching job tags

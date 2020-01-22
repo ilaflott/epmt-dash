@@ -3,7 +3,6 @@ methods for converting and displaying jobs in dash
 """
 
 from logging import getLogger
-from pathlib import Path
 import pandas as pd
 import numpy as np
 from dash_config import columns_to_print, MOCK_EPMT_API
