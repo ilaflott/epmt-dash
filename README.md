@@ -48,5 +48,24 @@ Make Run mounts container port 8050 to local 8050
 
 Mounts volume parent directory (EPMT) to container /home
 
-Mounds volume current directory (Dash) to container /home/dash
+Mounts volume current directory (Dash) to container /home/dash
 
+Testing:
+
+make targets:
+
+make build-selenium
+
+make selenium-test
+
+make build-chromedriver-service
+
+make start-chromedriver
+
+This appears to be prebuilt chromedriver with selenium:
+
+https://github.com/joyzoursky/docker-python-chromedriver
+
+Quick setup with the above:
+
+https://hub.docker.com/r/joyzoursky/python-chromedriver/
