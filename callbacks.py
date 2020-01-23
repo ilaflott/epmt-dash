@@ -506,7 +506,7 @@ def update_jobs_table(raw_toggle, search_value, end, rows_per_page, page_current
     """update_jobs_table
     This callback updates the jobs table data, columns, pages and styling
     """
-    logger.info("\nUpdate_output started")
+    logger.debug("\nUpdate_output started")
     ctx = dash.callback_context
     # Debug Context due to this callback being huge
     logger.debug("Callback Context info:\nTriggered:\n{}\nInputs:\n{}\nStates:\n{}".format(

@@ -19,8 +19,16 @@ class JobGen:
     """JobGen class:
     holds job dataframe after converting fields to display
     """
-    def __init__(self, limit=60, offset=0):
-        sample = eq.get_jobs(fmt='dict', limit=limit, offset=offset)
+    def __init__(self, jobs=[], limit=60, offset=0):
+        if jobs:
+            logger.debug("Jobs requested {}".format(jobs))
+        sample = None
+        try:
+            sample = eq.get_jobs(jobs=jobs, fmt='dict', limit=limit, offset=offset)
+        except Exception as E:
+            logger.error("Job with ID:\"{}\", Not Found or broken".format(E))
+            
+        
         if sample:
             self.jobs_df = pd.DataFrame(sample)
             self.jobs_df = self.jobs_df.sort_values(
@@ -33,9 +41,16 @@ class JobGen:
                           for d in self.jobs_df.info_dict]
             self.jobs_df['exit_code'] = exit_codes
             self.jobs_df['Processed'] = 0
-            # Extract tags out and merge them in as columns
-            # tags = pd.DataFrame.from_dict(self.jobs_df['tags'].tolist())
-            # self.jobs_df = pd.merge(self.jobs_df,tags, left_index=True, right_index=True)
+            ## Extract tags out and merge them in as columns
+            #tags = pd.DataFrame.from_dict(self.jobs_df['tags'].tolist())
+            #self.jobs_df = pd.merge(self.jobs_df,tags, left_index=True, right_index=True)
+            #self.jobs_df.drop('tags', axis=1)
+            #pd.set_option('display.max_rows', None)
+            #pd.set_option('display.max_columns', None)
+            #pd.set_option('display.width', None)
+            #pd.set_option('display.max_colwidth', -1)
+            #self.jobs_df = self.jobs_df[columns_to_print]
+            #logger.debug("df {}".format(self.jobs_df))
 
             # Convert Job date into a start_day datetime date
             self.jobs_df['start_day'] = self.jobs_df.start.map(lambda x: x.date())

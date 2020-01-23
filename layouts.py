@@ -5,6 +5,7 @@ These are the dash templates for each page that will be displayed
 # pylint: disable=import-error
 from logging import getLogger, basicConfig, DEBUG
 from datetime import datetime as dt
+from json import dumps
 import dash_bootstrap_components as dbc
 import dash_daq as daq
 import dash_core_components as dcc
@@ -15,7 +16,7 @@ from refs import ref_df
 from jobs import JobGen
 from components import Header, Footer, parseurl
 logger = getLogger(__name__)  # pylint: disable=invalid-name
-basicConfig(level=DEBUG)
+#basicConfig(level=DEBUG)
 
 
 ########################Jobs & References ########################
@@ -643,15 +644,15 @@ def layouts(pfullurl):
     # offset = page * DEFAULT_ROWS_PER_PAGE
     q = parseurl(pfullurl)
     # Grab jobid values from query dict
-    page = int(q['page'][0])
-    job_df = JobGen(limit=DEFAULT_ROWS_PER_PAGE,
-                    offset=page*DEFAULT_ROWS_PER_PAGE).jobs_df
+    page = q['jobid'][:]
+    job_df = JobGen(jobs=page).jobs_df # , limit=DEFAULT_ROWS_PER_PAGE, offset=page*DEFAULT_ROWS_PER_PAGE
     jobids = q.get('jobid', None)
-    logger.info(jobids)
+    table_data = job_df
     if jobids:
-        table_data = job_df.loc[job_df['job id'].isin(jobids)]
-    else:
-        table_data = job_df
+        if job_df['job id'].isin(jobids).any():
+            logger.debug("We have that job")
+            table_data = job_df.loc[job_df['job id'].isin(jobids)]
+            table_data['tags'] = table_data['tags'].apply(dumps)
 
     return html.Div([
         html.Div([

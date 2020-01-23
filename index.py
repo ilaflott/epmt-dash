@@ -1,4 +1,8 @@
-"""Configure the Dash server and load the layout"""
+"""index.py
+Configure the Dash server and load the layout
+
+This file loads the initial layout as well as handles custom url query page delivery.
+"""
 
 import dash_core_components as dcc
 import dash_html_components as html
@@ -59,7 +63,7 @@ def display_page(pathname, pfullurl):
         return lay.layout_alerts
     elif pathname == '/refs/':
         return lay.layout_references
-    elif pathname == '/table/':
+    elif pathname == '/jobs':
         return lay.layouts(pfullurl)
     else:
         return lay.noPage

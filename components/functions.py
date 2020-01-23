@@ -21,6 +21,8 @@ def parseurl(i):
     logger.info("Given URL {}".format(i))
     # convert url into dictionary
     res_dict = parse_qs(urlparse(i).query)
+    if ',' in res_dict['jobid'][0]:
+        res_dict['jobid'] = res_dict['jobid'][0].split(',')
     logger.info("URL2Dict {}".format(res_dict))
     return res_dict
 
