@@ -679,7 +679,22 @@ def update_jobs_table(raw_toggle, search_value, end, rows_per_page, page_current
 
 ######################## /Index Callbacks ########################
 
-######################## Create Ref Callback ########################
-
-
+######################## graph Callback ########################
+@app.callback(
+    dash.dependencies.Output('chart', 'figure'),
+    [dash.dependencies.Input('test', 'children')]
+)
+def display_graph():
+    from functions import durList
+    newData, exenames, traceList = durList('856164',0,1000000,None)
+    logger.info(newData)
+    return {
+            'data': [
+                {'x': [1, 2, 3], 'y': [4, 1, 2], 'type': 'bar', 'name': 'SF'},
+                {'x': [1, 2, 3], 'y': [2, 4, 5], 'type': 'bar', 'name': u'Montréal'},
+            ],
+            'layout': {
+                'title': 'Dash Data Visualization'
+            }
+        }
 ######################## /Create Ref Callbacks ########################

@@ -65,6 +65,8 @@ def display_page(pathname, pfullurl):
         return lay.layout_references
     elif pathname == '/jobs':
         return lay.layouts(pfullurl)
+    elif pathname == '/graph':
+        return lay.graphit(pfullurl)
     else:
         return lay.noPage
 

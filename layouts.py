@@ -691,6 +691,65 @@ def layouts(pfullurl):
         ], className="subpage")
     ], className="page")
 
+def graphit(pfullurl):
+    # offset = page * DEFAULT_ROWS_PER_PAGE
+    q = parseurl(pfullurl)
+    # Grab jobid values from query dict
+    page = q['jobid'][:]
+    job_df = JobGen(jobs=page).jobs_df # , limit=DEFAULT_ROWS_PER_PAGE, offset=page*DEFAULT_ROWS_PER_PAGE
+    jobids = q.get('jobid', None)
+    table_data = job_df
+    if jobids:
+        if job_df['job id'].isin(jobids).any():
+            logger.debug("We have that job")
+            table_data = job_df.loc[job_df['job id'].isin(jobids)]
+            table_data['tags'] = table_data['tags'].apply(dumps)
+    from functions import durList, separateDataBy
+    newData, exenames, traceList = durList(jobids[0],0,1000000,None)
+    outputData = separateDataBy(newData, 'exename')  # exename or option from traceList
+    return html.Div([
+        html.Div([
+            # dcc.Location(id='url', refresh=False),
+            html.Div([
+                dcc.Graph(figure={
+            'data': outputData,
+            'layout': {
+                'title': 'Job {}'.format(jobids)
+            }
+        } ,id='chart'),
+                dash_table.DataTable(
+                    id='custom-table',
+                    columns=[
+                        {"name": i, "id": i} for i in sorted(table_data.columns)
+                    ],
+                    sort_action='native',
+                    data=table_data.to_dict('records'),
+                    fixed_rows={'headers': True, 'data': 0},
+                    # fixed_columns={ 'headers': True, 'data': 1 },#, Css is not setup for this
+                    style_table={
+                        'padding': '5px',
+                        'height': '300px',
+                        'font-size': '14px'
+                    },
+                    style_header={
+                        'font-weight': 'bold',
+                        'padding': '5px',
+                        'whiteSpace': 'normal',
+                        # 'overflow': 'visible',
+                        # 'font-size':'14px',
+                    },
+                    style_cell={
+                        'font-family': 'sans-serif',
+                        'overflow': 'hidden',
+                        'minWidth': '100px',
+                        # 'font-size':'14px',
+                        # 'textOverflow': 'ellipsis',
+                    },
+                ),
+            ])
+        ], className="subpage")
+    ], className="page")
+
 ######################## END table Layout ########################
 
 

@@ -6,7 +6,8 @@ from logging import getLogger
 from urllib.parse import parse_qs, urlparse
 from math import log
 from colorsys import rgb_to_hsv, hsv_to_rgb
-
+import time
+from epmt_query import get_procs
 # We log how we want
 # pylint: disable=invalid-name, logging-format-interpolation
 logger = getLogger(__name__)  # you can use other name
@@ -104,3 +105,68 @@ def list_of_contrast(length, start=(0, 0, 0)):
         l.append(hex)
         start = (r, g, b)
     return l
+
+def durList(jid, minDur, maxDur, exes):
+    """Takes jobid, and limiting paramaters for query"""
+    print("Building data Dict for", jid)
+    print("Querying DB...")
+    start = time.time()
+    # TODO
+    logger.info("Limiting procs to 15k")
+    procList = get_procs(jid, limit=15000) #, fltr=lambda p: p.duration > minDur and maxDur > p.duration, order='desc(p.exclusive_cpu_time)', fmt='dict')
+    end = time.time()
+    print("Took",(end - start))
+    #print("Sorting and Filtering ",len(procList))
+    #procList = procList[0::density]
+    #print("After ", len(procList))
+    # print("loop:",tuple(i for i in options))
+    # x value is start time, y variable index on options
+    exenames = list(set([k['exename'] for k in procList]))
+    opnames = [list(k['tags'].keys() if k['tags'] is not None else "") for k in procList][0]
+    traceList = [{'label': 'Executable Name', 'value': 'exename'},
+                 {'label': 'Job', 'value': 'job'},
+                 {'label': 'Host', 'value': 'host'},
+                 {'label': 'Exit Code', 'value': 'exitcode'}]
+    for n in opnames:
+        traceList.append({'label': n.capitalize(), 'value': "tag-" + n})
+    exenames.sort(key=str.lower)
+    if(exes):  # Leaves alot of empty dicts, dropdown seems to ignore them
+        filteredData = []
+        for x in procList:
+            if x['exename'] in exes:
+                filteredData.append(x)
+        # old xyData = [{key:val for key, val in e.items() if val[1] in exes} for e in procList]
+        procList = filteredData
+    return procList, exenames, traceList
+
+
+def separateDataBy(data, graphStyle="exename", pointText=("path", "exe", "args"), ):
+    """Break query results into separate traces"""
+    from collections import defaultdict
+    outputDict = defaultdict(list)
+    #print("graphstyle", graphStyle)
+    for entry in data:
+        if (graphStyle[:4] == "tag-"):
+            # Works but dirty
+            # outputDict[sum(entry[graphStyle].items(),())].append([entry])
+            outputDict[entry['tags'][graphStyle[4:]]].append([entry])
+        else:
+            outputDict[entry[graphStyle]].append([entry])
+        #print([sublist[0]['start'] for sublist in outputDict['dash']])
+    hoverwidth = 20
+    output = [{  # 'x': list(range(1, 11)), 'y': list(range(1, 11)),
+              'mode': 'markers',
+              'x': [sublist[0]['start'] for sublist in outputDict[n]],
+              'y': [sublist[0]['duration'] for sublist in outputDict[n]],
+              'text' if (True) else None: [[sublist[0]["exename"],sublist[0]["args"],sublist[0]["path"]] for sublist in outputDict[n]],
+              'hoverinfo':"text",
+              'name': n,
+              'hovertemplate': "Path: %{text[2]}<br>" +
+                                "Args: <br>%{text[1]}"
+              #'textposition': 'top center'
+              } for n in outputDict.keys()]
+    #print(output)
+    #
+    #textwrap.wrap("Path: %{text[2]}<br>" + "Args: <br>%{text[1]}", hoverwidth)
+    # print("args: {0}".format("<br>".join(textwrap.wrap(longstring,hoverwidth))))
+    return output
