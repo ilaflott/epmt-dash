@@ -714,7 +714,10 @@ def graphit(pfullurl):
                 dcc.Graph(figure={
             'data': outputData,
             'layout': {
-                'title': 'Job {}'.format(jobids)
+                'title': 'Job {}'.format(jobids),
+                'yaxis': {
+                    'type': 'log'
+                }
             }
         } ,id='chart'),
                 dash_table.DataTable(
