@@ -714,7 +714,7 @@ def graphit(pfullurl):
                 dcc.Graph(figure={
             'data': outputData,
             'layout': {
-                'title': 'Job {}'.format(jobids),
+                'title': 'Job {}'.format(jobids[0]),
                 'yaxis': {
                     'type': 'log'
                 }

@@ -112,7 +112,7 @@ def durList(jid, minDur, maxDur, exes):
     print("Querying DB...")
     start = time.time()
     # TODO
-    logger.info("Limiting procs to 15k")
+    logger.warning("Limiting procs to 15k")
     procList = get_procs(jid, limit=15000) #, fltr=lambda p: p.duration > minDur and maxDur > p.duration, order='desc(p.exclusive_cpu_time)', fmt='dict')
     end = time.time()
     print("Took",(end - start))
