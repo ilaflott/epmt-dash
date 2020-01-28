@@ -698,6 +698,10 @@ def graphit(pfullurl):
     page = q['jobid'][:]
     job_df = JobGen(jobs=page).jobs_df # , limit=DEFAULT_ROWS_PER_PAGE, offset=page*DEFAULT_ROWS_PER_PAGE
     jobids = q.get('jobid', None)
+    group_by = q.get('groupby', 'tag-op')[0]
+    exe_query = q.get('exes', None)
+    logger.debug("groupby: {}".format(group_by))
+    logger.debug("exe_query: {}".format(exe_query))
     table_data = job_df
     if jobids:
         if job_df['job id'].isin(jobids).any():
@@ -705,8 +709,8 @@ def graphit(pfullurl):
             table_data = job_df.loc[job_df['job id'].isin(jobids)]
             table_data['tags'] = table_data['tags'].apply(dumps)
     from functions import durList, separateDataBy
-    newData, exenames, traceList = durList(jobids[0],0,1000000,None)
-    outputData = separateDataBy(newData, 'exename')  # exename or option from traceList
+    newData, exenames, traceList = durList(jobids[0],0,1000000,exe_query)
+    outputData = separateDataBy(newData, group_by)  # exename or option from traceList
     return html.Div([
         html.Div([
             # dcc.Location(id='url', refresh=False),
@@ -714,7 +718,7 @@ def graphit(pfullurl):
                 dcc.Graph(figure={
             'data': outputData,
             'layout': {
-                'title': 'Job {}'.format(jobids[0]),
+                'title': 'Job {}'.format(jobids[0] if len(jobids) < 2 else ', '.join(jobids)),
                 'yaxis': {
                     'type': 'log'
                 }

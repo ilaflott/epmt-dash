@@ -22,8 +22,9 @@ def parseurl(i):
     logger.info("Given URL {}".format(i))
     # convert url into dictionary
     res_dict = parse_qs(urlparse(i).query)
-    if ',' in res_dict['jobid'][0]:
-        res_dict['jobid'] = res_dict['jobid'][0].split(',')
+    for field in res_dict.keys():
+        if ',' in res_dict[field][0]:
+            res_dict[field] = res_dict[field][0].split(',')
     logger.info("URL2Dict {}".format(res_dict))
     return res_dict
 
@@ -112,8 +113,9 @@ def durList(jid, minDur, maxDur, exes):
     print("Querying DB...")
     start = time.time()
     # TODO
-    logger.warning("Limiting procs to 15k")
-    procList = get_procs(jid, limit=15000) #, fltr=lambda p: p.duration > minDur and maxDur > p.duration, order='desc(p.exclusive_cpu_time)', fmt='dict')
+    proc_limit = 15000
+    logger.warning("Limiting procs to {}".format(proc_limit))
+    procList = get_procs(jid, limit=proc_limit) #, fltr=lambda p: p.duration > minDur and maxDur > p.duration, order='desc(p.exclusive_cpu_time)', fmt='dict')
     end = time.time()
     print("Took",(end - start))
     #print("Sorting and Filtering ",len(procList))
@@ -122,7 +124,7 @@ def durList(jid, minDur, maxDur, exes):
     # print("loop:",tuple(i for i in options))
     # x value is start time, y variable index on options
     exenames = list(set([k['exename'] for k in procList]))
-    opnames = [list(k['tags'].keys() if k['tags'] is not None else "") for k in procList][0]
+    opnames = set(k['tags'].get('op','no-tag') for k in procList)
     traceList = [{'label': 'Executable Name', 'value': 'exename'},
                  {'label': 'Job', 'value': 'job'},
                  {'label': 'Host', 'value': 'host'},
@@ -149,7 +151,8 @@ def separateDataBy(data, graphStyle="exename", pointText=("path", "exe", "args")
         if (graphStyle[:4] == "tag-"):
             # Works but dirty
             # outputDict[sum(entry[graphStyle].items(),())].append([entry])
-            outputDict[entry['tags'][graphStyle[4:]]].append([entry])
+            if entry['tags'].get('op',None):
+                outputDict[entry['tags'][graphStyle[4:]]].append([entry])
         else:
             outputDict[entry[graphStyle]].append([entry])
         #print([sublist[0]['start'] for sublist in outputDict['dash']])
@@ -159,10 +162,11 @@ def separateDataBy(data, graphStyle="exename", pointText=("path", "exe", "args")
               'x': [sublist[0]['start'] for sublist in outputDict[n]],
               'y': [sublist[0]['duration'] for sublist in outputDict[n]],
               'text' if (True) else None: [[sublist[0]["exename"],sublist[0]["args"],sublist[0]["path"]] for sublist in outputDict[n]],
-              'hoverinfo':"text",
+              #'hoverinfo':"text",
+              'hovermode':False,
               'name': n,
-              'hovertemplate': "Path: %{text[2]}<br>" +
-                                "Args: <br>%{text[1]}"
+              #'hovertemplate': "Path: %{text[2]}<br>" +
+              #                  "Args: <br>%{text[1]}"
               #'textposition': 'top center'
               } for n in outputDict.keys()]
     #print(output)
