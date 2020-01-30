@@ -7,21 +7,37 @@ from urllib.parse import parse_qs, urlparse
 from math import log
 from colorsys import rgb_to_hsv, hsv_to_rgb
 import time
-from epmt_query import get_procs
+from dash_config import MOCK_EPMT_API
+
+
 # We log how we want
 # pylint: disable=invalid-name, logging-format-interpolation
 logger = getLogger(__name__)  # you can use other name
 #pd.options.mode.chained_assignment = None
 
+if MOCK_EPMT_API:
+    logger.info("Using Mock API")
+    # TODO:
+    #from epmt_query_mock import get_procs 
+else:
+    logger.info("Using EPMT API")
+    from epmt_query import get_procs
+
 
 # Return dictionary query results
 def parseurl(i):
-    """ parseurl
-    Accepts url & returns query parameter
+    """ 
+    This Function uses url lib to parse a query then
+    checks each of the query keys values for commas and converts
+    those values into lists.
+    Accepts url & returns query dictionary.
     """
     logger.info("Given URL {}".format(i))
     # convert url into dictionary
     res_dict = parse_qs(urlparse(i).query)
+    # Parse query key values, values for commas
+    # TODO: A better method may be encoding or repeating the key
+    # https://stackoverflow.com/a/50537278
     for field in res_dict.keys():
         if ',' in res_dict[field][0]:
             res_dict[field] = res_dict[field][0].split(',')
@@ -31,7 +47,9 @@ def parseurl(i):
 
 
 def recent_button(btn_dict):
-    """ recent_button
+    """ 
+    This function accepts a dictionary of buttons, tabs and timestamps
+     and returns the most recent one clicked.
     Input: dictionary of buttons timestamps
     If Model tab was clicked:
      {'button1':0, 'button2':0, 'button3':0, 'tabs':'model'}
@@ -54,9 +72,12 @@ def recent_button(btn_dict):
 
 
 power_labels = {0: '', 1: 'K', 2: 'M', 3: 'G', 4: 'T', 5: 'P'}
+
 def get_unit(alist):
     """
+
     Get greatest unit from df alist
+    
     """
     if len(alist) > 0:
         hi = max(alist)
@@ -68,9 +89,12 @@ def get_unit(alist):
 
 def convtounit(val, reqUnit):
     """
+
+    This function converts a given byte to requested unit.
     Helper function accepts a value & a unit
     Input: bytes, power_label unit
-    Output: Value converted
+    Output: Value converted without label.
+    
     """
     # Letter to Unit reverse search
     unitp = list(power_labels.keys())[list(power_labels.values()).index(reqUnit)]
@@ -78,10 +102,17 @@ def convtounit(val, reqUnit):
 
 
 def contrasting_color(color):
-    """contrasting_color
-    This helper function returns a shifted hsv color.
+    """
+
+    This helper function returns a shifted hsv color 
+    and matching hex value for convience.
+
     Input: color list [h,s,v]
     Output: (r,g,b), hex of color
+    
+    Example:
+    ((r, g, b), hex) = contrasting_color(rgb_to_hsv(50, 100, 200))
+
     """
     if not color:
         return None
@@ -93,12 +124,14 @@ def contrasting_color(color):
                            color[2])
     hexout = '#%02x%02x%02x' % (int(r), int(g), int(b))
     return ((r, g, b), hexout)
-((r, g, b), hex) = contrasting_color(rgb_to_hsv(50, 100, 200))
 
 
 def list_of_contrast(length, start=(0, 0, 0)):
-    """ list_of_contrast
-    Returns a list of colors of requested length with requested starting r,g,b value
+    """
+    
+    Returns a list of colors of requested length
+    with requested starting r,g,b tuple.
+    
     """
     l = []
     for _ in range(length):
@@ -108,12 +141,22 @@ def list_of_contrast(length, start=(0, 0, 0)):
     return l
 
 def durList(jid, minDur, maxDur, exes):
-    """Takes jobid, and limiting paramaters for query"""
+    """
+
+    This Function will convert jobid's into traces for graphing.
+    Takes jobid, and limiting paramaters for query
+    
+    minDur & maxDur will reduce the procs returned to only
+    those requested.
+
+    exes will be a list of those exename procs that are requested
+
+    """
     print("Building data Dict for", jid)
     print("Querying DB...")
     start = time.time()
     # TODO
-    proc_limit = 15000
+    proc_limit = 0
     logger.warning("Limiting procs to {}".format(proc_limit))
     procList = get_procs(jid, limit=proc_limit) #, fltr=lambda p: p.duration > minDur and maxDur > p.duration, order='desc(p.exclusive_cpu_time)', fmt='dict')
     end = time.time()
@@ -143,7 +186,13 @@ def durList(jid, minDur, maxDur, exes):
 
 
 def separateDataBy(data, graphStyle="exename", pointText=("path", "exe", "args"), ):
-    """Break query results into separate traces"""
+    """
+    This function takes traceLists as data and transposes them 
+    by the requested graphstyle.
+    Graphstyle options are tag-ops, exename or other tag paramaters
+    (tag-instance or tag-sequence)
+    
+    """
     from collections import defaultdict
     outputDict = defaultdict(list)
     #print("graphstyle", graphStyle)

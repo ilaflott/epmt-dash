@@ -32,14 +32,13 @@ logger = getLogger(__name__)
 # Pylint doesn't understand input callbacks are used to fire the event
 # pylint: disable=unused-argument
 
-# if (__name__ != "__main__"):
 if MOCK_EPMT_API:
     logger.info("Using Mock API")
+    from epmt_query_mock import comparable_job_partitions, get_refmodels, delete_refmodels, create_refmodel
     from epmt_outliers_mock import detect_outlier_jobs
-    from epmt_query_mock import comparable_job_partitions, get_refmodels, delete_refmodels
 else:
     logger.info("Using EPMT API")
-    from epmt_query import comparable_job_partitions, get_refmodels, delete_refmodels
+    from epmt_query import comparable_job_partitions, get_refmodels, delete_refmodels, create_refmodel
     from epmt_outliers import detect_outlier_jobs
 
 # pd.options.mode.chained_assignment = None
@@ -257,15 +256,23 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn,
                     return ["Jobs are incompatible", ref_df.to_dict('records'),
                             edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
             logger.info("Selected jobs {}".format(selected_rows))
-            # Generate new refs for each of selected jobs
-            # Make_refs returns a list of
-            refa = refs.make_refs(name=model_name_input, jobs=[str(
-                a) for a, b, c in selected_rows], tags={"exp_name": n, "exp_component": c})
+            
+            refa = create_refmodel(jobs=[str(
+                a) for a, b, c in selected_rows], name=model_name_input,
+                 tag={"exp_name": n, "exp_component": c}, enabled=True)
             if refa is None:
                 return ["Failed creating Reference Model", ref_df.to_dict('records'),
                         edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
+            logger.info("Reference created: {}".format(refa))
+
+            # Convert dictionary with excess values into a dataframe
+            # with only columns we want to display.
+            refa = [[refa['id'], refa['name'], refa['created_at'], refa['tags'], refa['jobs'],
+             ['duration', 'cpu_time', 'num_procs'], refa['enabled']]]
             refa = pd.DataFrame(
-                refa, columns=['id', 'name', 'date created', 'tags', 'jobs', 'features', 'active'])
+                refa, columns=['id', 'name', 'date created',
+                               'tags', 'jobs', 'features', 'active'])
+
             refa['jobs'] = refa['jobs'].apply(dumps)
             refa['tags'] = refa['tags'].apply(dumps)
             refa['features'] = refa['features'].apply(dumps)

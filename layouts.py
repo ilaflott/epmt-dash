@@ -89,14 +89,7 @@ recent_jobs_page = html.Div([
                         justify="between",
                         align="center"
                     ),
-                    # start
-                    dbc.Row([
-                        # Models created notification
-                        dbc.Col([html.Div(style={'inline': 'true'}, children=["Model Status:",
-                                                                              html.Div(id='recent-job-model-status',
-                                                                                       children='')
-                                                                              ])])
-                    ]),  # end
+                    
                 ], fluid=True),
 
             # First Data Table
@@ -186,9 +179,16 @@ recent_jobs_page = html.Div([
                                                             children='Save Model', n_clicks_timestamp=0),
                                                 # Button for close
                                                 html.Button(id='create-Model-close-btn', children='Close', n_clicks_timestamp=0)],
-                                                width=6,
+                                                width=3,
                                                 align="center"
-                                            )
+                                            ),
+
+                                            # Models created notification
+                        dbc.Col([html.Div(style={'inline': 'true'}, children=["Model Status:",
+                                                                              html.Div(id='recent-job-model-status',
+                                                                                       children='')
+                                                                              ])])
+
                                         ]
                                     )
                                 ], fluid=True),
