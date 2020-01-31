@@ -16,7 +16,7 @@ from refs import ref_df
 from jobs import JobGen
 from components import Header, Footer, parseurl
 logger = getLogger(__name__)  # pylint: disable=invalid-name
-#basicConfig(level=DEBUG)
+# basicConfig(level=DEBUG)
 
 
 ########################Jobs & References ########################
@@ -89,11 +89,11 @@ recent_jobs_page = html.Div([
                         justify="between",
                         align="center"
                     ),
-                    
+
                 ], fluid=True),
 
-            # First Data Table
-            html.Div([
+                # First Data Table
+                html.Div([
                     dash_table.DataTable(
                         id='table-multicol-sorting',
                         row_selectable="multi",
@@ -184,10 +184,10 @@ recent_jobs_page = html.Div([
                                             ),
 
                                             # Models created notification
-                        dbc.Col([html.Div(style={'inline': 'true'}, children=["Model Status:",
-                                                                              html.Div(id='recent-job-model-status',
-                                                                                       children='')
-                                                                              ])])
+                                            dbc.Col([html.Div(style={'inline': 'true'}, children=["Model Status:",
+                                                                                                  html.Div(id='recent-job-model-status',
+                                                                                                           children='')
+                                                                                                  ])])
 
                                         ]
                                     )
@@ -645,7 +645,8 @@ def layouts(pfullurl):
     q = parseurl(pfullurl)
     # Grab jobid values from query dict
     page = q['jobid'][:]
-    job_df = JobGen(jobs=page).jobs_df # , limit=DEFAULT_ROWS_PER_PAGE, offset=page*DEFAULT_ROWS_PER_PAGE
+    # , limit=DEFAULT_ROWS_PER_PAGE, offset=page*DEFAULT_ROWS_PER_PAGE
+    job_df = JobGen(jobs=page).jobs_df
     jobids = q.get('jobid', None)
     table_data = job_df
     if jobids:
@@ -691,12 +692,14 @@ def layouts(pfullurl):
         ], className="subpage")
     ], className="page")
 
+
 def graphit(pfullurl):
     # offset = page * DEFAULT_ROWS_PER_PAGE
     q = parseurl(pfullurl)
     # Grab jobid values from query dict
     page = q['jobid'][:]
-    job_df = JobGen(jobs=page).jobs_df # , limit=DEFAULT_ROWS_PER_PAGE, offset=page*DEFAULT_ROWS_PER_PAGE
+    # , limit=DEFAULT_ROWS_PER_PAGE, offset=page*DEFAULT_ROWS_PER_PAGE
+    job_df = JobGen(jobs=page).jobs_df
     jobids = q.get('jobid', None)
     group_by = q.get('groupby', 'tag-op')[0]
     exe_query = q.get('exes', None)
@@ -709,21 +712,21 @@ def graphit(pfullurl):
             table_data = job_df.loc[job_df['job id'].isin(jobids)]
             table_data['tags'] = table_data['tags'].apply(dumps)
     from functions import durList, separateDataBy
-    newData, exenames, traceList = durList(jobids[0],0,1000000,exe_query)
+    newData, exenames, traceList = durList(jobids[0], 0, 1000000, exe_query)
     outputData = separateDataBy(newData, group_by)  # exename or option from traceList
     return html.Div([
         html.Div([
             # dcc.Location(id='url', refresh=False),
             html.Div([
                 dcc.Graph(figure={
-            'data': outputData,
-            'layout': {
-                'title': 'Job {}'.format(jobids[0] if len(jobids) < 2 else ', '.join(jobids)),
-                'yaxis': {
-                    'type': 'log'
-                }
-            }
-        } ,id='chart'),
+                    'data': outputData,
+                    'layout': {
+                        'title': 'Job {}'.format(jobids[0] if len(jobids) < 2 else ', '.join(jobids)),
+                        'yaxis': {
+                            'type': 'log'
+                        }
+                    }
+                }, id='chart'),
                 dash_table.DataTable(
                     id='custom-table',
                     columns=[

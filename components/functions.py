@@ -17,8 +17,7 @@ logger = getLogger(__name__)  # you can use other name
 
 if MOCK_EPMT_API:
     logger.info("Using Mock API")
-    # TODO:
-    #from epmt_query_mock import get_procs 
+    from epmt_query_mock import get_procs
 else:
     logger.info("Using EPMT API")
     from epmt_query import get_procs
@@ -43,7 +42,6 @@ def parseurl(i):
             res_dict[field] = res_dict[field][0].split(',')
     logger.info("URL2Dict {}".format(res_dict))
     return res_dict
-
 
 
 def recent_button(btn_dict):
@@ -73,17 +71,18 @@ def recent_button(btn_dict):
 
 power_labels = {0: '', 1: 'K', 2: 'M', 3: 'G', 4: 'T', 5: 'P'}
 
+
 def get_unit(alist):
     """
 
     Get greatest unit from df alist
-    
+
     """
     if len(alist) > 0:
         hi = max(alist)
     else:
         hi = 1
-    #print(alist)
+    # print(alist)
     return power_labels[int(log(hi, 1024))]
 
 
@@ -94,7 +93,7 @@ def convtounit(val, reqUnit):
     Helper function accepts a value & a unit
     Input: bytes, power_label unit
     Output: Value converted without label.
-    
+
     """
     # Letter to Unit reverse search
     unitp = list(power_labels.keys())[list(power_labels.values()).index(reqUnit)]
@@ -109,7 +108,7 @@ def contrasting_color(color):
 
     Input: color list [h,s,v]
     Output: (r,g,b), hex of color
-    
+
     Example:
     ((r, g, b), hex) = contrasting_color(rgb_to_hsv(50, 100, 200))
 
@@ -128,10 +127,10 @@ def contrasting_color(color):
 
 def list_of_contrast(length, start=(0, 0, 0)):
     """
-    
+
     Returns a list of colors of requested length
     with requested starting r,g,b tuple.
-    
+
     """
     l = []
     for _ in range(length):
@@ -140,34 +139,36 @@ def list_of_contrast(length, start=(0, 0, 0)):
         start = (r, g, b)
     return l
 
+
 def durList(jid, minDur, maxDur, exes):
     """
 
     This Function will convert jobid's into traces for graphing.
     Takes jobid, and limiting paramaters for query
-    
+
     minDur & maxDur will reduce the procs returned to only
     those requested.
 
     exes will be a list of those exename procs that are requested
 
     """
-    print("Building data Dict for", jid)
-    print("Querying DB...")
+    logger.debug("Building data Dict for {}".format(jid))
+    logger.debug("Querying DB...")
     start = time.time()
     # TODO
-    proc_limit = 0
+    proc_limit = None
     logger.warning("Limiting procs to {}".format(proc_limit))
-    procList = get_procs(jid, limit=proc_limit) #, fltr=lambda p: p.duration > minDur and maxDur > p.duration, order='desc(p.exclusive_cpu_time)', fmt='dict')
+    # , fltr=lambda p: p.duration > minDur and maxDur > p.duration, order='desc(p.exclusive_cpu_time)', fmt='dict')
+    procList = get_procs(jid, limit=proc_limit)
     end = time.time()
-    print("Took",(end - start))
+    print("Took", (end - start))
     #print("Sorting and Filtering ",len(procList))
     #procList = procList[0::density]
     #print("After ", len(procList))
     # print("loop:",tuple(i for i in options))
     # x value is start time, y variable index on options
     exenames = list(set([k['exename'] for k in procList]))
-    opnames = set(k['tags'].get('op','no-tag') for k in procList)
+    opnames = set(k['tags'].get('op', 'no-tag') for k in procList)
     traceList = [{'label': 'Executable Name', 'value': 'exename'},
                  {'label': 'Job', 'value': 'job'},
                  {'label': 'Host', 'value': 'host'},
@@ -191,7 +192,7 @@ def separateDataBy(data, graphStyle="exename", pointText=("path", "exe", "args")
     by the requested graphstyle.
     Graphstyle options are tag-ops, exename or other tag paramaters
     (tag-instance or tag-sequence)
-    
+
     """
     from collections import defaultdict
     outputDict = defaultdict(list)
@@ -200,7 +201,7 @@ def separateDataBy(data, graphStyle="exename", pointText=("path", "exe", "args")
         if (graphStyle[:4] == "tag-"):
             # Works but dirty
             # outputDict[sum(entry[graphStyle].items(),())].append([entry])
-            if entry['tags'].get('op',None):
+            if entry['tags'].get('op', None):
                 outputDict[entry['tags'][graphStyle[4:]]].append([entry])
         else:
             outputDict[entry[graphStyle]].append([entry])
@@ -210,15 +211,15 @@ def separateDataBy(data, graphStyle="exename", pointText=("path", "exe", "args")
               'mode': 'markers',
               'x': [sublist[0]['start'] for sublist in outputDict[n]],
               'y': [sublist[0]['duration'] for sublist in outputDict[n]],
-              'text' if (True) else None: [[sublist[0]["exename"],sublist[0]["args"],sublist[0]["path"]] for sublist in outputDict[n]],
-              #'hoverinfo':"text",
+              'text' if (True) else None: [[sublist[0]["exename"], sublist[0]["args"], sublist[0]["path"]] for sublist in outputDict[n]],
+              # 'hoverinfo':"text",
               'hovermode':False,
               'name': n,
-              #'hovertemplate': "Path: %{text[2]}<br>" +
+              # 'hovertemplate': "Path: %{text[2]}<br>" +
               #                  "Args: <br>%{text[1]}"
-              #'textposition': 'top center'
+              # 'textposition': 'top center'
               } for n in outputDict.keys()]
-    #print(output)
+    # print(output)
     #
     #textwrap.wrap("Path: %{text[2]}<br>" + "Args: <br>%{text[1]}", hoverwidth)
     # print("args: {0}".format("<br>".join(textwrap.wrap(longstring,hoverwidth))))

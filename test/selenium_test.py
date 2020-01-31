@@ -6,6 +6,7 @@ import unittest
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 
+
 class TestTemplate(unittest.TestCase):
     """Include test cases on a given url"""
 
@@ -39,6 +40,7 @@ class TestTemplate(unittest.TestCase):
             el.click()
         except NoSuchElementException as ex:
             self.fail(ex.msg)
+
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(TestTemplate)

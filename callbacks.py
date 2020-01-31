@@ -81,7 +81,7 @@ def test_job_update(saveclick, sel_jobs, ref_data, sel_ref):
             refs.edit_model(
                 model_name=selected_refs['name'], new_jobs=sel_jobs)
             #from ast import literal_eval
-            #refa = make_refs(name=selected_refs['name'], jobs=sel_jobs,
+            # refa = make_refs(name=selected_refs['name'], jobs=sel_jobs,
             # tags=literal_eval(selected_refs['tags']))
             return ""  # return placeholder dataframe has been updated
 
@@ -256,10 +256,10 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn,
                     return ["Jobs are incompatible", ref_df.to_dict('records'),
                             edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
             logger.info("Selected jobs {}".format(selected_rows))
-            
+
             refa = create_refmodel(jobs=[str(
                 a) for a, b, c in selected_rows], name=model_name_input,
-                 tag={"exp_name": n, "exp_component": c}, enabled=True)
+                tag={"exp_name": n, "exp_component": c}, enabled=True)
             if refa is None:
                 return ["Failed creating Reference Model", ref_df.to_dict('records'),
                         edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
@@ -268,7 +268,7 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn,
             # Convert dictionary with excess values into a dataframe
             # with only columns we want to display.
             refa = [[refa['id'], refa['name'], refa['created_at'], refa['tags'], refa['jobs'],
-             ['duration', 'cpu_time', 'num_procs'], refa['enabled']]]
+                     ['duration', 'cpu_time', 'num_procs'], refa['enabled']]]
             refa = pd.DataFrame(
                 refa, columns=['id', 'name', 'date created',
                                'tags', 'jobs', 'features', 'active'])
@@ -413,8 +413,8 @@ def f(job_data, sel_jobs):
                     # if dumps(model['tags']) == model_tags:
                     logger.debug("Found a matching model {}".format(model))
                     drdn_options.append({'label': model['name'] + " Tags:"
-                                                  + dumps(model['tags']) + " Created on:"
-                                                  + str(model['date created']),
+                                         + dumps(model['tags']) + " Created on:"
+                                         + str(model['date created']),
                                          'value': model['name']})
                     drdn_value = model['name']
             if len(drdn_options) > 1:
@@ -599,7 +599,7 @@ def update_jobs_table(raw_toggle, search_value, end, rows_per_page, page_current
     # #################################################################
     # Run the search
     # todo: Catch these exceptions
-    #try:
+    # try:
     if raw_toggle:
         # Raw search on job id only
         results = alt[(alt['job id'].str.contains(search_value))
@@ -613,7 +613,7 @@ def update_jobs_table(raw_toggle, search_value, end, rows_per_page, page_current
     logger.info("Found {} search results on \"{}\"".format(
         int(results.shape[0]), search_value))
     alt = results
-    #except:
+    # except:
     #    logger.error("Threw exception on query")
 
     # Recalculate number of rows after search complete
@@ -652,7 +652,7 @@ def update_jobs_table(raw_toggle, search_value, end, rows_per_page, page_current
                                                                  + '"'},
                                           'backgroundColor': cont_colors[color]})
             else:
-                #logger.debug("Not generating a highlight rule for {} not enough matching
+                # logger.debug("Not generating a highlight rule for {} not enough matching
                 # jobs".format(n))
                 pass
     else:
@@ -687,21 +687,23 @@ def update_jobs_table(raw_toggle, search_value, end, rows_per_page, page_current
 ######################## /Index Callbacks ########################
 
 ######################## graph Callback ########################
+
+
 @app.callback(
     dash.dependencies.Output('chart', 'figure'),
     [dash.dependencies.Input('test', 'children')]
 )
 def display_graph():
     from functions import durList
-    newData, exenames, traceList = durList('856164',0,1000000,None)
+    newData, exenames, traceList = durList('856164', 0, 1000000, None)
     logger.info(newData)
     return {
-            'data': [
-                {'x': [1, 2, 3], 'y': [4, 1, 2], 'type': 'bar', 'name': 'SF'},
-                {'x': [1, 2, 3], 'y': [2, 4, 5], 'type': 'bar', 'name': u'Montréal'},
-            ],
-            'layout': {
-                'title': 'Dash Data Visualization'
-            }
+        'data': [
+            {'x': [1, 2, 3], 'y': [4, 1, 2], 'type': 'bar', 'name': 'SF'},
+            {'x': [1, 2, 3], 'y': [2, 4, 5], 'type': 'bar', 'name': u'Montréal'},
+        ],
+        'layout': {
+            'title': 'Dash Data Visualization'
         }
+    }
 ######################## /Create Ref Callbacks ########################

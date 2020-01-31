@@ -3,6 +3,7 @@
 
 import datetime
 from datetime import timedelta
+from random import choice
 from copy import deepcopy
 from logging import getLogger
 import pandas as pd
@@ -181,7 +182,10 @@ def delete_refmodels(*ref_ids):
     return ''
 
 
-def get_jobs(jobs=None, tags=None, fltr=None, order=None, limit=None, offset=0, when=None, before=None, after=None, hosts=[], fmt='dict', annotations=None, analyses=None, merge_proc_sums=True, exact_tag_only=False):
+def get_jobs(jobs=None, tags=None, fltr=None, order=None, limit=None, offset=0, when=None,
+             before=None, after=None, hosts=[],
+             fmt='dict', annotations=None, analyses=None, merge_proc_sums=True,
+             exact_tag_only=False):
     """ Use SAMPLE_JOB real job as template
      replace jobid with new number
      return list of limit of jobs
@@ -247,3 +251,104 @@ def comparable_job_partitions(jobs, matching_keys=['exp_name', 'exp_component'])
            for exp_name, exp_component in cdict]
     logger.debug(out)
     return out
+
+
+def get_procs(
+        jobs=[],
+        tags=None, fltr=None, order=None, limit=None, when=None, hosts=[],
+        fmt='dict', merge_threads_sums=True, exact_tag_only=False):
+    '''
+    Implemented:
+    jobs: list or string/int
+    limit: int
+    jobid,exename and path
+
+    jobid matches request
+    exename randomized
+    path matches randomized exename
+    '''
+    result = []
+
+    if (limit is None) and (fmt != 'orm'):
+        limit = 10000
+        logger.info('No limit set, defaults to {0}. Set limit to 0 to avoid limits'.format(limit))
+    exelist = [
+        "bash", "bsd-csh", "bunzip2", "busybox", "bzcat", "bzcmp", "bzdiff", "bzegrep", "bzexe",
+        "bzfgrep", "bzgrep", "bzip2", "bzip2recover", "bzless", "bzmore", "cat", "chacl", "chgrp",
+        "chmod", "chown", "chvt", "cp", "cpio", "csh", "dash", "date", "dd", "df", "dir", "dmesg",
+        "dnsdomainname", "domainname", "dumpkeys", "echo", "ed", "efibootmgr", "egrep", "false",
+        "fgconsole", "fgrep", "findmnt", "fuser", "fusermount", "getfacl", "grep", "gunzip",
+        "gzexe", "gzip", "hciconfig", "hostname", "ip", "journalctl", "kbd_mode", "keyctl", "kill",
+        "kmod", "less", "lessecho", "lessfile", "lesskey", "lesspipe", "ln", "loadkeys", "login",
+        "loginctl", "lowntfs-3g", "ls", "lsblk", "lsmod", "mkdir", "mknod", "mktemp", "more",
+        "mount", "mountpoint", "mt", "mt-gnu", "mv", "nano", "nc", "nc.openbsd", "netcat",
+        "netstat", "networkctl", "nisdomainname", "ntfs-3g", "ntfs-3g.probe", "ntfs-3g.secaudit",
+        "ntfs-3g.usermap", "ntfscat", "ntfscluster", "ntfscmp", "ntfsfallocate", "ntfsfix",
+        "ntfsinfo", "ntfsls", "ntfsmove", "ntfstruncate", "ntfswipe", "open", "openvt", "pidof",
+        "ping", "ping6", "plymouth", "ps", "pwd", "rbash", "readlink", "red", "rm", "rmdir",
+        "rnano", "run-parts", "sed", "setfacl", "setfont", "setupcon", "sh", "sh.distrib", "sleep",
+        "ss", "static-sh", "stty", "su", "sync", "systemctl", "systemd", "systemd-ask-password",
+        "systemd-escape", "systemd-hwdb", "systemd-inhibit", "systemd-machine-id-setup",
+        "systemd-notify", "systemd-tmpfiles", "systemd-tty-ask-password-agent", "tailf", "tar",
+        "tcsh", "tempfile", "touch", "true", "udevadm", "ulockmgr_server", "umount", "uname",
+        "uncompress", "unicode_start", "vdir", "wdctl", "which", "whiptail", "ypdomainname", "zcat",
+        "zcmp", "zdiff", "zegrep", "zfgrep", "zforce", "zgrep", "zless", "zmore", "znew"]
+
+    sample_proc = {'id': 36416,
+                   'start': datetime.datetime(2019, 6, 16, 13, 54, 28, 878022),
+                   'end': datetime.datetime(2019, 6, 16, 14, 6, 18, 107548),
+                   'duration': 709229526.0000001,
+                   'created_at': datetime.datetime(2019, 12, 17, 21, 1, 32, 442541),
+                   'updated_at': datetime.datetime(2019, 12, 17, 21, 1, 32, 442546),
+                   'tags': {'op': 'dmput', 'op_instance': '2', 'op_sequence': '89'},
+                   'job': jobs,
+                   'host': 'pp028',
+                   'user': 'Jeffrey.Durachta',
+                   'group': None,
+                   'numtids': 1,
+                   'cpu_time': 733887.0,
+                   'inclusive_cpu_time': 592078553.0,
+                   'exename': 'tcsh',
+                   'path': '/bin/tcsh',
+                   'args': '-f /home/Jeffrey.Durachta/ESM4/DECK/ESM4_historical_D151/gfdl.ncrc4-intel16-prod-openmp/scripts/postProcess/ESM4_historical_D151_ocean_month_rho2_1x1deg_18890101.tags',
+                   'pid': 1941,
+                   'ppid': 1940,
+                   'pgid': 1932,
+                   'sid': 1927,
+                   'gen': 0,
+                   'exitcode': 0,
+                   'parent': None,
+                   'PERF_COUNT_SW_CPU_CLOCK': 679559948,
+                   'cancelled_write_bytes': 4096,
+                   'delayacct_blkio_time': 0,
+                   'guest_time': 0,
+                   'inblock': 8424,
+                   'invol_ctxsw': 140,
+                   'majflt': 10,
+                   'minflt': 38676,
+                   'outblock': 10648,
+                   'processor': 0,
+                   'rchar': 297337,
+                   'rdtsc_duration': 2452426270720,
+                   'read_bytes': 4313088,
+                   'rssmax': 5512,
+                   'syscr': 1327,
+                   'syscw': 1313,
+                   'systemtime': 311952,
+                   'time_oncpu': 734283936,
+                   'time_waiting': 414940469,
+                   'timeslices': 4042,
+                   'user+system': 733887,
+                   'usertime': 421935,
+                   'vol_ctxsw': 3901,
+                   'wchar': 82957,
+                   'write_bytes': 5451776,
+                   'jobid': '692544'}
+    for j in jobs if isinstance(jobs, list) else [jobs]:
+        for n in range(limit):
+            proc = sample_proc
+            proc['jobid'] = j
+            proc['exename'] = choice(exelist)
+            proc['path'] = '/bin/'+proc['exename']
+            result.append(deepcopy(proc))
+    return result
