@@ -1,9 +1,9 @@
 """Mock epmt_query methods
 """
 
-import datetime
 from datetime import timedelta
-from random import choice
+import datetime
+import random
 from copy import deepcopy
 from logging import getLogger
 import pandas as pd
@@ -252,6 +252,29 @@ def comparable_job_partitions(jobs, matching_keys=['exp_name', 'exp_component'])
     logger.debug(out)
     return out
 
+import time
+from datetime import date, timedelta
+
+def str_time_prop(start, end, format):
+    """Get a time at a proportion of a range of two formatted times.
+
+    start and end should be strings specifying times formated in the
+    given format (strftime-style), giving an interval [start, end].
+    prop specifies how a proportion of the interval to be taken after
+    start.  The returned time will be in the specified format.
+    """
+
+    stime = time.mktime(time.strptime(start, format))
+    etime = time.mktime(time.strptime(end, format))
+
+    ptime = stime + random.random() * (etime - stime)
+
+    return time.strftime(format, time.localtime(ptime))
+
+
+def random_date(start, end, dfmt):
+    return str_time_prop(start, end, dfmt)
+
 
 def get_procs(
         jobs=[],
@@ -293,13 +316,13 @@ def get_procs(
         "tcsh", "tempfile", "touch", "true", "udevadm", "ulockmgr_server", "umount", "uname",
         "uncompress", "unicode_start", "vdir", "wdctl", "which", "whiptail", "ypdomainname", "zcat",
         "zcmp", "zdiff", "zegrep", "zfgrep", "zforce", "zgrep", "zless", "zmore", "znew"]
-
+    from datetime import datetime
     sample_proc = {'id': 36416,
-                   'start': datetime.datetime(2019, 6, 16, 13, 54, 28, 878022),
-                   'end': datetime.datetime(2019, 6, 16, 14, 6, 18, 107548),
+                   'start': datetime(2019, 6, 16, 13, 54, 28, 878022),
+                   'end': datetime(2019, 6, 16, 14, 6, 18, 107548),
                    'duration': 709229526.0000001,
-                   'created_at': datetime.datetime(2019, 12, 17, 21, 1, 32, 442541),
-                   'updated_at': datetime.datetime(2019, 12, 17, 21, 1, 32, 442546),
+                   'created_at': datetime(2019, 12, 17, 21, 1, 32, 442541),
+                   'updated_at': datetime(2019, 12, 17, 21, 1, 32, 442546),
                    'tags': {'op': 'dmput', 'op_instance': '2', 'op_sequence': '89'},
                    'job': jobs,
                    'host': 'pp028',
@@ -348,7 +371,14 @@ def get_procs(
         for n in range(limit):
             proc = sample_proc
             proc['jobid'] = j
-            proc['exename'] = choice(exelist)
+            proc['exename'] = random.choice(exelist)
             proc['path'] = '/bin/'+proc['exename']
+            timeformat = "%m/%d/%Y %I:%M %p %Z"
+            start_datetime = random_date(
+            "11/1/2019 1:30 PM UTC", "11/5/2019 4:50 PM UTC", timeformat)
+            from datetime import datetime
+            start_time = datetime.strptime(start_datetime, timeformat).time()
+            proc['start'] = start_time
+            proc['duration'] = random.uniform(86400/4, 86400)
             result.append(deepcopy(proc))
     return result

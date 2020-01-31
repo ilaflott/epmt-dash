@@ -1,21 +1,27 @@
 This Dash interface currently works with EPMT using Pony and sqlite.  
 
-The sqlite file is in this Dash Directory and symbolicly linked inside
+You can use the EPMT library with this interface from the epmt command gui
 
-the epmt directory.
+/build/epmt$ ./epmt -v gui
 
-For example if you use EPMT_DB_PONY.sqlite in the EPMT directory.
+To run with mock api use python index.py from the ui directory with
 
-epmt$ mv EPMT_DB_PONY.sqlite dash/
+environemnt variable "EPMT_GUI_MOCK" set
 
-epmt$ ln -s dash/EPMT_DB_PONY.sqlite EPMT_DB_PONY.sqlite
+/build/epmt/ui$ EPMT_GUI_MOCK=1 bash -c 'python index.py'
+
+Once running a main job table will display on localhost:8050
+
+Job graphs are currently displayed with jobid querys
+
+for example:
+
+http://asus:8050/graph?jobid=1234059&groupby=exename
 
 
-├── EPMT
+├── EPMT/
 
-│   ├── Dash
-
-│   │   ├── EPMT_DB_PONY.sqlite
+│   ├── ui/
 
 │   │   ├── app.py
 
@@ -25,11 +31,15 @@ epmt$ ln -s dash/EPMT_DB_PONY.sqlite EPMT_DB_PONY.sqlite
 
 │   │   ├── callbacks.py
 
+│   │   ├── epmt_query_mock.py
+
 │   │   └── ...
 
-│   ├── EPMT_DB_PONY.sqlite (Symlink to dash/EPMT_DB_PONY.sqlite)
+│   ├── epmt_query.py
 
 │   ├── epmt
+
+│   ├── settings.py
 
 │   └── ...
 
