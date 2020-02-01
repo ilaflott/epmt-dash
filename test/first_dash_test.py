@@ -31,6 +31,116 @@ class TestTemplate(unittest.TestCase):
             el.click()
         except NoSuchElementException as ex:
             self.fail(ex.msg)
+    def test_case_2(self):
+        """Find and Click Models tab"""
+        try:
+            self.driver.get('http://172.17.0.1:8050')
+            el = self.driver.find_element_by_xpath("//*[@id='tabs']/div[2]/span")
+            el.click()
+        except NoSuchElementException as ex:
+            self.fail(ex.msg)
+    def test_case_3(self):
+        """Find and Click Raw Data Toggle"""
+        try:
+            self.driver.get('http://172.17.0.1:8050')
+            el = self.driver.find_element_by_xpath("//*[@id='raw-switch']/div/div/div[2]/button")
+            el.click()
+        except NoSuchElementException as ex:
+            self.fail(ex.msg)
+    def test_case_4(self):
+        """Find and Click Search Area"""
+        try:
+            self.driver.get('http://172.17.0.1:8050')
+            el = self.driver.find_element_by_xpath("//*[@id='searchdf']")
+            el.click()
+        except NoSuchElementException as ex:
+            self.fail(ex.msg)
+    def test_case_5(self):
+        """Find and Click Run Analysis button"""
+        try:
+            self.driver.get('http://172.17.0.1:8050')
+            el = self.driver.find_element_by_xpath("//*[@id='run-analysis-btn']")
+            el.click()
+        except NoSuchElementException as ex:
+            self.fail(ex.msg)
+    def test_case_6(self):
+        """Find and Click Create model from jobs button"""
+        try:
+            self.driver.get('http://172.17.0.1:8050')
+            el = self.driver.find_element_by_xpath("//*[@id='create-newModel-btn']")
+            el.click()
+        except NoSuchElementException as ex:
+            self.fail(ex.msg)
+    def test_case_7(self):
+        """Find and Click Select All button"""
+        try:
+            self.driver.get('http://172.17.0.1:8050')
+            el = self.driver.find_element_by_xpath("//*[@id='index-select-all']")
+            el.click()
+        except NoSuchElementException as ex:
+            self.fail(ex.msg)
+    def test_case_8(self):
+        """Find and Click Date start and end"""
+        try:
+            self.driver.get('http://172.17.0.1:8050')
+            # Activate date picker dialog
+            el = self.driver.find_element_by_xpath("//*[@id='jobs-date-picker']/div/div/div[1]")
+            el.click()
+            # Click start date
+            el = self.driver.find_element_by_xpath("/html/body/div[2]/div/div/div/div/div[2]/div[2]/div/div[2]/div/table/tbody/tr[1]/td[7]")
+            el.click()
+            # Delay
+            self.driver.implicitly_wait(3)
+            # Click end date
+            el = self.driver.find_element_by_xpath("/html/body/div[2]/div/div/div/div/div[2]/div[2]/div/div[2]/div/table/tbody/tr[2]/td[4]")
+            el.click()
+        except NoSuchElementException as ex:
+            self.fail(ex.msg)
+
+    def test_case_9(self):
+        """Find and Click Available test model dropdown"""
+        try:
+            self.driver.get('http://172.17.0.1:8050')
+            el = self.driver.find_element_by_xpath("//*[@id='react-select-2--value']/div[1]")
+            el.click()
+        except NoSuchElementException as ex:
+            self.fail(ex.msg)    
+    def test_case_10(self):
+        """Find and Click number of jobs to display dropdown"""
+        try:
+            self.driver.get('http://172.17.0.1:8050')
+            el = self.driver.find_element_by_xpath("//*[@id='react-select-3--value']/div[1]")
+            el.click()
+        except NoSuchElementException as ex:
+            self.fail(ex.msg)
+    def test_case_11(self):
+        """Find and Click issue tracker"""
+        try:
+            self.driver.get('http://172.17.0.1:8050')
+            el = self.driver.find_element_by_xpath("//*[@id='version']/a")
+            el.click()
+        except NoSuchElementException as ex:
+            self.fail(ex.msg)
+    # Test Models tab
+    def test_case_12(self):
+        """Find and click Models tab, test all buttons"""
+        try:
+            self.driver.get('http://172.17.0.1:8050')
+            # Find and click Models tab
+            el = self.driver.find_element_by_xpath("//*[@id='tabs']/div[2]/span")
+            el.click()
+            # Find and Click Toggle Model Status
+            el = self.driver.find_element_by_xpath("//*[@id='toggle-Model-btn']")
+            el.click()
+            # Find and Click Edit Reference Model
+            el = self.driver.find_element_by_xpath("//*[@id='edit-Model-btn']")
+            el.click()
+            # Find and Click Delete Model button
+            el = self.driver.find_element_by_xpath("//*[@id='delete-Model-btn']")
+            el.click()
+        except NoSuchElementException as ex:
+            self.fail(ex.msg)
+
 
     # def test_case_2(self):
     #     """Find and click Learn more button"""
