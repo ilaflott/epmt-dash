@@ -5,6 +5,7 @@ WORKDIR /home/dash
 ADD requirements-ui.txt.py3 requirements.txt.py3 /home/dash/
 RUN pip install --trusted-host pypi.python.org -r requirements-ui.txt.py3 -r requirements.txt.py3
 
+#ENV EPMT_GUI_MOCK=1
 EXPOSE 8050
 ENV PYTHONUNBUFFERED 0
 CMD ["python","-u","index.py"]

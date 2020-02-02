@@ -7,20 +7,19 @@ build:
 run: 
 	#docker run -p 8050:8050 dash/app:latest
 	#docker-compose up dash
-	docker run -p 8050:8050 -v $(PWD)/..:/home -v $(PWD)/.:/home/dash epmt-interface:latest
+	docker run -p 8050:8050 -w /home -v $(PWD)/..:/home -v $(PWD)/.:/home/dash epmt-interface:latest ./epmt gui
 
+	#docker run -p 8050:8050 dash/app:latest
+	#docker-compose up dash
+run-mock: 
+	docker run --rm -p 8050:8050 -e EPMT_GUI_MOCK=1 -v $(PWD)/..:/home -v $(PWD)/.:/home/dash epmt-interface:latest
 dash-test:
-	docker build -f Dockerfiles/Dockerfile.dash-test -t dash-test --build-arg EPMT_GUI_MOCK=1 .
-	docker run --rm -it python-chromedriver:3.7
-
+	docker run -it --rm -w /usr/workspace/test -v $(PWD):/usr/workspace joyzoursky/python-chromedriver:3.7-selenium python first_dash_test.py
 build-selenium:
 	docker build -f Dockerfiles/Dockerfile.chromedriver-sel -t python-chromedriver:3.7 .
-
 selenium-test:
 	docker run --rm -it -w /usr/workspace/test -v $(pwd):/usr/workspace python-chromedriver:3.7 python selenium_test.py
-
 build-chromedriver-service:
 	docker build -f Dockerfiles/Dockerfile.chromedriver -t python-chromedriver-ser:latest .
-
 start-chromedriver:
 	docker run --rm  --name chromedriver -p 127.0.0.1:4444:4444 python-chromedriver-ser:latest
