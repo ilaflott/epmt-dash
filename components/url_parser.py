@@ -10,14 +10,16 @@ import posixpath
 
 
 def path_parse(path_string, *, normalize=True, module=posixpath):
+    # Prevent 
     result = []
-    if normalize:
-        tmp = module.normpath(path_string)
-    else:
-        tmp = path_string
-    while tmp != "/":
-        (tmp, item) = module.split(tmp)
-        result.insert(0, item)
+    if path_string:
+        if normalize:
+            tmp = module.normpath(path_string)
+        else:
+            tmp = path_string
+        while tmp != "/":
+            (tmp, item) = module.split(tmp)
+            result.insert(0, item)
     return result
 
 

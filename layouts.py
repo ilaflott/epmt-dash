@@ -14,7 +14,7 @@ import dash_table
 from dash_config import DEFAULT_ROWS_PER_PAGE
 from refs import ref_df
 from jobs import JobGen
-from components import Header, Footer, parseurl
+from components import Header, Footer, parse_url, create_gantt_graph, create_boxplot
 logger = getLogger(__name__)  # pylint: disable=invalid-name
 # basicConfig(level=DEBUG)
 
@@ -708,7 +708,7 @@ def graphit(pfullurl):
     table_data = job_df
     if jobids:
         if job_df['job id'].isin(jobids).any():
-            logger.debug("We have that job")
+            logger.debug("Job found, converting tags to print")
             table_data = job_df.loc[job_df['job id'].isin(jobids)]
             table_data['tags'] = table_data['tags'].apply(dumps)
     from functions import durList, separateDataBy
@@ -759,6 +759,24 @@ def graphit(pfullurl):
             ])
         ], className="subpage")
     ], className="page")
+
+def graph_plotly(url):
+    e = parse_url(url)
+    logger.debug(e)
+    (path,query) = (e['path'],e['query'])
+    graph_style = path[1]
+    if graph_style == 'gantt':
+        graph_data = create_gantt_graph()
+    elif graph_style == 'boxplot':
+        graph_data = create_boxplot()
+    else:
+        graph_data = 'Unknown graphstyle'
+
+    return html.Div([
+        html.Div([graph_data
+        ], className="subpage")
+    ], className="page")
+
 
 ######################## END table Layout ########################
 

@@ -1,18 +1,14 @@
 """functions.py
-Methods used for data manipulation
+Methods used for data manipulation from graphing to charting
 """
 
-from logging import getLogger
 from urllib.parse import parse_qs, urlparse
 from math import log
 from colorsys import rgb_to_hsv, hsv_to_rgb
 import time
 from dash_config import MOCK_EPMT_API
-
-
-# We log how we want
-# pylint: disable=invalid-name, logging-format-interpolation
-logger = getLogger(__name__)  # you can use other name
+from logging import getLogger
+logger = getLogger(__name__)  
 #pd.options.mode.chained_assignment = None
 
 if MOCK_EPMT_API:
@@ -20,20 +16,24 @@ if MOCK_EPMT_API:
     from epmt_query_mock import get_procs
 else:
     logger.info("Using EPMT API")
-    from epmt_query import get_procs
+    from epmt_query import get_procs, get_ops
 
 
 # Return dictionary query results
 def parseurl(i):
     """ 
-    This Function uses url lib to parse a query then
+    This Function uses urllib to parse a query then
     checks each of the query keys values for commas and converts
     those values into lists.
     Accepts url & returns query dictionary.
     """
     logger.info("Given URL {}".format(i))
+
+    # Determine graphstyle and jobid
+
     # convert url into dictionary
     res_dict = parse_qs(urlparse(i).query)
+    logger.debug("URL parse_qs: {}".format(res_dict))
     # Parse query key values, values for commas
     # TODO: A better method may be encoding or repeating the key
     # https://stackoverflow.com/a/50537278
@@ -100,7 +100,7 @@ def convtounit(val, reqUnit):
     return val/1000**unitp
 
 
-def contrasting_color(color):
+def contrasting_color(color,shift=0.16):
     """
 
     This helper function returns a shifted hsv color 
@@ -116,25 +116,26 @@ def contrasting_color(color):
     if not color:
         return None
 
-    # How much to jump in hue:
-    jump = .16
-    (r, g, b) = hsv_to_rgb(color[0] + jump,
+    (r, g, b) = hsv_to_rgb(color[0] + shift,
                            color[1],
                            color[2])
     hexout = '#%02x%02x%02x' % (int(r), int(g), int(b))
     return ((r, g, b), hexout)
 
 
-def list_of_contrast(length, start=(0, 0, 0)):
+def list_of_contrast(length, start=(33, 45, 237), hue_shift=0.16):
     """
-
     Returns a list of colors of requested length
     with requested starting r,g,b tuple.
+
+    length: Number of hex values to return
+    start = rgb tuple
+    hue_shift = hue adjustment factor added to the hsv
 
     """
     l = []
     for _ in range(length):
-        ((r, g, b), hex) = contrasting_color(rgb_to_hsv(start[0], start[1], start[2]))
+        ((r, g, b), hex) = contrasting_color(rgb_to_hsv(start[0], start[1], start[2]),hue_shift)
         l.append(hex)
         start = (r, g, b)
     return l
@@ -224,3 +225,87 @@ def separateDataBy(data, graphStyle="exename", pointText=("path", "exe", "args")
     #textwrap.wrap("Path: %{text[2]}<br>" + "Args: <br>%{text[1]}", hoverwidth)
     # print("args: {0}".format("<br>".join(textwrap.wrap(longstring,hoverwidth))))
     return output
+
+
+def gantt_me(jobs=[], gtags=['op']):
+    """Generate Gantt chart data"""
+    start_times, end_times, op_name, op_dur, dfn = ([] for i in range(5))
+    e = get_procs()[:1]
+    logger.error(e)
+    op = get_ops(jobs, tags = gtags, fmt='orm')
+
+    # Roll ops into a zip
+    for n in op:
+        # Grossly extend a list for each metric to be graphed
+        start_times.extend([n.start])
+        end_times.extend([n.finish])
+        op_name.extend(["{}".format(list(n['tags'].items())[0])])
+        op_dur.extend([n.duration])
+    rolled_ops = zip(op_name, start_times, end_times, op_dur)
+
+    # Start times should be first
+    rolled_ops = sorted(rolled_ops, key=lambda x: x[1])
+    # Make gantt list of dicts from rolled_ops
+    for g in rolled_ops:
+        dfn.extend([{'Task':g[0],'Start':g[1],'Finish':g[2]}])
+    return dfn
+
+
+def create_gantt_graph():
+    """gantt_me wrapper"""
+    import plotly.figure_factory as ff
+    import dash
+    import dash_core_components as dcc
+    joblist = ['625172']
+    gtag = ['op_instance','op']
+    gantt_data = gantt_me(joblist, gtag)
+    gcolors = list_of_contrast(len(gantt_data),(33,45,237),0.05)
+    fig = ff.create_gantt(gantt_data,colors=gcolors,bar_width=0.4)
+    fig.update_layout(title="Job {} Timeline for tag:'{}'".format(joblist,gtag))
+    # Remove Year, week, day selector at top of gantt
+    fig.layout.xaxis.rangeselector={}
+
+    # op_sequence can be in the hundreds, turn off the y-axis labels
+    if gtag is 'op_sequence':
+        fig.update_yaxes(showticklabels=False)
+    basic_graph = dcc.Graph(
+        id='basic-interactions',
+        figure=fig
+    )
+    return basic_graph
+
+def create_boxplot():
+    """boxplot wrapper"""
+    import plotly.figure_factory as ff
+    import dash
+    import dash_core_components as dcc
+    basic_graph = dcc.Graph(
+        id='basic-interactions',
+        figure={
+            'data': [
+                {
+                    'x': [1, 2, 3, 4],
+                    'y': [4, 1, 3, 5],
+                    'text': ['a', 'b', 'c', 'd'],
+                    'customdata': ['c.a', 'c.b', 'c.c', 'c.d'],
+                    'name': 'Trace 1',
+                    'mode': 'markers',
+                    'marker': {'size': 12}
+                },
+                {
+                    'x': [1, 2, 3, 4],
+                    'y': [9, 4, 1, 4],
+                    'text': ['w', 'x', 'y', 'z'],
+                    'customdata': ['c.w', 'c.x', 'c.y', 'c.z'],
+                    'name': 'Trace 2',
+                    'mode': 'markers',
+                    'marker': {'size': 12}
+                }
+            ],
+            'layout': {
+                'title': 'Boxplot Placeholder',
+                'clickmode': 'event+select'
+            }
+        }
+    )
+    return basic_graph

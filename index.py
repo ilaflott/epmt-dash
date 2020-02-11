@@ -67,12 +67,8 @@ def display_page(pathname, pfullurl):
         return lay.layout_references
     elif pathname == '/jobs':
         return lay.layouts(pfullurl)
-    elif pathname == '/graph/':
-        return lay.graphit(pfullurl)
-    # Graphing URL localhost:8080/graph/*
-    elif pathname.startswith('/graph/'):
-        logger.debug("Graph type page requested")
-        return lay.graphit(pfullurl)
+    elif str(pathname).startswith('/graph'):
+        return lay.graph_plotly(pfullurl)
     else:
         return lay.noPage
 
