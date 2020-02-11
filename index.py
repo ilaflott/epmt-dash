@@ -10,7 +10,8 @@ from dash.dependencies import Input, Output
 from app import app
 import layouts as lay
 import callbacks  # pylint: disable=unused-import
-
+from logging import getLogger
+logger = getLogger(__name__)
 
 def init_app():
     """
@@ -54,6 +55,7 @@ def display_page(pathname, pfullurl):
     """Method:
     For displaying/returning all layouts as requested by url
     """
+    logger.info("Page requested {}".format(pathname))
     app.fullurl = pfullurl
     if pathname == '' or pathname == '/':
         return lay.recent_jobs_page
@@ -65,7 +67,11 @@ def display_page(pathname, pfullurl):
         return lay.layout_references
     elif pathname == '/jobs':
         return lay.layouts(pfullurl)
-    elif pathname == '/graph':
+    elif pathname == '/graph/':
+        return lay.graphit(pfullurl)
+    # Graphing URL localhost:8080/graph/*
+    elif pathname.startswith('/graph/'):
+        logger.debug("Graph type page requested")
         return lay.graphit(pfullurl)
     else:
         return lay.noPage

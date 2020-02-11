@@ -605,11 +605,15 @@ def update_jobs_table(raw_toggle, search_value, end, rows_per_page, page_current
         results = alt[(alt['job id'].str.contains(search_value))
                       | (alt['tags'].str.contains(search_value))]
     else:
-        # Search on abbreviated data and tags as columns
-        results = alt[(alt['exp_name'].str.contains(search_value))
-                      | (alt['job id'].str.contains(search_value))
-                      | (alt['exp_component'].str.contains(search_value))
-                      | (alt['tags'].str.contains(search_value))]
+        try:
+            # Search on abbreviated data and tags as columns
+            results = alt[(alt['exp_name'].str.contains(search_value))
+                        | (alt['job id'].str.contains(search_value))
+                        | (alt['exp_component'].str.contains(search_value))
+                        | (alt['tags'].str.contains(search_value))]
+        except KeyError:
+            logger.warn("Threw key err due to no jobs or stale data")
+            results = pd.DataFrame()
     logger.info("Found {} search results on \"{}\"".format(
         int(results.shape[0]), search_value))
     alt = results

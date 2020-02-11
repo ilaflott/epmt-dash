@@ -133,3 +133,18 @@ Ran 2 tests in 13.347s
 
 OK
 root@78d1d1a05101:/usr/workspace/test#
+
+
+Testing functions with pytest:
+
+From the dash interface directory epmt/ui here:
+
+chris@asus:~/Documents/playground/MM/build/epmt/ui$ python -m pytest test/test_urlparse.py -W ignore::DeprecationWarning
+Test session starts (platform: linux, Python 3.7.6, pytest 5.3.4, pytest-sugar 0.9.2)
+rootdir: /home/chris/Documents/playground/MM/build/epmt/ui
+plugins: dash-1.4.1, mock-2.0.0, sugar-0.9.2
+collecting ... 
+ test/test_urlparse.py ✓✓✓✓                                                                                                             100% ██████████
+
+Results (6.11s):
+       4 passed
