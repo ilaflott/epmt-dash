@@ -10,3 +10,4 @@ from table import make_dash_table
 #from .functions import update_first_datatable, update_first_download, update_second_datatable, update_graph
 from functions import parseurl, power_labels, get_unit, convtounit, recent_button, list_of_contrast, durList, separateDataBy, create_gantt_graph, create_boxplot
 from url_parser import parse_url
+from ops_tester import *

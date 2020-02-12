@@ -763,12 +763,23 @@ def graphit(pfullurl):
 def graph_plotly(url):
     e = parse_url(url)
     logger.debug(e)
-    (path,query) = (e['path'],e['query'])
+    path= e['path']
+    query = e['query']
     graph_style = path[1]
     if graph_style == 'gantt':
-        graph_data = create_gantt_graph()
+        default_tags = ['op_instance','op']
+        if len(path)>2:
+            job = path[2]
+        gtags = query.get('tags',None)
+        graph_data = create_gantt_graph(job,gtags if gtags else default_tags)
     elif graph_style == 'boxplot':
-        graph_data = create_boxplot()
+        model = None
+        jobs = []
+        if len(path)>2:
+            model = path[2]
+        if query:
+            jobs = query['jobs']
+        graph_data = create_boxplot(model,jobs)
     else:
         graph_data = 'Unknown graphstyle'
 

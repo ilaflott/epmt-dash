@@ -19,6 +19,7 @@ else:
     from epmt_query import get_procs, get_ops
 
 
+
 # Return dictionary query results
 def parseurl(i):
     """ 
@@ -227,20 +228,28 @@ def separateDataBy(data, graphStyle="exename", pointText=("path", "exe", "args")
     return output
 
 
-def gantt_me(jobs=[], gtags=['op']):
+def df_normalizer(df, norm_metric='cpu_time'):
+    df = df.set_index('op')
+    means_stds = df.groupby('op')[norm_metric].agg(['mean','std']).reset_index()
+    df = df.merge(means_stds,on='op')
+    df[norm_metric +'_normalized'] = (df[norm_metric] - df['mean']) / df['std']
+    return df
+
+
+def gantt_me(jobs=[], gtags=None):
     """Generate Gantt chart data"""
     start_times, end_times, op_name, op_dur, dfn = ([] for i in range(5))
     e = get_procs()[:1]
     logger.error(e)
-    op = get_ops(jobs, tags = gtags, fmt='orm')
+    op = get_ops(jobs, tags = gtags, fmt='dict')
 
     # Roll ops into a zip
     for n in op:
         # Grossly extend a list for each metric to be graphed
-        start_times.extend([n.start])
-        end_times.extend([n.finish])
+        start_times.extend([n['start']])
+        end_times.extend([n['finish']])
         op_name.extend(["{}".format(list(n['tags'].items())[0])])
-        op_dur.extend([n.duration])
+        op_dur.extend([n['duration']])
     rolled_ops = zip(op_name, start_times, end_times, op_dur)
 
     # Start times should be first
@@ -251,14 +260,13 @@ def gantt_me(jobs=[], gtags=['op']):
     return dfn
 
 
-def create_gantt_graph():
+def create_gantt_graph(joblist=[],gtag=['op_instance','op']):
     """gantt_me wrapper"""
     import plotly.figure_factory as ff
     import dash
     import dash_core_components as dcc
-    joblist = ['625172']
-    gtag = ['op_instance','op']
-    gantt_data = gantt_me(joblist, gtag)
+    
+    gantt_data = gantt_me(jobs=joblist, gtags=gtag)
     gcolors = list_of_contrast(len(gantt_data),(33,45,237),0.05)
     fig = ff.create_gantt(gantt_data,colors=gcolors,bar_width=0.4)
     fig.update_layout(title="Job {} Timeline for tag:'{}'".format(joblist,gtag))
@@ -274,38 +282,67 @@ def create_gantt_graph():
     )
     return basic_graph
 
-def create_boxplot():
+def create_boxplot(model='test_model', jobs=['676007','625172','804285']):
     """boxplot wrapper"""
-    import plotly.figure_factory as ff
-    import dash
     import dash_core_components as dcc
+    import plotly.graph_objects as go
+    import plotly.express as px
+    import pandas as pd
+    from epmt_query import op_metrics, get_ops,get_refmodels
+
+    model_name = model
+    jobs2test_against_model = jobs
+
+    jobs = get_refmodels(name=model_name)[0]['jobs']
+
+    # Include test jobs
+    if jobs2test_against_model:
+        jobs.extend(jobs2test_against_model)
+
+    # Convert get_ops into list for all jobs
+    op_list = []
+    [op_list.extend(get_ops(jobby, tags = 'op', combine=False)) for jobby in jobs]
+    ops_dur = pd.DataFrame([(op['jobs'][0].jobid, op['tags']['op'], op['proc_sums']['cpu_time']) for op in op_list], columns=['jobid','op','cpu_time'])
+
+    # Assign testjob column
+    ops_dur['testjob'] = ops_dur['jobid'].apply(lambda n: True if n in jobs2test_against_model else False)
+    
+    # Mean Normalize
+    ops_dur = df_normalizer(ops_dur)
+    
+    # Create the model boxplot
+    fig = px.box(ops_dur[(ops_dur['testjob']==False)], title="Mean normalized cpu_wait Per Op: Jobs({}) versus Model({})".format(', '.join(jobs2test_against_model), model_name), x="cpu_time_normalized", y="op", hover_name="jobid", hover_data=["cpu_time", "cpu_time_normalized"], orientation='h', points='outliers')#, color='op')
+
+    # Color outliers Red
+    fig.update_traces(marker=dict(outliercolor='rgba(219, 64, 82, 0.6)'))
+
+    # Display legend for scatter points
+    fig.update_layout(showlegend=True)
+
+    # Scatter the test jobs against the model
+    fig.add_trace(
+        go.Scatter(
+            mode='markers',
+            x=ops_dur[(ops_dur['testjob']==True)]['cpu_time_normalized'],
+            y=ops_dur[(ops_dur['testjob']==True)]['op'],
+            opacity=1,
+            name="Test Jobs",
+            text=ops_dur[(ops_dur['testjob']==True)]['jobid'],
+            hoverinfo='text',
+            marker=dict(
+                color='LightSkyBlue',
+                size=10,
+                line=dict(
+                    color='Green',
+                    width=2
+                )
+            ),
+            showlegend=True
+        )
+)
+
     basic_graph = dcc.Graph(
         id='basic-interactions',
-        figure={
-            'data': [
-                {
-                    'x': [1, 2, 3, 4],
-                    'y': [4, 1, 3, 5],
-                    'text': ['a', 'b', 'c', 'd'],
-                    'customdata': ['c.a', 'c.b', 'c.c', 'c.d'],
-                    'name': 'Trace 1',
-                    'mode': 'markers',
-                    'marker': {'size': 12}
-                },
-                {
-                    'x': [1, 2, 3, 4],
-                    'y': [9, 4, 1, 4],
-                    'text': ['w', 'x', 'y', 'z'],
-                    'customdata': ['c.w', 'c.x', 'c.y', 'c.z'],
-                    'name': 'Trace 2',
-                    'mode': 'markers',
-                    'marker': {'size': 12}
-                }
-            ],
-            'layout': {
-                'title': 'Boxplot Placeholder',
-                'clickmode': 'event+select'
-            }
-        }
+        figure=fig
     )
     return basic_graph
