@@ -12,11 +12,11 @@ class TestTemplate(unittest.TestCase):
 
     def setUp(self):
         """Start web driver"""
-        chrome_options = webdriver.ChromeOptions()
-        chrome_options.add_argument('--no-sandbox')
-        chrome_options.add_argument('--headless')
-        chrome_options.add_argument('--disable-gpu')
-        self.driver = webdriver.Chrome(chrome_options=chrome_options)
+        options = webdriver.ChromeOptions()
+        options.add_argument('--no-sandbox')
+        options.add_argument('--headless')
+        options.add_argument('--disable-gpu')
+        self.driver = webdriver.Chrome(options=options)
         self.driver.implicitly_wait(10)
 
     def tearDown(self):

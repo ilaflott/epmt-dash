@@ -779,7 +779,7 @@ def graph_plotly(url):
             model = path[2]
         if query:
             jobs = query['jobs']
-        graph_data = create_boxplot(model,jobs)
+        graph_data = create_boxplot(model,jobs,normalize=query.get('normalize',['True'])[0],metric=query.get('metric',['cpu_time'])[0])
     else:
         graph_data = 'Unknown graphstyle'
 

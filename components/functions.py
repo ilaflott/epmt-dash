@@ -282,7 +282,7 @@ def create_gantt_graph(joblist=[],gtag=['op_instance','op']):
     )
     return basic_graph
 
-def create_boxplot(model='test_model', jobs=['676007','625172','804285']):
+def create_boxplot(model='test_model', jobs=['676007','625172','804285'], normalize=True, metric='cpu_time'):
     """boxplot wrapper"""
     import dash_core_components as dcc
     import plotly.graph_objects as go
@@ -292,8 +292,16 @@ def create_boxplot(model='test_model', jobs=['676007','625172','804285']):
 
     model_name = model
     jobs2test_against_model = jobs
+    boxplot_title = metric + " Per Op: Jobs({}) ".format(', '.join(jobs2test_against_model))
+    # Handle missing model
+    try:
+        jobs = get_refmodels(name=model_name)[0]['jobs']
+        # Model exists include it in title
+        boxplot_title = boxplot_title + " versus Model({})".format(model_name)
+    except IndexError:
+        jobs = []
+        boxplot_title = boxplot_title + " {} model not found".format(model_name)
 
-    jobs = get_refmodels(name=model_name)[0]['jobs']
 
     # Include test jobs
     if jobs2test_against_model:
@@ -302,44 +310,59 @@ def create_boxplot(model='test_model', jobs=['676007','625172','804285']):
     # Convert get_ops into list for all jobs
     op_list = []
     [op_list.extend(get_ops(jobby, tags = 'op', combine=False)) for jobby in jobs]
-    ops_dur = pd.DataFrame([(op['jobs'][0].jobid, op['tags']['op'], op['proc_sums']['cpu_time']) for op in op_list], columns=['jobid','op','cpu_time'])
+    ops_dur = pd.DataFrame([(op['jobs'][0].jobid, op['tags']['op'], op['proc_sums'][metric]) for op in op_list], columns=['jobid','op',metric])
 
     # Assign testjob column
     ops_dur['testjob'] = ops_dur['jobid'].apply(lambda n: True if n in jobs2test_against_model else False)
-    
-    # Mean Normalize
-    ops_dur = df_normalizer(ops_dur)
+    x_title = metric
+
+    # Check to apply normalization
+    if normalize is 'True':
+        boxplot_title = "Mean normalized " + boxplot_title
+        # Mean Normalize
+        ops_dur = df_normalizer(ops_dur, norm_metric=metric)
+        x_title = x_title + "_normalized"
     
     # Create the model boxplot
-    fig = px.box(ops_dur[(ops_dur['testjob']==False)], title="Mean normalized cpu_wait Per Op: Jobs({}) versus Model({})".format(', '.join(jobs2test_against_model), model_name), x="cpu_time_normalized", y="op", hover_name="jobid", hover_data=["cpu_time", "cpu_time_normalized"], orientation='h', points='outliers')#, color='op')
+    fig = px.box(ops_dur[(ops_dur['testjob']==False)], title=boxplot_title, x=x_title, y="op", hover_name="jobid", hover_data=[metric, x_title], orientation='h', points='suspectedoutliers')#, color='op')
 
     # Color outliers Red
-    fig.update_traces(marker=dict(outliercolor='rgba(219, 64, 82, 0.6)'))
+    # only enabled if px.box(points='suspectedoutliers')
+    # fig.update_traces(marker=dict(outliercolor='rgba(219, 64, 82, 0.6)'))
 
     # Display legend for scatter points
     fig.update_layout(showlegend=True)
 
+    # Filter dataframe for test jobs
+    filtered = ops_dur[(ops_dur['testjob']==True)]
+
+    # Get unique jobids from filtered list
+    uniq_job_ops = filtered.jobid.unique()
+
+    # Dataframe to graph
+    df_to_scatter = [filtered[(filtered['jobid']==job)] for job in uniq_job_ops]
+
     # Scatter the test jobs against the model
-    fig.add_trace(
+    [fig.add_trace(
         go.Scatter(
             mode='markers',
-            x=ops_dur[(ops_dur['testjob']==True)]['cpu_time_normalized'],
-            y=ops_dur[(ops_dur['testjob']==True)]['op'],
+            x=job[x_title],
+            y=job['op'],
             opacity=1,
-            name="Test Jobs",
-            text=ops_dur[(ops_dur['testjob']==True)]['jobid'],
+            name=job.head(1).jobid.to_string(index=False),
+            text=job.jobid,
             hoverinfo='text',
             marker=dict(
-                color='LightSkyBlue',
+                #color='LightSkyBlue',
                 size=10,
                 line=dict(
-                    color='Green',
+                    #color='Green',
                     width=2
                 )
             ),
             showlegend=True
         )
-)
+) for job in df_to_scatter]
 
     basic_graph = dcc.Graph(
         id='basic-interactions',
