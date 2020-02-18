@@ -761,6 +761,18 @@ def graphit(pfullurl):
     ], className="page")
 
 def graph_plotly(url):
+    """
+    Based on the url this function will return the page including
+    the graph data.  Parsing the url and passing it onto the appropriate
+    functions.
+    Currently supports gantt & boxplot url options.
+
+    gantt:
+        graph_plotly('http://localhost:8050/graph/gantt/804278?tags=op_instance:16,op_instance:10')
+    
+    boxplot:
+        graph_plotly('http://localhost:8050/graph/boxplot/model_sample?jobs=job1,job2&normalize=True')
+    """
     e = parse_url(url)
     logger.debug(e)
     path= e['path']

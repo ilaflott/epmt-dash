@@ -1,5 +1,4 @@
 version: '3.1'
-
 services:
   dash:
     image: epmt-interface:latest
@@ -11,3 +10,13 @@ services:
       - ./sample:/home/dash/sample
     ports:
       - 8050:8050
+
+    test:
+      build:
+        context: .
+        dockerfile: Dockerfiles/Dockerfile.chromedriver-sel
+      command: /bin/bash -c 'cd /epmt && python ui/test/first_dash_test.py'
+      volumes:
+        - ./:/epmt
+      links:
+        - dash

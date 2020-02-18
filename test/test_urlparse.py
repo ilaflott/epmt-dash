@@ -1,5 +1,5 @@
 """
-Test url path handling
+Test url path handling and generation
 """
 
 import unittest
@@ -53,6 +53,13 @@ class TestTemplate(unittest.TestCase):
         self.assertEqual(url_parser.parse_url('www.localhost'), {'path': [], 'query': {}})
         self.assertEqual(url_parser.parse_url('www.localhost/'), {'path': [], 'query': {}})
         self.assertEqual(url_parser.parse_url('www.localhost/route1'), {'path': ['route1'], 'query': {}})
-
+    def test_case_10(self):
+        """Basic gantt generator test tags=op,op_instance"""
+        seeking = 'http://localhost:8050/graph/gantt/job1?tags=op,op_instance'
+        self.assertEqual(url_parser.url_gen('gantt',['job1'],parameters=['tags=op,op_instance']), seeking)
+    def test_case_11(self):
+        """Basic boxplot generator model_sample against jobs job1 job 2 query normalize True"""
+        seeking = 'http://localhost:8050/graph/boxplot/model_sample?jobs=job1,job2&normalize=True'
+        self.assertEqual(url_parser.url_gen('boxplot',['job1','job2'],model='model_sample',parameters=['normalize=True']), seeking)
 if __name__ == '__main__':
     unittest.main()

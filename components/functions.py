@@ -229,6 +229,11 @@ def separateDataBy(data, graphStyle="exename", pointText=("path", "exe", "args")
 
 
 def df_normalizer(df, norm_metric='cpu_time'):
+    """
+    Simple mean normalizer algorithm that works on dataframes.
+    Will create a new column titled the value from norm_metric
+    Normalized Column: (norm_metric)_normalized
+    """
     df = df.set_index('op')
     means_stds = df.groupby('op')[norm_metric].agg(['mean','std']).reset_index()
     df = df.merge(means_stds,on='op')
@@ -237,10 +242,10 @@ def df_normalizer(df, norm_metric='cpu_time'):
 
 
 def gantt_me(jobs=[], gtags=None):
-    """Generate Gantt chart data"""
+    """
+    Generate Gantt chart data
+    """
     start_times, end_times, op_name, op_dur, dfn = ([] for i in range(5))
-    e = get_procs()[:1]
-    logger.error(e)
     op = get_ops(jobs, tags = gtags, fmt='dict')
 
     # Roll ops into a zip
@@ -261,7 +266,11 @@ def gantt_me(jobs=[], gtags=None):
 
 
 def create_gantt_graph(joblist=[],gtag=['op_instance','op']):
-    """gantt_me wrapper"""
+    """
+    Generate the data to be graphed and supply it to the graphing
+    function gantt_me.  Also do some minor formatting adjustments
+    to the graph before returning the dash dcc graph object.
+    """
     import plotly.figure_factory as ff
     import dash
     import dash_core_components as dcc
