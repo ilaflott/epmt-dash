@@ -801,6 +801,34 @@ def graph_plotly(url):
     ], className="page")
 
 
+def compare(url):
+
+    return html.Div([
+        html.Div(children=url
+            # Hidden Div full url
+        ,id='fullurl', style={'display':'none'}),
+        html.Div([
+            dcc.Graph(id='scatter-compare')]),
+        html.Div([
+            "X:",
+            dcc.Dropdown(
+                id='x-scatter-dropdown',
+                options=[
+                    {'label': 'duration', 'value': 'duration'},
+                    {'label': 'cpu_time', 'value': 'cpu_time'}
+                ])
+        ], style={'width': '49%','display': 'inline-block'}),
+        html.Div([
+            "Y:",
+            dcc.Dropdown(
+                id='y-scatter-dropdown',
+                options=[
+                    {'label': 'cpu_time', 'value': 'cpu_time'},
+                    {'label': 'duration', 'value': 'duration'}
+                ])
+            ], className="subpage",
+        style={'width': '49%','display': 'inline-block'})
+        ], className="page")
 ######################## END table Layout ########################
 
 

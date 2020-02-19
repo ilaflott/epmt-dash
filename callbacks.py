@@ -710,3 +710,28 @@ def display_graph():
         }
     }
 ######################## /Create Ref Callbacks ########################
+
+@app.callback(
+    dash.dependencies.Output('scatter-compare', 'figure'),
+    [dash.dependencies.Input('x-scatter-dropdown', 'value'),
+     dash.dependencies.Input('y-scatter-dropdown', 'value')],
+    [dash.dependencies.State('fullurl', 'children')]
+)
+def generate_scatter(x,y,url):
+    import pandas as pd
+    import plotly.express as px
+    import epmt_query as eq
+    from epmtlib import tag_from_string
+    from components import parse_url
+    e = parse_url(url)
+    tags = tag_from_string(';'.join(e['query']['tags']))
+    logger.debug(e)
+    #op_list = []
+    #metric = 'cpu_time'
+    #[op_list.extend(eq.get_ops(jobby, tags = 'op', combine=False)) for jobby in ['625172','627922','629320','629323','629322']]
+    #ops_dur = pd.DataFrame([(op['jobs'][0].jobid, op['tags']['op'], op['proc_sums'][metric]) for op in op_list], columns=['jobid','op',metric])
+    #e = fun.df_normalizer(ops_dur,'op',metric)
+    e = eq.get_jobs(fmt='pandas',tags=tags)[['jobid','duration','cpu_time']]
+
+    fig = px.scatter(e,x=x,y=y, color="jobid",size="cpu_time", title=url)
+    return fig

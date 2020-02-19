@@ -228,15 +228,15 @@ def separateDataBy(data, graphStyle="exename", pointText=("path", "exe", "args")
     return output
 
 
-def df_normalizer(df, norm_metric='cpu_time'):
+def df_normalizer(df, idx='op', norm_metric='cpu_time'):
     """
     Simple mean normalizer algorithm that works on dataframes.
     Will create a new column titled the value from norm_metric
     Normalized Column: (norm_metric)_normalized
     """
-    df = df.set_index('op')
-    means_stds = df.groupby('op')[norm_metric].agg(['mean','std']).reset_index()
-    df = df.merge(means_stds,on='op')
+    df = df.set_index(idx)
+    means_stds = df.groupby(idx)[norm_metric].agg(['mean','std']).reset_index()
+    df = df.merge(means_stds,on=idx)
     df[norm_metric +'_normalized'] = (df[norm_metric] - df['mean']) / df['std']
     return df
 

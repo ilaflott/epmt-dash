@@ -69,6 +69,8 @@ def display_page(pathname, pfullurl):
         return lay.layouts(pfullurl)
     elif str(pathname).startswith('/graph'):
         return lay.graph_plotly(pfullurl)
+    elif str(pathname).startswith('/compare'):
+        return lay.compare(pfullurl)
     else:
         return lay.noPage
 
