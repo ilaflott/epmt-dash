@@ -150,6 +150,8 @@ class Models:
     id = 0
     model_list = []
 
+class Job:
+    jobid = 'initialjobid'
 
 def create_refmodel(name, jobs=[], tag={}, enabled=True):
     """ This mock reference model method accepts a job name
@@ -166,7 +168,7 @@ def create_refmodel(name, jobs=[], tag={}, enabled=True):
             'tags': tag, 'jobs': jobs, 'enabled': enabled}
 
 
-def get_refmodels():
+def get_refmodels(name=None):
     """ Returns a list of models
     """
     return Models.model_list
@@ -202,6 +204,11 @@ def get_jobs(jobs=None, tags=None, fltr=None, order=None, limit=None, offset=0, 
     sample_name = '_historical'
     name_list = ['ESM0', 'ESM1']
     result = []
+    
+    # If Limit is not set make it short for mock jobs
+    if not limit:
+        limit = 50
+    
     for njob in range(limit):
         job = dict(SAMPLE_JOB)
         job['jobid'] = str(1234000 + njob)
@@ -210,13 +217,84 @@ def get_jobs(jobs=None, tags=None, fltr=None, order=None, limit=None, offset=0, 
         job['end'] = job['end'] + timedelta(days=njob)
         name = name_list[njob % 2]
         job['tags']['exp_name'] = name + sample_name
+        job['duration'] = job['duration'] - njob*8000000
+        job['cpu_time'] = job['cpu_time'] - njob*100
         if job['jobid'] == str(1234002):
             job['tags']['exp_name'] = "mismatch_test"
         comp = component_list[njob % 3] + sample_component
         job['tags']['exp_component'] = str(comp)
         result.append(deepcopy(job))
-    return result[offset:]
+    
+    # Convert to dataframe for filtering sorting etc.
+    df = pd.DataFrame.from_records(result)
 
+    # Offset before filtering
+    df = df[offset:]
+
+    # Filter on keys
+    if tags != None:
+        from json import dumps
+        for key in tags.keys():
+            # Filter down to requested key
+            n = df[df['tags'].apply(dumps).str.contains(key)]
+            if not n.empty:
+                # Finally filter on value
+                df = n[n['tags'].apply(dumps).str.contains(tags[key])]
+            else:
+                # No match on key value return df empty
+                df = df.head(0)
+
+    if fmt=='pandas':
+        return df
+    return df.to_dict('records')
+
+
+def get_ops(jobs, tags=[], exact_tag_only=False, combine=False, fmt='dict', op_duration_method='sum'):
+    an_op = {'jobs': ['804278'],
+             'tags': {'op': 'ncatted'},
+             'exact_tag_only': False,
+             'op_duration_method': 'sum',
+             'duration': 1174198.0,
+             'proc_sums': {'majflt': 0,
+                           'PERF_COUNT_SW_CPU_CLOCK': 64705386,
+                           'processor': 0,
+                           'time_waiting': 360216033,
+                           'syscr': 33968,
+                           'numtids': 246,
+                           'read_bytes': 0,
+                           'invol_ctxsw': 1039,
+                           'cpu_time': 2792326.0,
+                           'num_procs': 246,
+                           'rchar': 185635576,
+                           'rssmax': 1211560,
+                           'time_oncpu': 2904320316,
+                           'outblock': 2408,
+                           'cancelled_write_bytes': 0,
+                           'rdtsc_duration': 4056018512,
+                           'usertime': 1892581,
+                           'vol_ctxsw': 2186,
+                           'wchar': 532027,
+                           'guest_time': 0,
+                           'minflt': 391761,
+                           'delayacct_blkio_time': 0,
+                           'duration': 1174198.0,
+                           'syscw': 344,
+                           'user+system': 2792326,
+                           'write_bytes': 1232896,
+                           'timeslices': 3473,
+                           'inblock': 0,
+                           'systemtime': 899745},
+             'processes': ["Process 1", "Process 2"],
+             'start': datetime.datetime(2019, 6, 22, 17, 44, 40, 279441),
+             'finish': datetime.datetime(2019, 6, 22, 17, 52, 16, 164008)}
+    res = []
+    for job in jobs:
+        e = deepcopy(an_op)
+        j = Job()
+        j.jobid = job
+        e["jobs"] = [j]
+        res.extend([e])
+    return res
 
 def comparable_job_partitions(jobs, matching_keys=['exp_name', 'exp_component']):
     """Mock comparable_jobs
@@ -249,11 +327,9 @@ def comparable_job_partitions(jobs, matching_keys=['exp_name', 'exp_component'])
     # Reconfigure output format with out
     out = [((exp_name, exp_component), cdict[(exp_name, exp_component)])
            for exp_name, exp_component in cdict]
-    logger.debug(out)
     return out
 
 import time
-from datetime import date, timedelta
 
 def str_time_prop(start, end, format):
     """Get a time at a proportion of a range of two formatted times.

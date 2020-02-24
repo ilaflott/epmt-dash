@@ -34,11 +34,13 @@ logger = getLogger(__name__)
 
 if MOCK_EPMT_API:
     logger.info("Using Mock API")
-    from epmt_query_mock import comparable_job_partitions, get_refmodels, delete_refmodels, create_refmodel
+    from epmt_query_mock import comparable_job_partitions, get_refmodels, delete_refmodels, create_refmodel, get_jobs
     from epmt_outliers_mock import detect_outlier_jobs
+    from epmt_mock import tag_from_string
 else:
     logger.info("Using EPMT API")
-    from epmt_query import comparable_job_partitions, get_refmodels, delete_refmodels, create_refmodel
+    from epmtlib import tag_from_string
+    from epmt_query import comparable_job_partitions, get_refmodels, delete_refmodels, create_refmodel, get_jobs
     from epmt_outliers import detect_outlier_jobs
 
 # pd.options.mode.chained_assignment = None
@@ -720,8 +722,6 @@ def display_graph():
 def generate_scatter(x,y,url):
     import pandas as pd
     import plotly.express as px
-    import epmt_query as eq
-    from epmtlib import tag_from_string
     from components import parse_url
     e = parse_url(url)
     tags = tag_from_string(';'.join(e['query']['tags']))
@@ -731,7 +731,74 @@ def generate_scatter(x,y,url):
     #[op_list.extend(eq.get_ops(jobby, tags = 'op', combine=False)) for jobby in ['625172','627922','629320','629323','629322']]
     #ops_dur = pd.DataFrame([(op['jobs'][0].jobid, op['tags']['op'], op['proc_sums'][metric]) for op in op_list], columns=['jobid','op',metric])
     #e = fun.df_normalizer(ops_dur,'op',metric)
-    e = eq.get_jobs(fmt='pandas',tags=tags)[['jobid','duration','cpu_time']]
-
+    e = get_jobs(fmt='pandas',tags=tags)
     fig = px.scatter(e,x=x,y=y, color="jobid",size="cpu_time", title=url)
     return fig
+
+
+@app.callback(
+    [dash.dependencies.Output('multi-flow-chart', 'figure'),
+     dash.dependencies.Output('job-flow-text', 'children'),
+     dash.dependencies.Output('zoom-level-multi-flow','max')],
+    [dash.dependencies.Input('zoom-level-multi-flow', 'value'),
+     dash.dependencies.Input('y-metric-multi-flow', 'value'),
+     dash.dependencies.Input('multi-flow-chart', 'selectedData')],
+    [dash.dependencies.State('fullurl', 'children')]
+)
+def generate_multilayout_graph(zoom,y,click_data,url):
+    
+    import pandas as pd
+    import plotly.express as px
+    from components import parse_url
+    e = parse_url(url)
+    tags = tag_from_string(';'.join(e['query']['tags']))
+    logger.debug(e)
+    #op_list = []
+    #metric = 'cpu_time'
+    #[op_list.extend(eq.get_ops(jobby, tags = 'op', combine=False)) for jobby in ['625172','627922','629320','629323','629322']]
+    #ops_dur = pd.DataFrame([(op['jobs'][0].jobid, op['tags']['op'], op['proc_sums'][metric]) for op in op_list], columns=['jobid','op',metric])
+    #e = fun.df_normalizer(ops_dur,'op',metric)
+    e = get_jobs(fmt='pandas',tags=tags)
+    logger.debug("First job seen: \n{}".format(e[['jobid','duration','num_procs']].head(1).to_string(index=False)))
+    logger.debug("Zoom state: {}".format(type(zoom)))
+    #fig = px.scatter(e,x='jobid',y=y, title=url)
+    fig = {
+        'data': [dict(
+            x=pd.to_datetime(e['created_at']).dt.date.unique().tolist(),
+            y=e[[y]].values.flatten().tolist(),
+            text=e[['jobid']].values.flatten().tolist(),
+            #customdata=dff[dff['Indicator Name'] == yaxis_column_name]['Country Name'],
+            mode='markers',
+            marker={
+                'size': 15,
+                'opacity': 0.5,
+                'line': {'width': 0.5, 'color': 'white'}
+            }
+        )],
+        'layout': dict(
+            xaxis={
+                'title': "Job ID",
+                #'type': 'linear' if xaxis_type == 'Linear' else 'log'
+            },
+            yaxis={
+                #'title': yaxis_column_name,
+                #'type': 'linear' if yaxis_type == 'Linear' else 'log'
+            },
+            margin={'l': 40, 'b': 30, 't': 10, 'r': 0},
+            height=450,
+            hovermode='closest',
+            clickmode='event+select'
+        )
+    }
+
+    if zoom < 1:
+        # User has selected a job
+        if click_data:
+            points = [point['pointIndex'] for point in click_data['points']]
+            points = e.iloc[points]['jobid'].to_csv(header=False,index=False).strip('\n').split('\n')
+            logger.debug("selected data please: {}".format(points))
+            
+            # Return graph, updating selected jobs, allow slider operations
+            return [fig,', '.join(points),1]
+    
+    return [fig,"Please select a job",0]

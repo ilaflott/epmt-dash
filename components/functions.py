@@ -13,10 +13,10 @@ logger = getLogger(__name__)
 
 if MOCK_EPMT_API:
     logger.info("Using Mock API")
-    from epmt_query_mock import get_procs
+    from epmt_query_mock import get_procs, get_ops, get_refmodels
 else:
     logger.info("Using EPMT API")
-    from epmt_query import get_procs, get_ops
+    from epmt_query import get_procs, get_ops, get_refmodels
 
 
 
@@ -297,8 +297,10 @@ def create_boxplot(model='test_model', jobs=['676007','625172','804285'], normal
     import plotly.graph_objects as go
     import plotly.express as px
     import pandas as pd
-    from epmt_query import op_metrics, get_ops,get_refmodels
-
+    #from epmt_query import get_ops, get_refmodels
+    logger.debug("Creating boxplot")
+    logger.debug("Jobs: {}".format(jobs))
+    logger.debug("Normalize: {}".format(normalize))
     model_name = model
     jobs2test_against_model = jobs
     boxplot_title = metric + " Per Op: Jobs({}) ".format(', '.join(jobs2test_against_model))

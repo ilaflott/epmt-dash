@@ -71,6 +71,8 @@ def display_page(pathname, pfullurl):
         return lay.graph_plotly(pfullurl)
     elif str(pathname).startswith('/compare'):
         return lay.compare(pfullurl)
+    elif pathname == '/multilayout':
+        return lay.multi_flow(pfullurl)
     else:
         return lay.noPage
 

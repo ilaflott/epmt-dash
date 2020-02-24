@@ -816,7 +816,8 @@ def compare(url):
                 options=[
                     {'label': 'duration', 'value': 'duration'},
                     {'label': 'cpu_time', 'value': 'cpu_time'}
-                ])
+                ],
+                value='duration')
         ], style={'width': '49%','display': 'inline-block'}),
         html.Div([
             "Y:",
@@ -825,10 +826,88 @@ def compare(url):
                 options=[
                     {'label': 'cpu_time', 'value': 'cpu_time'},
                     {'label': 'duration', 'value': 'duration'}
-                ])
+                ],
+                value='cpu_time')
             ], className="subpage",
         style={'width': '49%','display': 'inline-block'})
         ], className="page")
+
+
+def multi_flow(url):
+    return html.Div([
+        # hidden url for callback
+        html.Div(children=url
+        ,id='fullurl', style={'display':'none'}),
+        html.Div([
+            
+            dcc.Graph(id='multi-flow-chart',
+                      figure={
+                          'data': [
+                              {
+                                  'x': [1, 2, 3, 4],
+                                  'y': [4, 1, 3, 5],
+                                  'text': ['a', 'b', 'c', 'd'],
+                                  'customdata': ['c.a', 'c.b', 'c.c', 'c.d'],
+                                  'name': 'Trace 1',
+                                  'mode': 'markers',
+                                  'marker': {'size': 12}
+                              },
+                              {
+                                  'x': [1, 2, 3, 4],
+                                  'y': [9, 4, 1, 4],
+                                  'text': ['w', 'x', 'y', 'z'],
+                                  'customdata': ['c.w', 'c.x', 'c.y', 'c.z'],
+                                  'name': 'Trace 2',
+                                  'mode': 'markers',
+                                  'marker': {'size': 12}
+                              }
+                          ],
+                          'layout': {
+                              'clickmode': 'event+select'
+                          }
+                      },
+                      style={'width': '100%'}),
+        ]),
+        html.Div([
+            html.Div(id='job-flow-text',style={'position':'relative','left':'17%','width':'200px','display':'inline-block','text-align':'center'}),
+            html.Div(["operation"],id='op-flow-text',style={'position':'relative','left':'20%','width':'200px','display':'inline-block','text-align':'center'}),
+            html.Div(["process"],id='proc-flow-text',style={'position':'relative','left':'23%','width':'200px','display':'inline-block','text-align':'center'}),
+            html.Div(["thread"],id='thread-flow-text',style={'position':'relative','left':'27%','width':'200px','display':'inline-block','text-align':'center'}),
+            html.Div(
+            dcc.Slider(
+                id='zoom-level-multi-flow',
+                step=None,
+                min=0,
+                max=0,
+                value=0,
+                marks={
+                    0: {'label': 'Job'},
+                    1: {'label': 'Operation'},
+                    2: {'label': 'Process'},
+                    3: {'label': 'Thread'},
+                },
+                included=False,
+                #vertical=True,
+            ),style={"width": '240px',
+            'height': '40px',
+            # 'margin': 'auto',
+            'position': 'relative',
+            'left': '25%'}),
+            html.Div([
+            "Metric:",
+            dcc.Dropdown(
+                id='y-metric-multi-flow',
+                options=[
+                    {'label': 'duration', 'value': 'duration'},
+                    {'label': 'cpu_time', 'value': 'cpu_time'},
+                    {'label': 'write_bytes', 'value': 'write_bytes'}
+                ],
+                value='duration'
+            )],style={'inline': 'true'})
+        ],style={'inline': 'true'}) # div
+    ])  # outer div
+    
+
 ######################## END table Layout ########################
 
 
