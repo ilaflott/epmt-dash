@@ -325,6 +325,7 @@ def create_boxplot(model='test_model', jobs=['676007','625172','804285'], normal
 
     # Assign testjob column
     ops_dur['testjob'] = ops_dur['jobid'].apply(lambda n: True if n in jobs2test_against_model else False)
+    
     x_title = metric
 
     # Check to apply normalization
@@ -377,6 +378,90 @@ def create_boxplot(model='test_model', jobs=['676007','625172','804285'], normal
 
     basic_graph = dcc.Graph(
         id='basic-interactions',
+        figure=fig
+    )
+    return basic_graph
+
+
+def create_bargraph(exp_name=None, metric=['duration','cpu_time'], model=None, jobs=None, normalize=True, order_by='duration', limit=100):
+    import dash_core_components as dcc
+    import plotly.express as px
+    import pandas as pd
+    from epmt_query import get_jobs
+    
+    if not exp_name:
+        return None
+    
+    order_key_list=metric
+
+    exp_jobs = get_jobs(tags={ 'exp_name': exp_name }, fmt='dict', limit=0)
+    sum_dict = {}
+    c_dict = {}
+    for j in exp_jobs:
+        c = j['tags']['exp_component']
+        entry = c_dict.get(c, {'data': []})
+        entry['data'].append((j['tags']['exp_time'], j['jobid'], [j[ok] for ok in order_key_list]))
+        c_dict[c] = entry
+
+    comps = []
+    #feature_val = []
+    #for c,v in c_dict.items():
+    #    comps.extend([c])
+    #    # Total order_key into feature_val
+    #    feature_val.extend([sum([n[2] for n in v['data']])])
+    # Find 10 largest
+    #df = pd.DataFrame({'Component':comps,order_key+'_sum':feature_val}).sort_values(order_key+'_sum',ascending=False).head(10)
+    # Invert order and build chart
+    #fig = px.bar(df.sort_values(order_key+'_sum',ascending=True), x=order_key+"_sum", y="Component", title="Top 10 " + exp_name + " components by " + order_key, orientation='h') #, color='op')
+    for ok in order_key_list:
+        for c,v in c_dict.items():
+            comps.extend([c])
+            # Reset collection list for each okl
+            lis = []
+            for g in v['data']:
+                lis.extend([g[2][order_key_list.index(ok)]])
+                # assign list to collection dict
+                if c in sum_dict:
+                    sum_dict[c].update({ok:lis})
+                else:
+                    sum_dict[c] = {ok:lis}
+            sum_dict[c][ok] = sum(sum_dict[c][ok])
+
+    # Generate sorted list on 'duration'
+    import operator
+    sorted_d = sorted(sum_dict.items(), key=lambda x: x[1][order_by])
+    
+    # Select up to including the limit
+    logger.debug("Limit is {}".format(type(limit)))
+    sorted_d = sorted_d[:limit]
+    import plotly.graph_objects as go
+
+    fig = go.Figure()
+    color = {}
+    color['cpu_time'] = 'rgb(180, 160, 109)'
+    color['duration'] = 'rgb(26, 118, 255)'
+    color['num_procs'] = 'rgb(75, 83, 50)'
+    color['num_threads'] = 'rgb(140, 83, 109)'
+    for m in order_key_list:
+        fig.add_trace(go.Bar(y=[n[0] for n in sorted_d], #component c
+                        x=[l[1][m] for l in sorted_d], # List of m values in component c
+                        name=m,
+                        marker_color=color[m],
+                        orientation='h'
+                        ))
+
+    # Logarithmic metric, descending
+    fig.update_layout(xaxis_type="log",
+                      # xaxis={'categoryorder':'category descending'}),
+                      xaxis_tickfont_size=17,
+                      xaxis=dict(
+                          titlefont_size=20
+                      ),
+                      barmode='group',
+                      bargap=0.25,
+                      height=900)
+    basic_graph = dcc.Graph(
+        id='bargraph',
         figure=fig
     )
     return basic_graph

@@ -14,7 +14,7 @@ import dash_table
 from dash_config import DEFAULT_ROWS_PER_PAGE
 from refs import ref_df
 from jobs import JobGen
-from components import Header, Footer, parse_url, create_gantt_graph, create_boxplot
+from components import Header, Footer, parse_url, create_gantt_graph, create_boxplot, create_bargraph
 logger = getLogger(__name__)  # pylint: disable=invalid-name
 # basicConfig(level=DEBUG)
 
@@ -778,12 +778,14 @@ def graph_plotly(url):
     path= e['path']
     query = e['query']
     graph_style = path[1]
+    # Return a gantt chart
     if graph_style == 'gantt':
         default_tags = ['op_instance','op']
         if len(path)>2:
             job = path[2]
         gtags = query.get('tags',None)
         graph_data = create_gantt_graph(job,gtags if gtags else default_tags)
+    # Return a boxplot graph
     elif graph_style == 'boxplot':
         model = None
         jobs = []
@@ -792,6 +794,13 @@ def graph_plotly(url):
         if query:
             jobs = query['jobs']
         graph_data = create_boxplot(model,jobs,normalize=query.get('normalize',['True'])[0],metric=query.get('metric',['cpu_time'])[0])
+    # Return a bar graph
+    elif graph_style == 'bar':
+        jobname = query.get('expname',None)[0]
+        metric = query.get('metric',None)
+        order_by = query.get('orderby',['duration'])[0]
+        limit = int(query.get('limit',0)[0])
+        graph_data = create_bargraph(jobname,metric=metric,order_by=order_by,limit=limit)
     else:
         graph_data = 'Unknown graphstyle'
 
