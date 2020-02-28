@@ -465,3 +465,9 @@ def create_bargraph(exp_name=None, metric=['duration','cpu_time'], model=None, j
         figure=fig
     )
     return basic_graph
+
+from orm import *
+@db_session
+def get_experiments(jobs):
+    import epmt_query as eq
+    return set([a.tags['exp_name'] for a in eq.get_jobs(jobs, fmt='orm')])
