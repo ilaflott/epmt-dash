@@ -63,7 +63,9 @@ recent_jobs_page = html.Div([
                                      type='text',
                                      value='',
                                      style={'display': 'block',
-                                            'width': '100%'}
+                                            'width': '100%'},
+                                     #persistence=True,
+                                     #persistence_type='memory'
                                  )],
                                 width="auto",
                                 # md=3,
@@ -249,7 +251,9 @@ recent_jobs_page = html.Div([
                                             ],
                                             clearable=False,
                                             searchable=False,
-                                            value=DEFAULT_ROWS_PER_PAGE
+                                            value=DEFAULT_ROWS_PER_PAGE,
+                                            persistence=True,
+                                            persistence_type='local'
                                         )
                                     ], width=2),
                                     # df.shape[0]
@@ -799,15 +803,20 @@ def graph_plotly(url):
         jobname = query.get('expname',None)[0]
         metric = query.get('metric',None)
         order_by = query.get('orderby',['duration'])[0]
-        limit = int(query.get('limit',0)[0])
+        limit = int(query.get('limit',[0])[0])
         graph_data = create_bargraph(jobname,metric=metric,order_by=order_by,limit=limit)
     else:
         graph_data = 'Unknown graphstyle'
 
-    return html.Div([
-        html.Div([graph_data
-        ], className="subpage")
-    ], className="page")
+    return html.Div(
+        [
+            html.Div(style={'inline': 'true'}, children=[
+            Header(),
+            ]),
+            html.Div([graph_data
+                      ], className="subpage"),
+            Footer(),
+        ], className="page")
 
 
 def compare(url):

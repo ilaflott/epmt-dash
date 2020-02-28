@@ -432,7 +432,9 @@ def create_bargraph(exp_name=None, metric=['duration','cpu_time'], model=None, j
     sorted_d = sorted(sum_dict.items(), key=lambda x: x[1][order_by])
     
     # Select up to including the limit
-    logger.debug("Limit is {}".format(type(limit)))
+    if limit is 0:
+        logger.debug("Limit set to 0, Defaulting limit to 10")
+        limit = 10
     sorted_d = sorted_d[:limit]
     import plotly.graph_objects as go
 
@@ -459,7 +461,9 @@ def create_bargraph(exp_name=None, metric=['duration','cpu_time'], model=None, j
                       ),
                       barmode='group',
                       bargap=0.25,
-                      height=900)
+                      height=700,
+                      title=exp_name + " top " + str(limit) + " " + ", ".join(order_key_list) + " per component"
+                      )
     basic_graph = dcc.Graph(
         id='bargraph',
         figure=fig

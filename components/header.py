@@ -9,7 +9,7 @@ def Header():
         get_header(),
         html.Br([]),
         html.Div(),
-        #get_menu()
+        get_menu()
     ])
 
 from jobs import get_version
@@ -43,6 +43,17 @@ def get_header():
     ], className="row gs-header gs-text-header")
     return header
 
-
+def get_menu():
+    navbar = dbc.Nav(
+        children=[
+            dbc.NavItem(dbc.NavLink("Recent Jobs", href="/")),
+            dbc.NavItem(dbc.NavLink("Test Boxplot", href="/graph/boxplot/atmos_model_hist/?jobs=2460339&normalize=False")),
+            dbc.NavItem(dbc.NavLink("Test Gantt", href="/graph/gantt/2494106")),
+            dbc.NavItem(dbc.NavLink("Test Scatter", href="/graph/boxplot/?jobs=2494106&normalize=False")),
+            dbc.NavItem(dbc.NavLink("Test Bar graph", href="/graph/bar?expname=ESM4_hist-piAer_D1&metric=duration,cpu_time"))
+        ],
+        fill=True,
+        pills=True)
+    return navbar
 
                     #dcc.Linhtml.Div(k('Overview - Unprocessed Jobs', href='/unprocessed/', className="tab"),
