@@ -805,6 +805,9 @@ def graph_plotly(url):
         order_by = query.get('orderby',['duration'])[0]
         limit = int(query.get('limit',[0])[0])
         graph_data = create_bargraph(jobname,metric=metric,order_by=order_by,limit=limit)
+        graph_data = html.Div(children=[
+                     graph_data,
+                     html.Pre(id='click-data')])
     else:
         graph_data = 'Unknown graphstyle'
 

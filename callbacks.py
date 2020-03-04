@@ -802,3 +802,15 @@ def generate_multilayout_graph(zoom,y,click_data,url):
             return [fig,', '.join(points),1]
     
     return [fig,"Please select a job",0]
+
+
+@app.callback(
+    dash.dependencies.Output('click-data', 'children'),
+    [dash.dependencies.Input('bargraph', 'clickData')])
+def show_me_callback(clickData):
+    ctx = dash.callback_context
+    logger.info("Callback Context info:\nTriggered:\n{}\nInputs:\n{}\nStates:\n{}".format(
+        ctx.triggered, ctx.inputs, ctx.states))
+    logger.info(clickData)
+    
+    return "" if clickData is None else clickData['points'][0]['y']

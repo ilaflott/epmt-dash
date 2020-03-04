@@ -462,6 +462,7 @@ def create_bargraph(exp_name=None, metric=['duration','cpu_time'], model=None, j
                       barmode='group',
                       bargap=0.25,
                       height=700,
+                      clickmode='event+select',
                       title=exp_name + " top " + str(limit) + " " + ", ".join(order_key_list) + " per component"
                       )
     basic_graph = dcc.Graph(
