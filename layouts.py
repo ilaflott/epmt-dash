@@ -791,13 +791,13 @@ def graph_plotly(url):
         graph_data = create_gantt_graph(job,gtags if gtags else default_tags)
     # Return a boxplot graph
     elif graph_style == 'boxplot':
-        model = None
+        model = ""
         jobs = []
         if len(path)>2:
             model = path[2]
         if query:
             jobs = query['jobs']
-        graph_data = create_boxplot(model,jobs,normalize=query.get('normalize',['True'])[0],metric=query.get('metric',['cpu_time'])[0])
+        graph_data = create_boxplot(model=model,jobs=jobs,normalize=query.get('normalize',['True'])[0],metric=query.get('metric',['cpu_time'])[0])
     # Return a bar graph
     elif graph_style == 'bar':
         jobname = query.get('expname',None)[0]
@@ -808,6 +808,14 @@ def graph_plotly(url):
         graph_data = html.Div(children=[
                      graph_data,
                      html.Pre(id='click-data')])
+        graph_data = html.Div(children=[
+                     graph_data,
+                    # Expname - hidden div
+                     html.Div(children=jobname
+                            ,id='bar-expname', style={'display':'none'}),
+                    # metric - hidden div
+                    html.Div(children=metric
+                            ,id='bar-metrics', style={'display':'none'})])
     else:
         graph_data = 'Unknown graphstyle'
 
@@ -816,8 +824,9 @@ def graph_plotly(url):
             html.Div(style={'inline': 'true'}, children=[
             Header(),
             ]),
-            html.Div([graph_data
-                      ], className="subpage"),
+            html.Div(id="subpage", children=[
+                graph_data
+            ], className="subpage"),
             Footer(),
         ], className="page")
 

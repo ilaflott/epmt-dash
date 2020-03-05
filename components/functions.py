@@ -291,7 +291,7 @@ def create_gantt_graph(joblist=[],gtag=['op_instance','op']):
     )
     return basic_graph
 
-def create_boxplot(model='test_model', jobs=['676007','625172','804285'], normalize=True, metric='cpu_time'):
+def create_boxplot(jobs=['676007','625172','804285'], model="", normalize=True, metric='cpu_time'):
     """boxplot wrapper"""
     import dash_core_components as dcc
     import plotly.graph_objects as go
@@ -302,6 +302,7 @@ def create_boxplot(model='test_model', jobs=['676007','625172','804285'], normal
     logger.debug("Jobs: {}".format(jobs))
     logger.debug("Normalize: {}".format(normalize))
     model_name = model
+    logger.debug("Model: {}".format(model_name))
     jobs2test_against_model = jobs
     boxplot_title = metric + " Per Op: Jobs({}) ".format(', '.join(jobs2test_against_model))
     # Handle missing model

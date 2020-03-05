@@ -805,12 +805,30 @@ def generate_multilayout_graph(zoom,y,click_data,url):
 
 
 @app.callback(
-    dash.dependencies.Output('click-data', 'children'),
-    [dash.dependencies.Input('bargraph', 'clickData')])
-def show_me_callback(clickData):
+    #[
+     dash.dependencies.Output('subpage', 'children'),
+     #dash.dependencies.Output('url', 'pathname')
+     #],
+    [dash.dependencies.Input('bargraph', 'clickData')],
+    [dash.dependencies.State('subpage', 'children'),
+     dash.dependencies.State('bar-metrics','children'),
+     dash.dependencies.State('bar-expname','children'),
+     dash.dependencies.State('url', 'pathname')])
+def show_me_callback(clickData,state,metric,expname,stateurl):
     ctx = dash.callback_context
     logger.info("Callback Context info:\nTriggered:\n{}\nInputs:\n{}\nStates:\n{}".format(
         ctx.triggered, ctx.inputs, ctx.states))
-    logger.info(clickData)
-    
-    return "" if clickData is None else clickData['points'][0]['y']
+    logger.info(type(metric))
+    if clickData is not None:
+        from functions import create_boxplot
+        # Component is y value
+        # metric is curveNumber
+        return create_boxplot(
+            jobs=get_jobs(
+                tags={'exp_component': str(clickData['points'][0]['y'])},
+                fmt='terse', limit=0),
+            metric=metric[clickData['points'][0]['curveNumber']])
+        #return ["Component:" + str(clickData['points'][0]['y']) + " Metric:" + metric[clickData['points'][0]['curveNumber']]]
+        
+    else:
+        return state
