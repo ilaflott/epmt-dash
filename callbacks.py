@@ -823,11 +823,20 @@ def show_me_callback(clickData,state,metric,expname,stateurl):
         from functions import create_boxplot
         # Component is y value
         # metric is curveNumber
-        return create_boxplot(
-            jobs=get_jobs(
-                tags={'exp_component': str(clickData['points'][0]['y'])},
-                fmt='terse', limit=0),
-            metric=metric[clickData['points'][0]['curveNumber']])
+        import dash_core_components as dcc
+        logger.debug("We have click data, redirecting")
+        
+        # Update only search query on current display
+        return dcc.Location(search="?expname=ESM4_hist-piAer_D1&metric=duration", id="someid")
+        # Full redirect
+        #return dcc.Location(href="http://localhost:8050/graph/boxplot/?jobs=2494106&normalize=False", id="someid")
+
+        # Return custom graph
+        #create_boxplot(
+               # jobs=get_jobs(
+               #     tags={'exp_component': str(clickData['points'][0]['y'])},
+               #     fmt='terse', limit=0),
+               # metric=metric[clickData['points'][0]['curveNumber']])
         #return ["Component:" + str(clickData['points'][0]['y']) + " Metric:" + metric[clickData['points'][0]['curveNumber']]]
         
     else:
