@@ -55,7 +55,7 @@ def display_page(pathname, pfullurl):
     """Method:
     For displaying/returning all layouts as requested by url
     """
-    logger.info("Page requested {}".format(pathname))
+    logger.info("Page requested {}".format(pfullurl))
     app.fullurl = pfullurl
     if pathname == '' or pathname == '/':
         return lay.recent_jobs_page

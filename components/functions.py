@@ -246,7 +246,7 @@ def gantt_me(jobs=[], gtags=None):
     Generate Gantt chart data
     """
     start_times, end_times, op_name, op_dur, dfn = ([] for i in range(5))
-    op = get_ops(jobs, tags = gtags, fmt='dict')
+    op = get_ops(jobs, tags = gtags, fmt='dict')#,full=True)
 
     # Roll ops into a zip
     for n in op:
@@ -291,7 +291,7 @@ def create_gantt_graph(joblist=[],gtag=['op_instance','op']):
     )
     return basic_graph
 
-def create_boxplot(jobs=['676007','625172','804285'], model="", normalize=True, metric='cpu_time'):
+def create_boxplot(jobs=['676007','625172','804285'], model="", normalize=True, metric='cpu_time', id=None):
     """boxplot wrapper"""
     import dash_core_components as dcc
     import plotly.graph_objects as go
@@ -343,8 +343,6 @@ def create_boxplot(jobs=['676007','625172','804285'], model="", normalize=True, 
     # only enabled if px.box(points='suspectedoutliers')
     # fig.update_traces(marker=dict(outliercolor='rgba(219, 64, 82, 0.6)'))
 
-    # Display legend for scatter points
-    fig.update_layout(showlegend=True)
 
     # Filter dataframe for test jobs
     filtered = ops_dur[(ops_dur['testjob']==True)]
@@ -377,14 +375,23 @@ def create_boxplot(jobs=['676007','625172','804285'], model="", normalize=True, 
         )
 ) for job in df_to_scatter]
 
+    # Display legend for scatter points
+    fig.update_layout(showlegend=True,clickmode='event+select')
+
     basic_graph = dcc.Graph(
-        id='basic-interactions',
+        id=id if id else 'basic-interactions',
         figure=fig
     )
     return basic_graph
 
 
 def create_bargraph(exp_name=None, metric=['duration','cpu_time'], model=None, jobs=None, normalize=True, order_by='duration', limit=100):
+    """
+    This bargraph generator makes grouped bargraphs.
+
+    By default metrics values are across the x axis and Components up
+    the Y axis.  Each metric is grouped per component.
+    """
     import dash_core_components as dcc
     import plotly.express as px
     import pandas as pd

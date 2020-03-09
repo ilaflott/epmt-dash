@@ -800,33 +800,40 @@ def graph_plotly(url):
         graph_data = create_boxplot(model=model,jobs=jobs,normalize=query.get('normalize',['True'])[0],metric=query.get('metric',['cpu_time'])[0])
     # Return a bar graph
     elif graph_style == 'bar':
+        # Rename and retrieve parameters
         jobname = query.get('expname',None)[0]
         metric = query.get('metric',None)
         order_by = query.get('orderby',['duration'])[0]
         limit = int(query.get('limit',[0])[0])
-        graph_data = create_bargraph(jobname,metric=metric,order_by=order_by,limit=limit)
-        graph_data = html.Div(children=[
-                     graph_data,
-                     html.Pre(id='click-data')])
-        graph_data = html.Div(children=[
-                     graph_data,
-                    # Expname - hidden div
-                     html.Div(children=jobname
-                            ,id='bar-expname', style={'display':'none'}),
-                    # metric - hidden div
-                    html.Div(children=metric
-                            ,id='bar-metrics', style={'display':'none'})])
+        grouped = True if len(metric) > 1 else False #query.get('grouped',[False])[0]
+        # Build and store a graph of given parameters
+        if grouped:
+            graph_data = create_bargraph(jobname,metric=metric,order_by=order_by,limit=limit)
+        else:
+            graph_data = "Bar graph not grouped"
+                
     else:
         graph_data = 'Unknown graphstyle'
 
     return html.Div(
         [
+            dcc.Location(id='anurl', refresh=False),
             html.Div(style={'inline': 'true'}, children=[
             Header(),
             ]),
             html.Div(id="subpage", children=[
-                graph_data
+                html.Div(id="graph-area",children=graph_data),
+                html.Div(id="hidden-divs", children=[
+                    # represents the URL bar, doesn't render anything
+                    # Expname - hidden div
+                     html.Div(children=jobname
+                            ,id='bar-expname', style={'display':'none'}),
+                    # metric - hidden div
+                    html.Div(children=metric
+                            ,id='bar-metrics', style={'display':'none'}),
+                    ])
             ], className="subpage"),
+            html.Pre(id='click-data',children=''),
             Footer(),
         ], className="page")
 

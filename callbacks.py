@@ -805,39 +805,46 @@ def generate_multilayout_graph(zoom,y,click_data,url):
 
 
 @app.callback(
-    #[
-     dash.dependencies.Output('subpage', 'children'),
-     #dash.dependencies.Output('url', 'pathname')
-     #],
+    [
+     dash.dependencies.Output('graph-area', 'children'),
+     dash.dependencies.Output('click-data', 'children'),
+     dash.dependencies.Output('anurl', 'href')
+     ],
     [dash.dependencies.Input('bargraph', 'clickData')],
-    [dash.dependencies.State('subpage', 'children'),
+    [dash.dependencies.State('graph-area', 'children'),
      dash.dependencies.State('bar-metrics','children'),
      dash.dependencies.State('bar-expname','children'),
-     dash.dependencies.State('url', 'pathname')])
-def show_me_callback(clickData,state,metric,expname,stateurl):
+     dash.dependencies.State('url', 'pathname'),
+     dash.dependencies.State('click-data', 'children')])
+def show_me_callback(clickData,state,metric,expname,stateurl,currLevel):
     ctx = dash.callback_context
-    logger.info("Callback Context info:\nTriggered:\n{}\nInputs:\n{}\nStates:\n{}".format(
-        ctx.triggered, ctx.inputs, ctx.states))
-    logger.info(type(metric))
+    #logger.info("Callback Context info:\nTriggered:\n{}\nInputs:\n{}\nStates:\n{}".format(
+    #    ctx.triggered, ctx.inputs, ctx.states))
+    logger.info("Current level is {}".format(currLevel))
     if clickData is not None:
-        from functions import create_boxplot
+        from functions import create_boxplot, create_bargraph
         # Component is y value
         # metric is curveNumber
         import dash_core_components as dcc
         logger.debug("We have click data, redirecting")
         
         # Update only search query on current display
-        return dcc.Location(search="?expname=ESM4_hist-piAer_D1&metric=duration", id="someid")
+        #return [dcc.Location(search="?expname=ESM4_hist-piAer_D1&metric=duration", id="someid"),"Activated"]
         # Full redirect
         #return dcc.Location(href="http://localhost:8050/graph/boxplot/?jobs=2494106&normalize=False", id="someid")
 
         # Return custom graph
-        #create_boxplot(
-               # jobs=get_jobs(
-               #     tags={'exp_component': str(clickData['points'][0]['y'])},
-               #     fmt='terse', limit=0),
-               # metric=metric[clickData['points'][0]['curveNumber']])
+        return [
+            create_bargraph('ESM4_hist-piAer_D1',metric=['num_procs'],order_by='num_procs',limit=10),
+            str(clickData['points'][0]['y']),
+            "/graph/bar?expname=ESM4_hist-piAer_D1&metric=num_procs",
+            ]
         #return ["Component:" + str(clickData['points'][0]['y']) + " Metric:" + metric[clickData['points'][0]['curveNumber']]]
         
     else:
-        return state
+        logger.error("Else hit")
+        return [
+            state,
+            "else",
+            "/graph/bar?expname=ESM4_hist-piAer_D1&metric=num_procs"
+            ]
