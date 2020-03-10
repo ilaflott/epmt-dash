@@ -812,7 +812,9 @@ def generate_multilayout_graph(zoom,y,click_data,url):
      ],
     [dash.dependencies.Input('bargraph', 'clickData')],
     [dash.dependencies.State('graph-area', 'children'),
+     # Hidden Div with list of metrics displayed
      dash.dependencies.State('bar-metrics','children'),
+     # Hidden Div with experiment name displayed
      dash.dependencies.State('bar-expname','children'),
      dash.dependencies.State('url', 'pathname'),
      dash.dependencies.State('click-data', 'children')])
@@ -837,12 +839,11 @@ def show_me_callback(clickData,state,metric,expname,stateurl,currLevel):
         return [
             create_bargraph('ESM4_hist-piAer_D1',metric=['num_procs'],order_by='num_procs',limit=10),
             str(clickData['points'][0]['y']),
-            "/graph/bar?expname=ESM4_hist-piAer_D1&metric=num_procs",
+            "/graph/bar?expname=ESM4_hist-piAer_D1&metric=num_procs&component="+str(clickData['points'][0]['y']),
             ]
         #return ["Component:" + str(clickData['points'][0]['y']) + " Metric:" + metric[clickData['points'][0]['curveNumber']]]
-        
+    # Handle case where callback fires when page loads & no input is given.
     else:
-        logger.error("Else hit")
         return [
             state,
             "else",

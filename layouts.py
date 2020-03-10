@@ -817,14 +817,14 @@ def graph_plotly(url):
 
     return html.Div(
         [
-            dcc.Location(id='anurl', refresh=False),
+            # represents the URL bar, doesn't render anything
+            dcc.Location(id='anurl', refresh=True),
             html.Div(style={'inline': 'true'}, children=[
             Header(),
             ]),
             html.Div(id="subpage", children=[
                 html.Div(id="graph-area",children=graph_data),
                 html.Div(id="hidden-divs", children=[
-                    # represents the URL bar, doesn't render anything
                     # Expname - hidden div
                      html.Div(children=jobname
                             ,id='bar-expname', style={'display':'none'}),

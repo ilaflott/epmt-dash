@@ -412,15 +412,7 @@ def create_bargraph(exp_name=None, metric=['duration','cpu_time'], model=None, j
         c_dict[c] = entry
 
     comps = []
-    #feature_val = []
-    #for c,v in c_dict.items():
-    #    comps.extend([c])
-    #    # Total order_key into feature_val
-    #    feature_val.extend([sum([n[2] for n in v['data']])])
-    # Find 10 largest
-    #df = pd.DataFrame({'Component':comps,order_key+'_sum':feature_val}).sort_values(order_key+'_sum',ascending=False).head(10)
-    # Invert order and build chart
-    #fig = px.bar(df.sort_values(order_key+'_sum',ascending=True), x=order_key+"_sum", y="Component", title="Top 10 " + exp_name + " components by " + order_key, orientation='h') #, color='op')
+
     for ok in order_key_list:
         for c,v in c_dict.items():
             comps.extend([c])
@@ -435,7 +427,7 @@ def create_bargraph(exp_name=None, metric=['duration','cpu_time'], model=None, j
                     sum_dict[c] = {ok:lis}
             sum_dict[c][ok] = sum(sum_dict[c][ok])
 
-    # Generate sorted list on 'duration'
+    # Generate sorted list on order_by key
     import operator
     sorted_d = sorted(sum_dict.items(), key=lambda x: x[1][order_by])
     
@@ -484,3 +476,53 @@ from orm import *
 def get_experiments(jobs):
     import epmt_query as eq
     return set([a.tags['exp_name'] for a in eq.get_jobs(jobs, fmt='orm')])
+
+def create_stacked_bar(jobs=None,metrics=None, normalize=True,order='total'):
+    import plotly.graph_objects as go
+
+    # Convert jobs and metrics into traces
+    data = trace_renderer(jobs,metrics,normalize)
+
+    layout = go.Layout(
+        barmode='stack',
+        # Across the bottom is each job
+        xaxis=dict(tickvals=jobs, type='category')
+    )
+    if order is not 'total' and order is not None:
+        logger.debug("Ordering by: {}".format(order))
+        import epmt_query as eq
+        jobs=eq.get_jobs(jobs=jobs,fmt='dict',limit=0)
+        sort_data = [(j['jobid'],j[order]) for j in jobs]
+        sort_data.sort(key=lambda tup: tup[1], reverse=False)
+        sorted_jobids = [j[0] for j in sort_data]
+        layout.xaxis.update(dict(categoryorder='array', categoryarray=sorted_jobids))
+        layout.title = ', '.join(metrics)+ " ordered by " + order
+    else:
+        layout.xaxis.update(dict(categoryorder='total descending'))
+        layout.title = ', '.join(metrics)+ " ordered by category total"
+    
+    fig = go.Figure(data=data, layout=layout)
+    return fig
+
+def trace_renderer(jobs=None,metrics=None, normalize=True):
+    """
+    Returns list of traces
+    """
+    import epmt_query as eq
+    import plotly.graph_objects as go
+    # For stacked bar the x values are embedded in each trace
+    # Only trace Data list is returned
+    data = []
+
+    # Traces go vertical, Jobs go horizontal
+    job_dicts = eq.get_jobs(jobs,fmt='dict',limit=0)
+    for m in metrics:
+        data.append(go.Bar(
+        x=jobs, y=[j[m] for j in job_dicts],
+        name=m
+    ))
+    if normalize:
+        from epmt_stat import normalize
+        for d in data:
+            d['y'] = normalize(d['y'],min_=-1/len(metrics), max_=1/len(metrics))
+    return data
