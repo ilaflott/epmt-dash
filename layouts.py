@@ -808,7 +808,9 @@ def graph_plotly(url):
         grouped = True if len(metric) > 1 else False #query.get('grouped',[False])[0]
         # Build and store a graph of given parameters
         if grouped:
-            graph_data = create_bargraph(jobname,metric=metric,order_by=order_by,limit=limit)
+            from epmt_query import get_jobs
+            jobs = get_jobs(tags={ 'exp_name': jobname }, limit=0, fmt='terse')
+            graph_data = create_bargraph(title=jobname, jobs=jobs,metric=metric,order_by=order_by,limit=limit)
         else:
             graph_data = "Bar graph not grouped"
                 
@@ -818,7 +820,7 @@ def graph_plotly(url):
     return html.Div(
         [
             # represents the URL bar, doesn't render anything
-            dcc.Location(id='anurl', refresh=True),
+            dcc.Location(id='anurl', refresh=False),
             html.Div(style={'inline': 'true'}, children=[
             Header(),
             ]),

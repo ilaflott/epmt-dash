@@ -836,10 +836,14 @@ def show_me_callback(clickData,state,metric,expname,stateurl,currLevel):
         #return dcc.Location(href="http://localhost:8050/graph/boxplot/?jobs=2494106&normalize=False", id="someid")
 
         # Return custom graph
+        req_component = str(clickData['points'][0]['y'])
+        bar_title = expname + " " + req_component
+        from epmt_query import get_jobs
+        bar_jobs = get_jobs(tags={ 'exp_name': expname, 'exp_component': req_component})
         return [
-            create_bargraph('ESM4_hist-piAer_D1',metric=['num_procs'],order_by='num_procs',limit=10),
-            str(clickData['points'][0]['y']),
-            "/graph/bar?expname=ESM4_hist-piAer_D1&metric=num_procs&component="+str(clickData['points'][0]['y']),
+            create_bargraph(title=bar_title, jobs=bar_jobs ,metric=metric,order_by=metric[0],limit=10),
+            req_component,
+            "/graph/bar?expname=" + expname + "&metric=" + ",".join(metric) + "&component="+str(clickData['points'][0]['y']),
             ]
         #return ["Component:" + str(clickData['points'][0]['y']) + " Metric:" + metric[clickData['points'][0]['curveNumber']]]
     # Handle case where callback fires when page loads & no input is given.

@@ -385,7 +385,7 @@ def create_boxplot(jobs=['676007','625172','804285'], model="", normalize=True, 
     return basic_graph
 
 
-def create_bargraph(exp_name=None, metric=['duration','cpu_time'], model=None, jobs=None, normalize=True, order_by='duration', limit=100):
+def create_bargraph(title="", metric=['duration','cpu_time'], model=None, jobs=None, normalize=True, order_by='duration', limit=100):
     """
     This bargraph generator makes grouped bargraphs.
 
@@ -396,13 +396,10 @@ def create_bargraph(exp_name=None, metric=['duration','cpu_time'], model=None, j
     import plotly.express as px
     import pandas as pd
     from epmt_query import get_jobs
-    
-    if not exp_name:
-        return None
-    
-    order_key_list=metric
+        
+    exp_jobs = get_jobs(jobs=jobs, fmt='dict', limit=0)
 
-    exp_jobs = get_jobs(tags={ 'exp_name': exp_name }, fmt='dict', limit=0)
+    order_key_list = metric
     sum_dict = {}
     c_dict = {}
     for j in exp_jobs:
@@ -463,7 +460,8 @@ def create_bargraph(exp_name=None, metric=['duration','cpu_time'], model=None, j
                       bargap=0.25,
                       height=700,
                       clickmode='event+select',
-                      title=exp_name + " top " + str(limit) + " " + ", ".join(order_key_list) + " per component"
+                      title=title
+                      #title=exp_name + " top " + str(limit) + " " + ", ".join(order_key_list) + " per component"
                       )
     basic_graph = dcc.Graph(
         id='bargraph',
