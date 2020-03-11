@@ -385,25 +385,23 @@ def create_boxplot(jobs=['676007','625172','804285'], model="", normalize=True, 
     return basic_graph
 
 
-def create_bargraph(title="", metric=['duration','cpu_time'], model=None, jobs=None, normalize=True, order_by='duration', limit=100):
-    """
-    This bargraph generator makes grouped bargraphs.
-
-    By default metrics values are across the x axis and Components up
-    the Y axis.  Each metric is grouped per component.
-    """
+def create_grouped_bargraph(title='',jobs=None,y_value='component', metric=['duration','cpu_time'], order_by='duration', limit=10):
     import dash_core_components as dcc
     import plotly.express as px
     import pandas as pd
     from epmt_query import get_jobs
-        
-    exp_jobs = get_jobs(jobs=jobs, fmt='dict', limit=0)
+    if len(jobs) is 0:
+        return "No Jobs Found"
+    exp_jobs = get_jobs(jobs=jobs, fmt='dict', limit=limit)
 
     order_key_list = metric
     sum_dict = {}
     c_dict = {}
     for j in exp_jobs:
-        c = j['tags']['exp_component']
+        if y_value is "component":
+            c = j['tags']['exp_component']
+        elif y_value is 'jobid':
+            c = j['jobid']
         entry = c_dict.get(c, {'data': []})
         entry['data'].append((j['tags']['exp_time'], j['jobid'], [j[ok] for ok in order_key_list]))
         c_dict[c] = entry
@@ -427,7 +425,7 @@ def create_bargraph(title="", metric=['duration','cpu_time'], model=None, jobs=N
     # Generate sorted list on order_by key
     import operator
     sorted_d = sorted(sum_dict.items(), key=lambda x: x[1][order_by])
-    
+
     # Select up to including the limit
     if limit is 0:
         logger.debug("Limit set to 0, Defaulting limit to 10")
@@ -463,6 +461,8 @@ def create_bargraph(title="", metric=['duration','cpu_time'], model=None, jobs=N
                       title=title
                       #title=exp_name + " top " + str(limit) + " " + ", ".join(order_key_list) + " per component"
                       )
+    if y_value is 'jobid':
+        fig.update_layout(yaxis=dict(type='category'))
     basic_graph = dcc.Graph(
         id='bargraph',
         figure=fig

@@ -14,7 +14,7 @@ import dash_table
 from dash_config import DEFAULT_ROWS_PER_PAGE
 from refs import ref_df
 from jobs import JobGen
-from components import Header, Footer, parse_url, create_gantt_graph, create_boxplot, create_bargraph
+from components import Header, Footer, parse_url, create_gantt_graph, create_boxplot, create_grouped_bargraph
 logger = getLogger(__name__)  # pylint: disable=invalid-name
 # basicConfig(level=DEBUG)
 
@@ -777,6 +777,9 @@ def graph_plotly(url):
     boxplot:
         graph_plotly('http://localhost:8050/graph/boxplot/model_sample?jobs=job1,job2&normalize=True')
     """
+    jobname = None
+    metric = None
+    exp_component = None
     e = parse_url(url)
     logger.debug(e)
     path= e['path']
@@ -800,21 +803,27 @@ def graph_plotly(url):
         graph_data = create_boxplot(model=model,jobs=jobs,normalize=query.get('normalize',['True'])[0],metric=query.get('metric',['cpu_time'])[0])
     # Return a bar graph
     elif graph_style == 'bar':
+        logger.debug("Somehow bar graph")
         # Rename and retrieve parameters
         jobname = query.get('expname',None)[0]
+        bar_title = "exp_name:" + jobname
         metric = query.get('metric',None)
         order_by = query.get('orderby',['duration'])[0]
         limit = int(query.get('limit',[0])[0])
         tag_dict = {'exp_name': jobname }
         exp_component = query.get('exp_component',[None])[0]
+        y_value='component'
         if exp_component:
             tag_dict.update({'exp_component':exp_component})
+            logger.debug("Requested tag_dict {}".format(tag_dict))
+            y_value='jobid'
+            bar_title = bar_title + " exp_component:" + exp_component
         grouped = True if len(metric) > 1 else False #query.get('grouped',[False])[0]
         # Build and store a graph of given parameters
         if grouped:
             from epmt_query import get_jobs
             jobs = get_jobs(tags=tag_dict, limit=0, fmt='terse')
-            graph_data = create_bargraph(title=jobname, jobs=jobs,metric=metric,order_by=order_by,limit=limit)
+            graph_data = create_grouped_bargraph(title=bar_title, jobs=jobs,metric=metric,order_by=order_by,limit=limit, y_value=y_value)
         else:
             graph_data = "Bar graph not grouped"
                 
@@ -824,7 +833,7 @@ def graph_plotly(url):
     return html.Div(
         [
             # represents the URL bar, doesn't render anything
-            dcc.Location(id='anurl', refresh=False),
+            dcc.Location(id='anurl', refresh=True),
             html.Div(style={'inline': 'true'}, children=[
             Header(),
             ]),
@@ -837,6 +846,13 @@ def graph_plotly(url):
                     # metric - hidden div
                     html.Div(children=metric
                             ,id='bar-metrics', style={'display':'none'}),
+                    # metric - hidden div
+                    html.Div(children="experiment"
+                            ,id='bar-level', style={'display':'none'})
+                    if exp_component is None else
+                    # metric - hidden div
+                    html.Div(children="job"
+                            ,id='bar-level', style={'display':'none'}),
                     ])
             ], className="subpage"),
             html.Pre(id='click-data',children=''),

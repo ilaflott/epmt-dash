@@ -817,14 +817,14 @@ def generate_multilayout_graph(zoom,y,click_data,url):
      # Hidden Div with experiment name displayed
      dash.dependencies.State('bar-expname','children'),
      dash.dependencies.State('url', 'pathname'),
-     dash.dependencies.State('click-data', 'children')])
+     dash.dependencies.State('bar-level', 'children')])
 def show_me_callback(clickData,state,metric,expname,stateurl,currLevel):
     ctx = dash.callback_context
     #logger.info("Callback Context info:\nTriggered:\n{}\nInputs:\n{}\nStates:\n{}".format(
     #    ctx.triggered, ctx.inputs, ctx.states))
     logger.info("Current level is {}".format(currLevel))
     if clickData is not None:
-        from functions import create_boxplot, create_bargraph
+        from functions import create_boxplot, create_grouped_bargraph
         # Component is y value
         # metric is curveNumber
         import dash_core_components as dcc
@@ -837,13 +837,23 @@ def show_me_callback(clickData,state,metric,expname,stateurl,currLevel):
 
         # Return custom graph
         req_component = str(clickData['points'][0]['y'])
-        bar_title = expname + " " + req_component
+        bar_title = "exp_name:" + expname + " exp_component:" + req_component
         from epmt_query import get_jobs
         bar_jobs = get_jobs(tags={ 'exp_name': expname, 'exp_component': req_component})
-        return [
-            create_bargraph(title=bar_title, jobs=bar_jobs ,metric=metric,order_by=metric[0],limit=10),
+        
+        if currLevel == 'job':
+            return [
+            #create_grouped_bargraph(title=bar_title, jobs=bar_jobs ,metric=metric,order_by=metric[0],limit=10,y_value='jobid'),
+            "Loading....",
             req_component,
-            "/graph/bar?expname=" + expname + "&metric=" + ",".join(metric) + "&exp_component="+str(clickData['points'][0]['y']),
+            "/graph/gantt/"+req_component,
+            ]
+
+        return [
+            #create_grouped_bargraph(title=bar_title, jobs=bar_jobs ,metric=metric,order_by=metric[0],limit=10,y_value='jobid'),
+            "Loading....",
+            req_component,
+            "/graph/bar?metric=" + ",".join(metric) + "&expname=" + expname + "&exp_component="+req_component,
             ]
         #return ["Component:" + str(clickData['points'][0]['y']) + " Metric:" + metric[clickData['points'][0]['curveNumber']]]
     # Handle case where callback fires when page loads & no input is given.
