@@ -807,7 +807,6 @@ def generate_multilayout_graph(zoom,y,click_data,url):
 @app.callback(
     [
      dash.dependencies.Output('graph-area', 'children'),
-     dash.dependencies.Output('click-data', 'children'),
      dash.dependencies.Output('anurl', 'href')
      ],
     [dash.dependencies.Input('bargraph', 'clickData')],
@@ -838,7 +837,6 @@ def show_me_callback(clickData,state,metric,expname,stateurl,currLevel):
         # Return custom graph
         req_component = str(clickData['points'][0]['y'])
         bar_title = "exp_name:" + expname + " exp_component:" + req_component
-        from epmt_query import get_jobs
         bar_jobs = get_jobs(tags={ 'exp_name': expname, 'exp_component': req_component})
         
         # If we're already past component and job selection we need need final chart
@@ -846,14 +844,12 @@ def show_me_callback(clickData,state,metric,expname,stateurl,currLevel):
             return [
             #create_grouped_bargraph(title=bar_title, jobs=bar_jobs ,metric=metric,order_by=metric[0],limit=10,y_value='jobid'),
             "Loading....",
-            req_component,
             "/graph/gantt/"+req_component,
             ]
 
         return [
             #create_grouped_bargraph(title=bar_title, jobs=bar_jobs ,metric=metric,order_by=metric[0],limit=10,y_value='jobid'),
             "Loading....",
-            req_component,
             "/graph/bar?metric=" + ",".join(metric) + "&expname=" + expname + "&exp_component="+req_component,
             ]
         #return ["Component:" + str(clickData['points'][0]['y']) + " Metric:" + metric[clickData['points'][0]['curveNumber']]]
@@ -861,6 +857,14 @@ def show_me_callback(clickData,state,metric,expname,stateurl,currLevel):
     else:
         return [
             state,
-            "else",
             "/graph/bar?expname=ESM4_hist-piAer_D1&metric=num_procs"
             ]
+
+
+@app.callback(
+    [
+     dash.dependencies.Output('click-data', 'children'),
+     ],
+    [dash.dependencies.Input('basic-interactions', 'clickData')])
+def show_me_callback(clickData):
+    return [str(clickData)]

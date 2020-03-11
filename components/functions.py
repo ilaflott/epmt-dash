@@ -13,10 +13,10 @@ logger = getLogger(__name__)
 
 if MOCK_EPMT_API:
     logger.info("Using Mock API")
-    from epmt_query_mock import get_procs, get_ops, get_refmodels
+    from epmt_query_mock import get_procs, get_ops, get_refmodels, get_jobs
 else:
     logger.info("Using EPMT API")
-    from epmt_query import get_procs, get_ops, get_refmodels
+    from epmt_query import get_procs, get_ops, get_refmodels, get_jobs
 
 
 
@@ -240,6 +240,16 @@ def df_normalizer(df, idx='op', norm_metric='cpu_time'):
     df[norm_metric +'_normalized'] = (df[norm_metric] - df['mean']) / df['std']
     return df
 
+# Incomplete, could be extended to apply text to each bar on gantt chart
+# x_pos/y_pos need work
+# def addAnnot(df, fig):
+#     for i in df:
+#         x_pos = (i['Finish'] - i['Start'])/2 + i['Start']
+#         for j in fig['data']:
+#             y_pos = (j['y'][0] + j['y'][1] + j['y'][2] + j['y'][3])/4
+#         fig['layout']['annotations'] += tuple([dict(x=x_pos,y=y_pos,text=i['Task'],font={'color':'black'})])
+#     return fig
+
 
 def gantt_me(jobs=[], gtags=None):
     """
@@ -278,13 +288,16 @@ def create_gantt_graph(joblist=[],gtag=['op_instance','op']):
     gantt_data = gantt_me(jobs=joblist, gtags=gtag)
     gcolors = list_of_contrast(len(gantt_data),(33,45,237),0.05)
     fig = ff.create_gantt(gantt_data,colors=gcolors,bar_width=0.4,height=25*len(gantt_data)+150)
-    fig.update_layout(title="Job {} Timeline for tag:'{}'".format(joblist,gtag))
+    fig.update_layout(title="Job {} Timeline for tag:'{}'".format(joblist,gtag),
+    clickmode='event+select',)
     # Remove Year, week, day selector at top of gantt
     fig.layout.xaxis.rangeselector={}
 
     # op_sequence can be in the hundreds, turn off the y-axis labels
     if gtag is 'op_sequence':
         fig.update_yaxes(showticklabels=False)
+    # Annotations disabled
+    #fig = addAnnot(gantt_data,fig)
     basic_graph = dcc.Graph(
         id='basic-interactions',
         figure=fig
@@ -385,11 +398,11 @@ def create_boxplot(jobs=['676007','625172','804285'], model="", normalize=True, 
     return basic_graph
 
 
-def create_grouped_bargraph(title='',jobs=None,y_value='component', metric=['duration','cpu_time'], order_by='duration', limit=10):
+def create_grouped_bargraph(title='',jobs=None, tags=None, y_value='component', metric=['duration','cpu_time'], order_by='duration', limit=10):
     import dash_core_components as dcc
     import plotly.express as px
     import pandas as pd
-    from epmt_query import get_jobs
+    jobs = get_jobs(tags=tags, limit=0, fmt='terse')
     logger.debug("Number of jobs to bargraph: {}".format(len(jobs)))
     if len(jobs) is 0:
         return "No Jobs Found"
@@ -472,11 +485,6 @@ def create_grouped_bargraph(title='',jobs=None,y_value='component', metric=['dur
     )
     return basic_graph
 
-from orm import *
-@db_session
-def get_experiments(jobs):
-    import epmt_query as eq
-    return set([a.tags['exp_name'] for a in eq.get_jobs(jobs, fmt='orm')])
 
 def create_stacked_bar(jobs=None,metrics=None, normalize=True,order='total'):
     import plotly.graph_objects as go
@@ -491,8 +499,7 @@ def create_stacked_bar(jobs=None,metrics=None, normalize=True,order='total'):
     )
     if order is not 'total' and order is not None:
         logger.debug("Ordering by: {}".format(order))
-        import epmt_query as eq
-        jobs=eq.get_jobs(jobs=jobs,fmt='dict',limit=0)
+        jobs=get_jobs(jobs=jobs,fmt='dict',limit=0)
         sort_data = [(j['jobid'],j[order]) for j in jobs]
         sort_data.sort(key=lambda tup: tup[1], reverse=False)
         sorted_jobids = [j[0] for j in sort_data]
@@ -509,14 +516,13 @@ def trace_renderer(jobs=None,metrics=None, normalize=True):
     """
     Returns list of traces
     """
-    import epmt_query as eq
     import plotly.graph_objects as go
     # For stacked bar the x values are embedded in each trace
     # Only trace Data list is returned
     data = []
 
     # Traces go vertical, Jobs go horizontal
-    job_dicts = eq.get_jobs(jobs,fmt='dict',limit=0)
+    job_dicts = get_jobs(jobs,fmt='dict',limit=0)
     for m in metrics:
         data.append(go.Bar(
         x=jobs, y=[j[m] for j in job_dicts],
