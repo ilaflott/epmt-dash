@@ -277,7 +277,7 @@ def create_gantt_graph(joblist=[],gtag=['op_instance','op']):
     
     gantt_data = gantt_me(jobs=joblist, gtags=gtag)
     gcolors = list_of_contrast(len(gantt_data),(33,45,237),0.05)
-    fig = ff.create_gantt(gantt_data,colors=gcolors,bar_width=0.4)
+    fig = ff.create_gantt(gantt_data,colors=gcolors,bar_width=0.4,height=25*len(gantt_data)+150)
     fig.update_layout(title="Job {} Timeline for tag:'{}'".format(joblist,gtag))
     # Remove Year, week, day selector at top of gantt
     fig.layout.xaxis.rangeselector={}
