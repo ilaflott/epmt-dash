@@ -841,6 +841,7 @@ def show_me_callback(clickData,state,metric,expname,stateurl,currLevel):
         from epmt_query import get_jobs
         bar_jobs = get_jobs(tags={ 'exp_name': expname, 'exp_component': req_component})
         
+        # If we're already past component and job selection we need need final chart
         if currLevel == 'job':
             return [
             #create_grouped_bargraph(title=bar_title, jobs=bar_jobs ,metric=metric,order_by=metric[0],limit=10,y_value='jobid'),

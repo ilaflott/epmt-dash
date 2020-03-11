@@ -390,6 +390,7 @@ def create_grouped_bargraph(title='',jobs=None,y_value='component', metric=['dur
     import plotly.express as px
     import pandas as pd
     from epmt_query import get_jobs
+    logger.debug("Number of jobs to bargraph: {}".format(len(jobs)))
     if len(jobs) is 0:
         return "No Jobs Found"
     exp_jobs = get_jobs(jobs=jobs, fmt='dict', limit=limit)
@@ -455,8 +456,10 @@ def create_grouped_bargraph(title='',jobs=None,y_value='component', metric=['dur
                           titlefont_size=20
                       ),
                       barmode='group',
-                      bargap=0.25,
-                      height=700,
+                      bargap=0.20,
+                      # Graph height is function of jobs and metrics
+                      # Add minimum 200px for small graphs
+                      height=25*len(metric)*len(sorted_d) + 200,
                       clickmode='event+select',
                       title=title
                       #title=exp_name + " top " + str(limit) + " " + ", ".join(order_key_list) + " per component"

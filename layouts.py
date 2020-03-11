@@ -803,12 +803,11 @@ def graph_plotly(url):
         graph_data = create_boxplot(model=model,jobs=jobs,normalize=query.get('normalize',['True'])[0],metric=query.get('metric',['cpu_time'])[0])
     # Return a bar graph
     elif graph_style == 'bar':
-        logger.debug("Somehow bar graph")
         # Rename and retrieve parameters
         jobname = query.get('expname',None)[0]
         bar_title = "exp_name:" + jobname
         metric = query.get('metric',None)
-        order_by = query.get('orderby',['duration'])[0]
+        order_by = query.get('order',['duration'])[0]
         limit = int(query.get('limit',[0])[0])
         tag_dict = {'exp_name': jobname }
         exp_component = query.get('exp_component',[None])[0]
@@ -833,6 +832,7 @@ def graph_plotly(url):
     return html.Div(
         [
             # represents the URL bar, doesn't render anything
+            # refresh causes page to reload if path is updated via callback
             dcc.Location(id='anurl', refresh=True),
             html.Div(style={'inline': 'true'}, children=[
             Header(),
