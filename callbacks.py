@@ -843,7 +843,7 @@ def show_me_callback(clickData,state,metric,expname,stateurl,currLevel):
         return [
             create_bargraph(title=bar_title, jobs=bar_jobs ,metric=metric,order_by=metric[0],limit=10),
             req_component,
-            "/graph/bar?expname=" + expname + "&metric=" + ",".join(metric) + "&component="+str(clickData['points'][0]['y']),
+            "/graph/bar?expname=" + expname + "&metric=" + ",".join(metric) + "&exp_component="+str(clickData['points'][0]['y']),
             ]
         #return ["Component:" + str(clickData['points'][0]['y']) + " Metric:" + metric[clickData['points'][0]['curveNumber']]]
     # Handle case where callback fires when page loads & no input is given.

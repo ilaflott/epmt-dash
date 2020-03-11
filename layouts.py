@@ -805,11 +805,15 @@ def graph_plotly(url):
         metric = query.get('metric',None)
         order_by = query.get('orderby',['duration'])[0]
         limit = int(query.get('limit',[0])[0])
+        tag_dict = {'exp_name': jobname }
+        exp_component = query.get('exp_component',[None])[0]
+        if exp_component:
+            tag_dict.update({'exp_component':exp_component})
         grouped = True if len(metric) > 1 else False #query.get('grouped',[False])[0]
         # Build and store a graph of given parameters
         if grouped:
             from epmt_query import get_jobs
-            jobs = get_jobs(tags={ 'exp_name': jobname }, limit=0, fmt='terse')
+            jobs = get_jobs(tags=tag_dict, limit=0, fmt='terse')
             graph_data = create_bargraph(title=jobname, jobs=jobs,metric=metric,order_by=order_by,limit=limit)
         else:
             graph_data = "Bar graph not grouped"
