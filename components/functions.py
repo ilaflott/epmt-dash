@@ -256,15 +256,16 @@ def gantt_me(jobs=[], gtags=None):
     Generate Gantt chart data
     """
     start_times, end_times, op_name, op_dur, dfn = ([] for i in range(5))
-    op = get_ops(jobs, tags = gtags, fmt='dict')#,full=True)
+    op = get_ops(jobs, tags = gtags, fmt='dict', full=True)
 
     # Roll ops into a zip
     for n in op:
         # Grossly extend a list for each metric to be graphed
-        start_times.extend([n['start']])
-        end_times.extend([n['finish']])
-        op_name.extend(["{}".format(list(n['tags'].items())[0])])
-        op_dur.extend([n['duration']])
+        for k in n['intervals']:
+            start_times.extend([k[0]])
+            end_times.extend([k[1]])
+            op_name.extend(["{}".format(list(n['tags'].items())[0])])
+            op_dur.extend([n['duration']])
     rolled_ops = zip(op_name, start_times, end_times, op_dur)
 
     # Start times should be first

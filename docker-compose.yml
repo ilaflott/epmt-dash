@@ -1,22 +1,28 @@
 version: '3.1'
 services:
   dash:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile.epmt-interface
     image: epmt-interface:latest
-    restart: always
+    restart: unless-stopped
     environment:
       ENV PYTHONUNBUFFERED: 0
+      EPMT_GUI_MOCK: 1
     volumes:
       - ./:/home/dash
-      - ./sample:/home/dash/sample
-    ports:
-      - 8050:8050
+    command: python index.py
+    expose:
+      - "8050"
 
-    test:
-      build:
-        context: .
-        dockerfile: Dockerfiles/Dockerfile.chromedriver-sel
-      command: /bin/bash -c 'cd /epmt && python ui/test/first_dash_test.py'
-      volumes:
-        - ./:/epmt
-      links:
-        - dash
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile.chromedriver-sel
+    image: python-chromedriver:3.7
+    volumes:
+      - ./test/:/usr/workspace
+    working_dir:  /usr/workspace/
+    command: python first_dash_test.py
+    links:
+      - dash
