@@ -1,15 +1,15 @@
 """
 A simple selenium test example written by python
 """
-
+import sys
 import unittest
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 
+TEST_ADDRESS = 'http://localhost:8050'
 
 class TestTemplate(unittest.TestCase):
     """Include test cases on a given url"""
-    test_address = 'http://localhost:8050'
     def setUp(self):
         """Start web driver"""
         options = webdriver.ChromeOptions()
@@ -26,7 +26,7 @@ class TestTemplate(unittest.TestCase):
     def test_case_1(self):
         """Find and click Recent Jobs tab"""
         try:
-            self.driver.get()
+            self.driver.get(TEST_ADDRESS)
             el = self.driver.find_element_by_xpath("//*[@id='tabs']/div[1]/span")
             el.click()
         except NoSuchElementException as ex:
@@ -35,7 +35,7 @@ class TestTemplate(unittest.TestCase):
     def test_case_2(self):
         """Find and Click Models tab"""
         try:
-            self.driver.get(test_address)
+            self.driver.get(TEST_ADDRESS)
             el = self.driver.find_element_by_xpath("//*[@id='tabs']/div[2]/span")
             el.click()
         except NoSuchElementException as ex:
@@ -44,7 +44,7 @@ class TestTemplate(unittest.TestCase):
     def test_case_3(self):
         """Find and Click Raw Data Toggle"""
         try:
-            self.driver.get(test_address)
+            self.driver.get(TEST_ADDRESS)
             el = self.driver.find_element_by_xpath("//*[@id='raw-switch']/div/div/div[2]/button")
             el.click()
         except NoSuchElementException as ex:
@@ -53,7 +53,7 @@ class TestTemplate(unittest.TestCase):
     def test_case_4(self):
         """Find and Click Search Area"""
         try:
-            self.driver.get(test_address)
+            self.driver.get(TEST_ADDRESS)
             el = self.driver.find_element_by_xpath("//*[@id='searchdf']")
             el.click()
         except NoSuchElementException as ex:
@@ -62,7 +62,7 @@ class TestTemplate(unittest.TestCase):
     def test_case_5(self):
         """Find and Click Run Analysis button"""
         try:
-            self.driver.get(test_address)
+            self.driver.get(TEST_ADDRESS)
             el = self.driver.find_element_by_xpath("//*[@id='run-analysis-btn']")
             el.click()
         except NoSuchElementException as ex:
@@ -71,7 +71,7 @@ class TestTemplate(unittest.TestCase):
     def test_case_6(self):
         """Find and Click Create model from jobs button"""
         try:
-            self.driver.get(test_address)
+            self.driver.get(TEST_ADDRESS)
             el = self.driver.find_element_by_xpath("//*[@id='create-newModel-btn']")
             el.click()
         except NoSuchElementException as ex:
@@ -80,7 +80,7 @@ class TestTemplate(unittest.TestCase):
     def test_case_7(self):
         """Find and Click Select All button"""
         try:
-            self.driver.get(test_address)
+            self.driver.get(TEST_ADDRESS)
             el = self.driver.find_element_by_xpath("//*[@id='index-select-all']")
             el.click()
         except NoSuchElementException as ex:
@@ -89,7 +89,7 @@ class TestTemplate(unittest.TestCase):
     def test_case_8(self):
         """Find and Click Date start and end"""
         try:
-            self.driver.get(test_address)
+            self.driver.get(TEST_ADDRESS)
             # Activate date picker dialog
             el = self.driver.find_element_by_xpath("//*[@id='jobs-date-picker']/div/div/div[1]")
             el.click()
@@ -109,7 +109,7 @@ class TestTemplate(unittest.TestCase):
     def test_case_9(self):
         """Find and Click Available test model dropdown"""
         try:
-            self.driver.get(test_address)
+            self.driver.get(TEST_ADDRESS)
             el = self.driver.find_element_by_xpath("//*[@id='react-select-2--value']/div[1]")
             el.click()
         except NoSuchElementException as ex:
@@ -118,7 +118,7 @@ class TestTemplate(unittest.TestCase):
     def test_case_10(self):
         """Find and Click number of jobs to display dropdown"""
         try:
-            self.driver.get(test_address)
+            self.driver.get(TEST_ADDRESS)
             el = self.driver.find_element_by_xpath("//*[@id='react-select-3--value']/div[1]")
             el.click()
         except NoSuchElementException as ex:
@@ -127,7 +127,7 @@ class TestTemplate(unittest.TestCase):
     def test_case_11(self):
         """Find and Click issue tracker"""
         try:
-            self.driver.get(test_address)
+            self.driver.get(TEST_ADDRESS)
             el = self.driver.find_element_by_xpath("//*[@id='version']/a")
             el.click()
         except NoSuchElementException as ex:
@@ -137,7 +137,7 @@ class TestTemplate(unittest.TestCase):
     def test_case_12(self):
         """Find and click Models tab, test all buttons"""
         try:
-            self.driver.get(test_address)
+            self.driver.get(TEST_ADDRESS)
             # Find and click Models tab
             el = self.driver.find_element_by_xpath("//*[@id='tabs']/div[2]/span")
             el.click()
@@ -165,4 +165,5 @@ class TestTemplate(unittest.TestCase):
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(TestTemplate)
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    result = unittest.TextTestRunner(verbosity=2).run(suite)
+    sys.exit(not result.wasSuccessful())
