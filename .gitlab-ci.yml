@@ -30,4 +30,4 @@ build:interface:
     # install selenium after 
     - pip install selenium
     - python index.py & disown
-    - python test/first_dash_test.py
+    - python test/find_and_click.py http://localhost:8050

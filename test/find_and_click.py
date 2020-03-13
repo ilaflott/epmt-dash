@@ -6,7 +6,11 @@ import unittest
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 
-TEST_ADDRESS = 'http://localhost:8050'
+try:
+    TEST_ADDRESS = str(sys.argv[1])
+except IndexError:
+    print("No Test Address given. Defaulting to localhost")
+    TEST_ADDRESS = 'http://localhost:8050'
 
 class TestTemplate(unittest.TestCase):
     """Include test cases on a given url"""
@@ -27,7 +31,7 @@ class TestTemplate(unittest.TestCase):
         """Find and click Recent Jobs tab"""
         try:
             self.driver.get(TEST_ADDRESS)
-            el = self.driver.find_element_by_xpath("broken test here")
+            el = self.driver.find_element_by_xpath("//*[@id='tabs']/div[1]/span")
             el.click()
         except NoSuchElementException as ex:
             self.fail(ex.msg)

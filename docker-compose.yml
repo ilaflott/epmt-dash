@@ -23,6 +23,6 @@ services:
     volumes:
       - ./test/:/usr/workspace
     working_dir:  /usr/workspace/
-    command: python first_dash_test.py
+    command: python find_and_click.py http://dash:8050
     links:
       - dash
