@@ -1,0 +1,33 @@
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
+
+# Start interface in mock mode
+variables: 
+  EPMT_GUI_MOCK: "1"
+  # set display port to avoid crash
+  DISPLAY: ":99"
+
+build:interface:
+  image: python:3.7.4
+  script:
+    - pip install --trusted-host pypi.python.org -r requirements-ui.txt.py3
+    - python index.py & disown
+    # Start testing against mock interface
+    # install google chrome
+    - wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
+    - sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
+    - apt-get -y update
+    - apt-get install -y google-chrome-stable
+    # install chromedriver
+    - apt-get install -yqq unzip
+    - wget -O /tmp/chromedriver.zip http://chromedriver.storage.googleapis.com/`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE`/chromedriver_linux64.zip
+    - unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/
+    # upgrade pip
+    - pip install --upgrade pip
+    # install selenium
+    - pip install selenium
+    - python first_dash_test.py
