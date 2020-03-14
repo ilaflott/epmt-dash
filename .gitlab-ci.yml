@@ -27,8 +27,8 @@ build:interface:
     # upgrade pip
     # install selenium after 
     #- pip install selenium dash[testing]
-    - echo "pytest url parser and generator"
-    - EPMT_GUI_MOCK=1 python -m pytest test/test_urlparse.py
+    #- echo "pytest url parser and generator"
+    #- EPMT_GUI_MOCK=1 python -m pytest test/test_urlparse.py
     - echo "Start Mock Server"
     - python index.py & disown
     - echo "Point and click menus and buttons firing callbacks"
