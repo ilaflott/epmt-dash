@@ -837,23 +837,28 @@ def show_me_callback(clickData,state,metric,expname,stateurl,currLevel):
         # Return custom graph
         req_component = str(clickData['points'][0]['y'])
         bar_title = "exp_name:" + expname + " exp_component:" + req_component
-        bar_jobs = get_jobs(tags={ 'exp_name': expname, 'exp_component': req_component})
         
         # If we're already past component and job selection we need need final chart
         if currLevel == 'job':
             return [
-            #create_grouped_bargraph(title=bar_title, jobs=bar_jobs ,metric=metric,order_by=metric[0],limit=10,y_value='jobid'),
+            # Here we'ere not replacing the element on screen with a
+            # new graph, we'ere redirecting via the second callback
+            # output anurl - href
+            # create_grouped_bargraph(title=bar_title, jobs=bar_jobs ,metric=metric,order_by=metric[0],limit=10,y_value='jobid'),
+            # This loading message will momentarily replace the current
+            # Graph with Loading text
             "Loading....",
             "/graph/gantt/"+req_component,
             ]
-
+        # This level redirects the page if currlevel is not job
         return [
             #create_grouped_bargraph(title=bar_title, jobs=bar_jobs ,metric=metric,order_by=metric[0],limit=10,y_value='jobid'),
             "Loading....",
             "/graph/bar?metric=" + ",".join(metric) + "&expname=" + expname + "&exp_component="+req_component,
             ]
         #return ["Component:" + str(clickData['points'][0]['y']) + " Metric:" + metric[clickData['points'][0]['curveNumber']]]
-    # Handle case where callback fires when page loads & no input is given.
+    # Handle case where callback fires when page loads & 
+    # no click data/input is given.
     else:
         return [
             state,
