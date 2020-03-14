@@ -26,7 +26,7 @@ build:interface:
     - unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/
     # upgrade pip
     # install selenium after 
-    - pip install selenium dash[testing]
+    #- pip install selenium dash[testing]
     - echo "pytest url parser and generator"
     - EPMT_GUI_MOCK=1 python -m pytest test/test_urlparse.py
     - echo "Start Mock Server"
