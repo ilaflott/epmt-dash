@@ -26,7 +26,7 @@ build:interface:
     - unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/
     # upgrade pip
     # install selenium after 
-    - pip install selenium
+    - pip install selenium dash[testing]
     - python index.py & disown
     - python test/find_and_click.py http://localhost:8050
     # Test url parser and generator

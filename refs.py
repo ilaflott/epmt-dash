@@ -59,7 +59,6 @@ def get_references():
     return: formatted dataframe
     """
     models = ref_gen().df
-    logger.debug("Refs({}):\n{}".format(id(models), models))
     # Ref model initialization data
     models['tags'] = models['tags'].apply(dumps)  # Dumps stringify's dictionaries
     models['jobs'] = models['jobs'].apply(dumps)  # Dumps stringify's lists
