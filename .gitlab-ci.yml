@@ -29,3 +29,5 @@ build:interface:
     - pip install selenium
     - python index.py & disown
     - python test/find_and_click.py http://localhost:8050
+    # Test url parser and generator
+    - pytest -q test/test_urlparse.py
