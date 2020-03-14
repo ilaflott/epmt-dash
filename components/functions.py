@@ -401,16 +401,30 @@ def create_boxplot(jobs=['676007','625172','804285'], model="", normalize=True, 
 
 def create_grouped_bargraph(title='',jobs=None, tags=None, y_value='component', metric=['duration','cpu_time'], order_by='duration', limit=10):
     import dash_core_components as dcc
+    import plotly.graph_objects as go
     import plotly.express as px
     import pandas as pd
-    jobs = get_jobs(tags=tags, limit=0, fmt='terse')
-    logger.debug("Number of jobs to bargraph: {}".format(len(jobs)))
-    if len(jobs) is 0:
+    import operator
+    
+    # Get jobs in dict format.
+    # todo: this should be pandas
+    exp_jobs = get_jobs(tags=tags, fmt='dict', limit=limit)
+    if len(exp_jobs) is 0:
         return "No Jobs Found"
-    exp_jobs = get_jobs(jobs=jobs, fmt='dict', limit=limit)
+    logger.debug("Number of jobs to bargraph: {}".format(len(exp_jobs)))
 
     order_key_list = metric
     sum_dict = {}
+    
+    # Component dictionary contains key of data value of 
+    # component: data: (exp_time, jobid, [metrics,])
+    #
+    # example 1 component, 1 jobid with 2 metrics: 
+    # {'aerosol_cmip': {'data': [('18540101',
+    #                             '2444929',
+    #                             [18941050858.0, 4863690779.0]),
+    # todo:
+    # This can be more easily achieved with pandas.
     c_dict = {}
     for j in exp_jobs:
         if y_value is "component":
@@ -423,6 +437,10 @@ def create_grouped_bargraph(title='',jobs=None, tags=None, y_value='component', 
 
     comps = []
 
+    # This loop generates the sum_dict
+    # sum_dict contains key of component
+    # value of dictionary of metrics
+    # Key metric : value metric sum generated from the c_dict
     for ok in order_key_list:
         for c,v in c_dict.items():
             comps.extend([c])
@@ -438,15 +456,13 @@ def create_grouped_bargraph(title='',jobs=None, tags=None, y_value='component', 
             sum_dict[c][ok] = sum(sum_dict[c][ok])
 
     # Generate sorted list on order_by key
-    import operator
     sorted_d = sorted(sum_dict.items(), key=lambda x: x[1][order_by])
 
-    # Select up to including the limit
+    # Select including the limit
     if limit is 0:
         logger.debug("Limit set to 0, Defaulting limit to 10")
         limit = 10
     sorted_d = sorted_d[:limit]
-    import plotly.graph_objects as go
 
     fig = go.Figure()
     color = {}
