@@ -400,6 +400,11 @@ def create_boxplot(jobs=['676007','625172','804285'], model="", normalize=True, 
 
 
 def create_grouped_bargraph(title='',jobs=None, tags=None, y_value='component', metric=['duration','cpu_time'], order_by='duration', limit=10):
+    """
+    
+    Horizontal bargraph because the Y axis names are easier to read
+    and there can be alot of bars to plot.
+    """
     import dash_core_components as dcc
     import plotly.graph_objects as go
     import plotly.express as px
