@@ -21,7 +21,7 @@ build:interface:
     - apt-get install -yqq unzip                        # install chromedriver
     - wget -O /tmp/chromedriver.zip http://chromedriver.storage.googleapis.com/`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE`/chromedriver_linux64.zip
     - unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/
-    - python -m py_compile epmt *.py components/*.py		# Compile everything
+    - python -m py_compile *.py components/*.py		# Compile everything
     - echo "pytest url parser and generator"
     - EPMT_GUI_MOCK=1 python -m pytest test/test_urlparse.py
     - pip install selenium dash[testing]
