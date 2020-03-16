@@ -421,7 +421,7 @@ def create_grouped_bargraph(title='',jobs=None, tags=None, y_value='component', 
     else:
         # Get jobs in dict format.
         # todo: this should be pandas
-        exp_jobs = get_jobs(jobs=jobs, tags=tags, fmt='dict', limit=limit)
+        exp_jobs = get_jobs(jobs=jobs, tags=tags, fmt='dict')
         if len(exp_jobs) is 0:
             return "No Jobs Found"
         logger.debug("Number of jobs to bargraph: {}".format(len(exp_jobs)))
@@ -482,10 +482,12 @@ def create_grouped_bargraph(title='',jobs=None, tags=None, y_value='component', 
         return "Key Missing"
 
     # Generate sorted list on order_by key
+    # This only sorts and limits 
     sorted_d = sorted(sum_dict.items(), key=lambda x: x[1][order_by])
-    if limit > 0:
-        sorted_d = sorted_d[:limit]
 
+    if limit > 0:
+        sorted_d = sorted_d[-limit:]
+    logger.debug("Pre sorted {}\nPost Sorted {}".format(sum_dict, sorted_d))
     fig = go.Figure()
     color = {}
     color['cpu_time'] = 'rgb(180, 160, 109)'
