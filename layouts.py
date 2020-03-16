@@ -804,6 +804,7 @@ def graph_plotly(url):
     # Return a bar graph
     elif graph_style == 'bar':
         # Rename and retrieve parameters
+        y_value='component'
         jobname = query.get('expname',None)[0]
         bar_title = "exp_name:" + jobname
         metric = query.get('metric',None)
@@ -811,16 +812,20 @@ def graph_plotly(url):
         limit = int(query.get('limit',[0])[0])
         tag_dict = {'exp_name': jobname }
         exp_component = query.get('exp_component',[None])[0]
-        y_value='component'
+        ops = query.get('op',[None])[0]
+        jobs = query.get('jobs',None)
         if exp_component:
             tag_dict.update({'exp_component':exp_component})
             logger.debug("Requested tag_dict {}".format(tag_dict))
             y_value='jobid'
             bar_title = bar_title + " exp_component:" + exp_component
+        if ops:
+            y_value='op'
+            bar_title = bar_title + " ops:" + ops
         grouped = True if len(metric) > 1 else False #query.get('grouped',[False])[0]
         # Build and store a graph of given parameters
         if grouped:
-            graph_data = create_grouped_bargraph(title=bar_title, tags=tag_dict, metric=metric,order_by=order_by,limit=limit, y_value=y_value)
+            graph_data = create_grouped_bargraph(title=bar_title, jobs=jobs, tags=tag_dict, metric=metric, ops=ops, order_by=order_by,limit=limit, y_value=y_value)
         else:
             graph_data = "Bar graph not grouped"
                 

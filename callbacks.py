@@ -848,7 +848,7 @@ def show_me_callback(clickData,state,metric,expname,stateurl,currLevel):
             # This loading message will momentarily replace the current
             # Graph with Loading text
             "Loading....",
-            "/graph/gantt/"+req_component,
+            "/graph/bar?metric=" + ",".join(metric) + "&expname=" + expname + "&jobs="+req_component+"&op=1",
             ]
         # This level redirects the page if currlevel is not job
         return [
