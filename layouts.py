@@ -821,7 +821,7 @@ def graph_plotly(url):
             bar_title = bar_title + " exp_component:" + exp_component
         if ops:
             y_value='op'
-            bar_title = bar_title + " ops:" + ops
+            bar_title = bar_title + " jobs:" + ','.join(jobs)
         grouped = True if len(metric) > 1 else False #query.get('grouped',[False])[0]
         # Build and store a graph of given parameters
         if grouped:
@@ -849,11 +849,12 @@ def graph_plotly(url):
                     # metric - hidden div
                     html.Div(children=metric
                             ,id='bar-metrics', style={'display':'none'}),
-                    # metric - hidden div
+                    # specify experiment as the level of bar graph
+                    # if exp_component is empty
                     html.Div(children="experiment"
                             ,id='bar-level', style={'display':'none'})
                     if exp_component is None else
-                    # metric - hidden div
+                    # otherwise the bar graph is at
                     html.Div(children="job"
                             ,id='bar-level', style={'display':'none'}),
                     ])

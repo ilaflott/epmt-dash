@@ -228,8 +228,8 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn,
     jobs_drpdn_value = 'No'
     ctx = dash.callback_context
     # Debug Context due to this callback being huge
-    logger.debug("Callback Context info:\nTriggered:\n{}\nInputs:\n{}\nStates:\n{}".format(
-        ctx.triggered, ctx.inputs, ctx.states))
+    #logger.debug("Callback Context info:\nTriggered:\n{}\nInputs:\n{}\nStates:\n{}".format(
+    #    ctx.triggered, ctx.inputs, ctx.states))
     logger.debug("Updating Models table and friends")
     return_models = refs.get_references().to_dict('records')
     ref_df = refs.ref_df
@@ -515,10 +515,10 @@ def update_jobs_table(raw_toggle, search_value, end, rows_per_page, page_current
     This callback updates the jobs table data, columns, pages and styling
     """
     logger.debug("\nUpdate_output started")
-    ctx = dash.callback_context
+    #ctx = dash.callback_context
     # Debug Context due to this callback being huge
-    logger.debug("Callback Context info:\nTriggered:\n{}\nInputs:\n{}\nStates:\n{}".format(
-        ctx.triggered, ctx.inputs, ctx.states))
+    #logger.debug("Callback Context info:\nTriggered:\n{}\nInputs:\n{}\nStates:\n{}".format(
+    #    ctx.triggered, ctx.inputs, ctx.states))
     logger.debug("Rows requested per page:{}".format(rows_per_page))
     # Grab df
     job_df = JobGen().jobs_df

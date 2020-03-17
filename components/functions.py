@@ -251,32 +251,37 @@ def df_normalizer(df, idx='op', norm_metric='cpu_time'):
 #     return fig
 
 
-def gantt_me(jobs=[], gtags=None):
+def gantt_me(jobs=[], gtags=None, exp_name=None):
     """
     Generate Gantt chart data
     """
     start_times, end_times, op_name, op_dur, dfn = ([] for i in range(5))
-    op = get_ops(jobs, tags = gtags, fmt='dict', full=True)
+    if exp_name:
+        data = get_jobs(tags={'exp_name':exp_name})
 
-    # Roll ops into a zip
-    for n in op:
-        # Grossly extend a list for each metric to be graphed
-        for k in n['intervals']:
-            start_times.extend([k[0]])
-            end_times.extend([k[1]])
-            op_name.extend(["{}".format(list(n['tags'].items())[0])])
-            op_dur.extend([n['duration']])
-    rolled_ops = zip(op_name, start_times, end_times, op_dur)
+    elif jobs:
+        data = get_ops(jobs, tags = gtags, fmt='dict', full=True)
+        # Roll ops into a zip
+        for n in data:
+            # Grossly extend a list for each metric to be graphed
+            for k in n['intervals']:
+                start_times.extend([k[0]])
+                end_times.extend([k[1]])
+                op_name.extend(["{}".format(list(n['tags'].items())[0])])
+                op_dur.extend([n['duration']])
+        rolled_ops = zip(op_name, start_times, end_times, op_dur)
+        # Start times should be first
+        rolled_ops = sorted(rolled_ops, key=lambda x: x[1])
+        # Make gantt list of dicts from rolled_ops
+        for g in rolled_ops:
+            dfn.extend([{'Task':g[0],'Start':g[1],'Finish':g[2]}])
+        return dfn
+    else:
+        return None
 
-    # Start times should be first
-    rolled_ops = sorted(rolled_ops, key=lambda x: x[1])
-    # Make gantt list of dicts from rolled_ops
-    for g in rolled_ops:
-        dfn.extend([{'Task':g[0],'Start':g[1],'Finish':g[2]}])
-    return dfn
 
 
-def create_gantt_graph(joblist=[],gtag=['op_instance','op']):
+def create_gantt_graph(joblist=[],gtag=['op_instance','op'],exp_name=None):
     """
     Generate the data to be graphed and supply it to the graphing
     function gantt_me.  Also do some minor formatting adjustments
@@ -286,9 +291,12 @@ def create_gantt_graph(joblist=[],gtag=['op_instance','op']):
     import dash
     import dash_core_components as dcc
     
-    gantt_data = gantt_me(jobs=joblist, gtags=gtag)
+    gantt_data = gantt_me(jobs=joblist, gtags=gtag, exp_name=exp_name)
+    if gantt_data is None:
+        return "Could not get operations or jobs"
     gcolors = list_of_contrast(len(gantt_data),(33,45,237),0.05)
-    fig = ff.create_gantt(gantt_data,colors=gcolors,bar_width=0.4,height=25*len(gantt_data)+150)
+    logger.debug("Len of gantt data{} first 2 {}".format(len(gantt_data), gantt_data[:2]))
+    fig = ff.create_gantt(gantt_data,group_tasks=True, index_col='Task', colors=gcolors,bar_width=0.4,height=600)
     fig.update_layout(title="Job {} Timeline for tag:'{}'".format(joblist,gtag),
     clickmode='event+select',)
     # Remove Year, week, day selector at top of gantt
@@ -487,7 +495,6 @@ def create_grouped_bargraph(title='',jobs=None, tags=None, y_value='component', 
 
     if limit > 0:
         sorted_d = sorted_d[-limit:]
-    logger.debug("Pre sorted {}\nPost Sorted {}".format(sum_dict, sorted_d))
     fig = go.Figure()
     color = {}
     color['cpu_time'] = 'rgb(180, 160, 109)'
@@ -503,7 +510,7 @@ def create_grouped_bargraph(title='',jobs=None, tags=None, y_value='component', 
                         ))
 
     # Logarithmic metric, descending
-    fig.update_layout(xaxis_type="log",
+    fig.update_layout(#xaxis_type="log",
                       # xaxis={'categoryorder':'category descending'}),
                       xaxis_tickfont_size=17,
                       xaxis=dict(
