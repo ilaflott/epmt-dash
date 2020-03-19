@@ -266,13 +266,15 @@ def gantt_me(jobs=[], gtags=None, exp_name=None, exp_component=None):
             data = data.rename(columns={'start': 'Start', 'end': 'Finish', 'jobid':'Task' })
             gantt_title = exp_name + " timeline for component " + exp_component
             return (data,gantt_title)
-        data = get_jobs(tags={'exp_name':exp_name}, fmt='pandas')
-        # Extract component
-        data['exp_component'] = data['tags'].apply(lambda x: x.get('exp_component'))
-        data = data[['start','end','exp_component','jobid']]
-        data = data.rename(columns={'start': 'Start', 'end': 'Finish', 'exp_component':'Resource', 'jobid':'Task' })
-        gantt_title = exp_name + " timeline by component "
-        return (data,gantt_title)
+        else:
+            # Return just jobs we only have a exp_name
+            data = get_jobs(tags={'exp_name':exp_name}, fmt='pandas', limit=5)
+            # Extract component
+            data['exp_component'] = data['tags'].apply(lambda x: x.get('exp_component'))
+            data = data[['start','end','exp_component','jobid']]
+            data = data.rename(columns={'start': 'Start', 'end': 'Finish', 'exp_component':'Resource', 'jobid':'Task' })
+            gantt_title = exp_name + " timeline by component "
+            return (data,gantt_title)
     elif jobs:
         data = get_ops(jobs, tags = gtags, fmt='dict', full=True)
         # Roll ops into a zip

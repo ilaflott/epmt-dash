@@ -876,13 +876,12 @@ def show_me_callback(clickData,graphdata):
     logger.debug("Clicked {}".format(clickData))
     clk_index = clickData['points'][0].get('y',None)
     graph_df = pd.DataFrame(graphdata['data'])
-    if clk_index:
-        # Sort by start datetime
-        graph_df = graph_df.sort_values(['x'],ascending=False)
-        # Remove rows missing names
-        graph_df = graph_df[graph_df.name != ''].reset_index()
-        logger.debug("Graph children {}".format(graphdata['data']))
-    else:
-        curvenum = clickData['points'][0].get('curveNumber',None)
-        return [graph_df.iloc[curvenum, :]['name']]
-    return [graph_df.iloc[clk_index, :]['name']]
+    curvenum = clickData['points'][0].get('curveNumber',None)
+    # Remove no names and reset index
+    graph_df = graph_df[graph_df.name != ''].reset_index()
+    logger.debug("Curve number is: {}".format(curvenum))
+    if curvenum >= graph_df.shape[0]:
+        curvenum = curvenum % graph_df.shape[0]
+        logger.debug("Curve number shortened to {}".format(curvenum))
+    logger.debug("curve df:\n{}".format(graph_df[['name','x']]))
+    return [graph_df.iloc[curvenum, :]['name']]
