@@ -870,6 +870,19 @@ def show_me_callback(clickData,state,metric,expname,stateurl,currLevel):
     [
      dash.dependencies.Output('click-data', 'children'),
      ],
-    [dash.dependencies.Input('basic-interactions', 'clickData')])
-def show_me_callback(clickData):
-    return [str(clickData)]
+    [dash.dependencies.Input('basic-interactions', 'clickData')],
+    [dash.dependencies.State('basic-interactions', 'figure')])
+def show_me_callback(clickData,graphdata):
+    logger.debug("Clicked {}".format(clickData))
+    clk_index = clickData['points'][0].get('y',None)
+    graph_df = pd.DataFrame(graphdata['data'])
+    if clk_index:
+        # Sort by start datetime
+        graph_df = graph_df.sort_values(['x'],ascending=False)
+        # Remove rows missing names
+        graph_df = graph_df[graph_df.name != ''].reset_index()
+        logger.debug("Graph children {}".format(graphdata['data']))
+    else:
+        curvenum = clickData['points'][0].get('curveNumber',None)
+        return [graph_df.iloc[curvenum, :]['name']]
+    return [graph_df.iloc[clk_index, :]['name']]

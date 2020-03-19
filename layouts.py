@@ -788,10 +788,13 @@ def graph_plotly(url):
     # Return a gantt chart
     if graph_style == 'gantt':
         default_tags = ['op_instance','op']
-        if len(path)>2:
-            job = path[2]
+        exp_name = query.get('expname',[None])[0]
+        job = query.get('job',[None])[0]
+        exp_component = query.get('expcmp',[None])[0]
+        #if len(path)>2:
+            #job = path[2]
         gtags = query.get('tags',None)
-        graph_data = create_gantt_graph(job,gtags if gtags else default_tags)
+        graph_data = create_gantt_graph(job, gtags if gtags else default_tags, exp_name=exp_name, exp_component=exp_component)
     # Return a boxplot graph
     elif graph_style == 'boxplot':
         model = ""
