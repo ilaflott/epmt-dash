@@ -5,6 +5,7 @@ Methods used for data manipulation from graphing to charting
 from urllib.parse import parse_qs, urlparse
 from math import log
 from colorsys import rgb_to_hsv, hsv_to_rgb
+import pandas as pd
 import time
 from dash_config import MOCK_EPMT_API
 from logging import getLogger
@@ -256,44 +257,48 @@ def gantt_me(jobs=[], gtags=None, exp_name=None, exp_component=None):
     Generate Gantt chart data
     """
     start_times, end_times, op_name, op_dur, dfn = ([] for i in range(5))
-    if exp_name:
+    if jobs:
+        logger.debug("Job was passed, get ops: {}".format(jobs))
+        a = get_ops(jobs, tags=gtags, fmt='pandas', full=True)
+        # Bump Op out
+        a['op'] = a['tags'].apply(lambda x: x.get('op'))
+
+        # Setup dataframe for gantt data
+        gantt_data_df = pd.DataFrame(columns=['Start','Finish','Task'])
+
+        # iterate each op row
+        for index, op in a.iterrows():
+            # Take 'intervals' tuple and iterate it
+            intervs = op['intervals']
+            for n in intervs:
+                # Store each interval as a op start and finish time
+                gantt_data_df = gantt_data_df.append({'Start':n[0],'Finish':n[1],'Task':op['op'], 'Resource':op['op']}, ignore_index=True)
+        # Order gantt data by start time
+        gantt_data_df = gantt_data_df.sort_values('Start')
+
+        gantt_title = ','.join(jobs) + " timeline by operation " + ','.join(gtags)
+    elif exp_name:
         logger.debug("experiment was passed: {}".format(exp_name))
         if exp_component:
             logger.debug("Component was passed: {}".format(exp_component))
-            data = get_jobs(tags={'exp_name':exp_name, 'exp_component':exp_component}, fmt='pandas')
-            data = data[['start','end','jobid']]
-            data['Resource'] = data['jobid']
-            data = data.rename(columns={'start': 'Start', 'end': 'Finish', 'jobid':'Task' })
+            gantt_data_df = get_jobs(tags={'exp_name':exp_name, 'exp_component':exp_component}, fmt='pandas')
+            gantt_data_df = gantt_data_df[['start','end','jobid']]
+            gantt_data_df['Resource'] = gantt_data_df['jobid']
+            gantt_data_df = gantt_data_df.rename(columns={'start': 'Start', 'end': 'Finish', 'jobid':'Task' })
             gantt_title = exp_name + " timeline for component " + exp_component
-            return (data,gantt_title)
         else:
-            # Return just jobs we only have a exp_name
-            data = get_jobs(tags={'exp_name':exp_name}, fmt='pandas', limit=5)
+            # Return just jobs we only have a exp_name.
+            # todo: handle catchall case
+            gantt_data_df = get_jobs(tags={'exp_name':exp_name}, fmt='pandas', limit=0)
             # Extract component
-            data['exp_component'] = data['tags'].apply(lambda x: x.get('exp_component'))
-            data = data[['start','end','exp_component','jobid']]
-            data = data.rename(columns={'start': 'Start', 'end': 'Finish', 'exp_component':'Resource', 'jobid':'Task' })
+            gantt_data_df['exp_component'] = gantt_data_df['tags'].apply(lambda x: x.get('exp_component'))
+            gantt_data_df = gantt_data_df[['start','end','exp_component','jobid']]
+            gantt_data_df = gantt_data_df.rename(columns={'start': 'Start', 'end': 'Finish', 'exp_component':'Resource', 'jobid':'Task' })
             gantt_title = exp_name + " timeline by component "
-            return (data,gantt_title)
-    elif jobs:
-        data = get_ops(jobs, tags = gtags, fmt='dict', full=True)
-        # Roll ops into a zip
-        for n in data:
-            # Grossly extend a list for each metric to be graphed
-            for k in n['intervals']:
-                start_times.extend([k[0]])
-                end_times.extend([k[1]])
-                op_name.extend(["{}".format(list(n['tags'].items())[0])])
-                op_dur.extend([n['duration']])
-        rolled_ops = zip(op_name, start_times, end_times, op_dur)
-        # Start times should be first
-        rolled_ops = sorted(rolled_ops, key=lambda x: x[1])
-        # Make gantt list of dicts from rolled_ops
-        for g in rolled_ops:
-            dfn.extend([{'Task':g[0],'Start':g[1],'Finish':g[2], 'Resource':g[0]}])
-        return dfn
     else:
         return None
+    gcolors = list_of_contrast(len(gantt_data_df),(33,45,237),0.06)
+    return (gantt_data_df, gantt_title, gcolors)
 
 
 
@@ -307,12 +312,11 @@ def create_gantt_graph(joblist=[],gtag=['op_instance','op'],exp_name=None, exp_c
     import dash
     import dash_core_components as dcc
     
-    (gantt_data, gantt_title) = gantt_me(jobs=joblist, gtags=gtag, exp_name=exp_name, exp_component=exp_component)
+    (gantt_data, gantt_title, gantt_colors) = gantt_me(jobs=joblist, gtags=gtag, exp_name=exp_name, exp_component=exp_component)
     if gantt_data is None:
         return "Could not get operations or jobs"
-    gcolors = list_of_contrast(len(gantt_data),(33,45,237),0.05)
-    logger.debug("Len of gantt data{} first 2 {}".format(len(gantt_data), gantt_data[:2]))
-    fig = ff.create_gantt(gantt_data,group_tasks=True, index_col='Resource', show_colorbar=True, colors=gcolors,bar_width=0.4,height=600) #5*len(gantt_data)+150)
+    logger.debug("Len of gantt data {} first 2 \n{}".format(len(gantt_data), gantt_data.head(2)[['Start','Task','Resource']]))
+    fig = ff.create_gantt(gantt_data,group_tasks=True, index_col='Resource', show_colorbar=True, colors=gantt_colors,bar_width=0.4,height=600) #5*len(gantt_data)+150)
     fig.update_layout(title=gantt_title, clickmode='event+select',)
     # Remove Year, week, day selector at top of gantt
     fig.layout.xaxis.rangeselector={}
@@ -334,7 +338,6 @@ def create_boxplot(jobs=['676007','625172','804285'], model="", normalize=True, 
     import dash_core_components as dcc
     import plotly.graph_objects as go
     import plotly.express as px
-    import pandas as pd
     #from epmt_query import get_ops, get_refmodels
     logger.debug("Creating boxplot")
     logger.debug("Jobs: {}".format(jobs))
@@ -432,7 +435,6 @@ def create_grouped_bargraph(title='',jobs=None, tags=None, y_value='component', 
     import dash_core_components as dcc
     import plotly.graph_objects as go
     import plotly.express as px
-    import pandas as pd
     import operator
     
     # Convert list query of jobs into single jobid

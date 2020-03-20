@@ -788,9 +788,10 @@ def graph_plotly(url):
     # Return a gantt chart
     if graph_style == 'gantt':
         default_tags = ['op_instance','op']
+        jobname = query.get('expname',[None])[0]
         exp_name = query.get('expname',[None])[0]
-        job = query.get('job',[None])[0]
-        exp_component = query.get('expcmp',[None])[0]
+        job = query.get('job',None)
+        exp_component = query.get('exp_component',[None])[0]
         #if len(path)>2:
             #job = path[2]
         gtags = query.get('tags',None)
@@ -839,7 +840,7 @@ def graph_plotly(url):
         [
             # represents the URL bar, doesn't render anything
             # refresh causes page to reload if path is updated via callback
-            dcc.Location(id='anurl', refresh=True),
+            dcc.Location(id=graph_style+'-url', refresh=True),
             html.Div(style={'inline': 'true'}, children=[
             Header(),
             ]),
@@ -852,6 +853,8 @@ def graph_plotly(url):
                     # metric - hidden div
                     html.Div(children=metric
                             ,id='bar-metrics', style={'display':'none'}),
+                    html.Div(children=exp_component
+                            ,id='exp-component', style={'display':'none'}),
                     # specify experiment as the level of bar graph
                     # if exp_component is empty
                     html.Div(children="experiment"

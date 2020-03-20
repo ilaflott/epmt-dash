@@ -807,7 +807,7 @@ def generate_multilayout_graph(zoom,y,click_data,url):
 @app.callback(
     [
      dash.dependencies.Output('graph-area', 'children'),
-     dash.dependencies.Output('anurl', 'href')
+     dash.dependencies.Output('bar-url', 'href')
      ],
     [dash.dependencies.Input('bargraph', 'clickData')],
     [dash.dependencies.State('graph-area', 'children'),
@@ -869,10 +869,14 @@ def show_me_callback(clickData,state,metric,expname,stateurl,currLevel):
 @app.callback(
     [
      dash.dependencies.Output('click-data', 'children'),
+     dash.dependencies.Output('gantt-url', 'href')
      ],
     [dash.dependencies.Input('basic-interactions', 'clickData')],
-    [dash.dependencies.State('basic-interactions', 'figure')])
-def show_me_callback(clickData,graphdata):
+    [dash.dependencies.State('basic-interactions', 'figure'),
+     dash.dependencies.State('bar-level', 'children'),
+     dash.dependencies.State('bar-expname', 'children'),
+     dash.dependencies.State('exp-component', 'children')])
+def show_me_callback(clickData,graphdata,currLevel,expname,exp_component):
     logger.debug("Clicked {}".format(clickData))
     clk_index = clickData['points'][0].get('y',None)
     graph_df = pd.DataFrame(graphdata['data'])
@@ -884,4 +888,6 @@ def show_me_callback(clickData,graphdata):
         curvenum = curvenum % graph_df.shape[0]
         logger.debug("Curve number shortened to {}".format(curvenum))
     logger.debug("curve df:\n{}".format(graph_df[['name','x']]))
-    return [graph_df.iloc[curvenum, :]['name']]
+    if currLevel == 'job':
+        return [graph_df.iloc[curvenum, :]['name'], "/graph/gantt/?expname=" + expname + "&exp_component=" + exp_component + "&job="+graph_df.iloc[curvenum, :]['name'] + "&tags=op"]    
+    return [graph_df.iloc[curvenum, :]['name'], "/graph/gantt/?expname=ESM4_hist-piAer_D1&exp_component="+graph_df.iloc[curvenum, :]['name']]
