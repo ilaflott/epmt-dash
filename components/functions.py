@@ -509,6 +509,9 @@ def create_grouped_bargraph(title='',jobs=None, tags=None, y_value='component', 
 
     # Generate sorted list on order_by key
     # This only sorts and limits 
+    if order_by not in metric:
+        logger.info("{} is not in metrics, ordering by {}".format(order_by,metric[0]))
+        order_by = metric[0]
     sorted_d = sorted(sum_dict.items(), key=lambda x: x[1][order_by])
 
     if limit > 0:
