@@ -891,3 +891,55 @@ def show_me_callback(clickData,graphdata,currLevel,expname,exp_component):
     if currLevel == 'job':
         return [graph_df.iloc[curvenum, :]['name'], "/graph/gantt/?expname=" + expname + "&exp_component=" + exp_component + "&job="+graph_df.iloc[curvenum, :]['name'] + "&tags=op"]    
     return [graph_df.iloc[curvenum, :]['name'], "/graph/gantt/?expname=ESM4_hist-piAer_D1&exp_component="+graph_df.iloc[curvenum, :]['name']]
+
+
+@app.callback(
+    [Output('quick-links', 'children'),
+     Output('quick-links', 'style')],
+    [
+        Input('table-multicol-sorting', 'data'),
+        Input('table-multicol-sorting', 'selected_rows'),
+        # Input('table-multicol-sorting', '')
+    ])
+def f(job_data, sel_jobs):
+    """ Callback
+    Input: job table data & job table selected jobs
+    Output: model selector dropdown options & active value
+    """
+    import dash_core_components as dcc
+    import dash_bootstrap_components as dbc
+    import dash_html_components as html
+
+    # Disregard selections that are stale
+    if sel_jobs and all([k <= len(job_data) for k in sel_jobs]):
+        logger.debug("Testing selected jobs {} job data len {}".format(
+            sel_jobs, len(job_data)))
+        selected_rows = [(job_data[i]['job id'],
+                        job_data[i]['exp_name'],
+                        job_data[i]['exp_component']) for i in sel_jobs]
+        #(jid, exp_name,exp_component) = selected_rows[0]
+        # Return a list of values for each parameter
+
+        jid = [n[0] for n in selected_rows]
+        exp_name = [n[1] for n in selected_rows][0]
+        exp_component = [n[2] for n in selected_rows][0]
+
+        gantt_link_exp =  dcc.Link(exp_name, href='/graph/gantt/?expname='+exp_name)
+        gantt_link_comp = dcc.Link(exp_component, href='/graph/gantt/?expname='+exp_name+"&exp_component="+exp_component)
+        gantt_link_job =  dcc.Link(", ".join(jid), href='/graph/gantt/?expname='+exp_name+"&job="+",".join(jid)+"&tags=op")
+
+        bar_link_exp =  dcc.Link(exp_name, href='/graph/bar/?expname='+exp_name + "&metric=duration,cpu_time")
+        bar_link_comp = dcc.Link(exp_component, href='/graph/bar/?expname='+exp_name+"&exp_component="+exp_component + "&metric=duration,cpu_time")
+        bar_link_job =  dcc.Link(", ".join(jid), href='/graph/bar/?expname='+exp_name+"&jobs="+",".join(jid)+"&op=1" + "&metric=duration,cpu_time")
+        
+        table_header = [
+            html.Thead(html.Tr([html.Th(""), html.Th("Exp_name (Components)"), html.Th("Component (Jobs)"), html.Th("Job (Operations)")]))
+        ]
+
+        row1 = html.Tr([html.Td("Timeline (Gantt)"), html.Td(gantt_link_exp), html.Td(gantt_link_comp), html.Td(gantt_link_job)])
+        row2 = html.Tr([html.Td("Metric (Bar)"), html.Td(bar_link_exp), html.Td(bar_link_comp), html.Td(bar_link_job)])
+        table_body = [html.Tbody([row1, row2])]
+        table = dbc.Table(table_header + table_body, bordered=True)
+        return [table, {'display':'contents'}]
+    return ["",{'display':'none'}]
+

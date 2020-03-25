@@ -147,6 +147,8 @@ recent_jobs_page = html.Div([
                     ),
                     dbc.Container([
                         dbc.Row([
+                        dbc.Col([
+                        dbc.Row([
                             dbc.Alert(
                                 children="",
                                 id="run-create-alert",
@@ -208,7 +210,8 @@ recent_jobs_page = html.Div([
                             dbc.Col([
                                 html.Button(id='index-select-all',
                                             children="Select All"),
-                            ], width='auto'), dbc.Col([
+                            ], width='auto'), 
+                            dbc.Col([
                                 html.Div(style={'display': 'block', 'width': '360px', 'text-align': 'center'}, children=[
                                     dcc.DatePickerRange(
                                         id='jobs-date-picker',
@@ -269,7 +272,13 @@ recent_jobs_page = html.Div([
                                 ])
                             ]),
                         ]),
+                    ], width=10),
+                    dbc.Col([html.Div(children=[
+                        "Quick Links Here"
+                    ]
+                            ,id='quick-links', style={'display':'none'})])
                     ])
+                ])
 
 
                 ], className="subpage"),
