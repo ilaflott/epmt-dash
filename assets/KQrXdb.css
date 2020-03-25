@@ -140,7 +140,7 @@ table.reversed tr:nth-child(odd) { background-color: #D7DBE1; -webkit-print-colo
 table.reversed tr:nth-child(even) { background-color: white; }
 
 table{ 
-	font-size: 0.95rem; 
+	/*font-size: 0.95rem; */
 	border-spacing: 0;
    border-collapse: collapse;
 }

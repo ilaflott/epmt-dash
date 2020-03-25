@@ -848,7 +848,7 @@ def show_me_callback(clickData,state,metric,expname,stateurl,currLevel):
             # This loading message will momentarily replace the current
             # Graph with Loading text
             "Loading....",
-            "/graph/bar?metric=" + ",".join(metric) + "&expname=" + expname + "&jobs="+req_component+"&op=1",
+            "/graph/bar?metric=" + ",".join(metric) + "&expname=" + expname + "&jobs="+req_component+"&op=op",
             ]
         # This level redirects the page if currlevel is not job
         return [
@@ -901,7 +901,7 @@ def show_me_callback(clickData,graphdata,currLevel,expname,exp_component):
         Input('table-multicol-sorting', 'selected_rows'),
         # Input('table-multicol-sorting', '')
     ])
-def f(job_data, sel_jobs):
+def update_workflow_table(job_data, sel_jobs):
     """ Callback
     Input: job table data & job table selected jobs
     Output: model selector dropdown options & active value
@@ -930,7 +930,7 @@ def f(job_data, sel_jobs):
 
         bar_link_exp =  dcc.Link(exp_name, href='/graph/bar/?expname='+exp_name + "&metric=duration,cpu_time")
         bar_link_comp = dcc.Link(exp_component, href='/graph/bar/?expname='+exp_name+"&exp_component="+exp_component + "&metric=duration,cpu_time")
-        bar_link_job =  dcc.Link(", ".join(jid), href='/graph/bar/?expname='+exp_name+"&jobs="+",".join(jid)+"&op=1" + "&metric=duration,cpu_time")
+        bar_link_job =  dcc.Link(", ".join(jid), href='/graph/bar/?expname='+exp_name+"&jobs="+",".join(jid)+"&op=op" + "&metric=duration,cpu_time")
         
         table_header = [
             html.Thead(html.Tr([html.Th(""), html.Th("Exp_name (Components)"), html.Th("Component (Jobs)"), html.Th("Job (Operations)")]))

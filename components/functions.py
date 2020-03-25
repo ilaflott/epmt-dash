@@ -426,7 +426,7 @@ def create_boxplot(jobs=['676007','625172','804285'], model="", normalize=True, 
     return basic_graph
 
 
-def create_grouped_bargraph(title='',jobs=None, tags=None, y_value='component', metric=['duration','cpu_time'], ops=None, order_by='duration', limit=10):
+def create_grouped_bargraph(title='',jobs=None, tags=None, y_value='component', metric=['duration','cpu_time'], ops='op', order_by='duration', limit=10):
     """
     
     Horizontal bargraph because the Y axis names are easier to read
@@ -443,7 +443,7 @@ def create_grouped_bargraph(title='',jobs=None, tags=None, y_value='component', 
         jobs = jobs[0]
     if y_value is 'op':
         logger.debug("Get ops of jobs: {}".format(jobs))
-        job_ops = get_ops(jobs=jobs)
+        job_ops = get_ops(jobs=jobs, tags=ops)
     else:
         # Get jobs in dict format.
         # todo: this should be pandas
@@ -464,48 +464,46 @@ def create_grouped_bargraph(title='',jobs=None, tags=None, y_value='component', 
     #                             [18941050858.0, 4863690779.0]),
     # todo:
     # This can be more easily achieved with pandas.
-    # 
-    # First handle ops as ops use a different struct than jobs
     c_dict = {}
-    try:
-        if y_value is 'op':
-            for o in job_ops:
-                if y_value is "op":
-                    c = o['tags']['op']
-                entry = c_dict.get(c, {'data': []})
-                entry['data'].append(("", o['jobs'][0].jobid, [o['proc_sums'][ok] for ok in metric]))
-                c_dict[c] = entry
-        else:
-            for j in exp_jobs:
-                if y_value is "component":
-                    c = j['tags']['exp_component']
-                elif y_value is 'jobid':
-                    c = j['jobid']
-                entry = c_dict.get(c, {'data': []})
-                entry['data'].append((j['tags']['exp_time'], j['jobid'], [j[ok] for ok in order_key_list]))
-                c_dict[c] = entry
+    #try:
+    if y_value is 'op':
+        for o in job_ops:
+            if y_value is "op":
+                c = o['tags'][ops]
+            entry = c_dict.get(c, {'data': []})
+            entry['data'].append(("", o['jobs'][0].jobid, [o['proc_sums'][ok] for ok in metric]))
+            c_dict[c] = entry
+    else:
+        for j in exp_jobs:
+            if y_value is "component":
+                c = j['tags']['exp_component']
+            elif y_value is 'jobid':
+                c = j['jobid']
+            entry = c_dict.get(c, {'data': []})
+            entry['data'].append((j['tags']['exp_time'], j['jobid'], [j[ok] for ok in order_key_list]))
+            c_dict[c] = entry
+#    except KeyError as ke:
+        #return "Key Missing"
 
-        comps = []
+    comps = []
 
-        # This loop generates the sum_dict
-        # sum_dict contains key of component
-        # value of dictionary of metrics
-        # Key metric : value metric sum generated from the c_dict
-        for ok in order_key_list:
-            for c,v in c_dict.items():
-                comps.extend([c])
-                # Reset collection list for each okl
-                lis = []
-                for g in v['data']:
-                    lis.extend([g[2][order_key_list.index(ok)]])
-                    # assign list to collection dict
-                    if c in sum_dict:
-                        sum_dict[c].update({ok:lis})
-                    else:
-                        sum_dict[c] = {ok:lis}
-                sum_dict[c][ok] = sum(sum_dict[c][ok])
-    except KeyError:
-        return "Key Missing"
+    # This loop generates the sum_dict
+    # sum_dict contains key of component
+    # value of dictionary of metrics
+    # Key metric : value metric sum generated from the c_dict
+    for ok in order_key_list:
+        for c,v in c_dict.items():
+            comps.extend([c])
+            # Reset collection list for each okl
+            lis = []
+            for g in v['data']:
+                lis.extend([g[2][order_key_list.index(ok)]])
+                # assign list to collection dict
+                if c in sum_dict:
+                    sum_dict[c].update({ok:lis})
+                else:
+                    sum_dict[c] = {ok:lis}
+            sum_dict[c][ok] = sum(sum_dict[c][ok])
 
     # Generate sorted list on order_by key
     # This only sorts and limits 

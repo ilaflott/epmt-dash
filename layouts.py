@@ -145,7 +145,7 @@ recent_jobs_page = html.Div([
                         ],
                         style_data_conditional=[],
                     ),
-                    dbc.Container([
+                    html.Div([
                         dbc.Row([
                         dbc.Col([
                         dbc.Row([
@@ -258,7 +258,7 @@ recent_jobs_page = html.Div([
                                             persistence=True,
                                             persistence_type='local'
                                         )
-                                    ], width=2),
+                                    ], width=5),
                                     # df.shape[0]
                                     # Old Page attempt
                                     # dbc.Col(['Page:'], html.Div(id="page-selector", children=[dcc.Link(str(n+1)+", ",href="?page="+str(n)) for n in range((job_df.shape[0]//DEFAULT_ROWS_PER_PAGE))])
