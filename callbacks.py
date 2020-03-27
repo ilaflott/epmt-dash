@@ -815,14 +815,14 @@ def generate_multilayout_graph(zoom,y,click_data,url):
      dash.dependencies.State('bar-metrics','children'),
      # Hidden Div with experiment name displayed
      dash.dependencies.State('bar-expname','children'),
-     dash.dependencies.State('url', 'pathname'),
+     dash.dependencies.State('url', 'href'),
      dash.dependencies.State('bar-level', 'children')])
 def show_me_callback(clickData,state,metric,expname,stateurl,currLevel):
     ctx = dash.callback_context
     #logger.info("Callback Context info:\nTriggered:\n{}\nInputs:\n{}\nStates:\n{}".format(
     #    ctx.triggered, ctx.inputs, ctx.states))
     logger.info("Current level is {}".format(currLevel))
-    if clickData is not None:
+    if clickData is not None and currLevel is not 'job':
         from functions import create_boxplot, create_grouped_bargraph
         # Component is y value
         # metric is curveNumber
@@ -838,8 +838,12 @@ def show_me_callback(clickData,state,metric,expname,stateurl,currLevel):
         req_component = str(clickData['points'][0]['y'])
         bar_title = "exp_name:" + expname + " exp_component:" + req_component
         
+        # be sure metric is not a single item
+        if isinstance(metric,str):
+            metric = [metric]
+
         # If we're already past component and job selection we need need final chart
-        if currLevel == 'job':
+        if currLevel == 'component':
             return [
             # Here we'ere not replacing the element on screen with a
             # new graph, we'ere redirecting via the second callback
@@ -850,20 +854,18 @@ def show_me_callback(clickData,state,metric,expname,stateurl,currLevel):
             "Loading....",
             "/graph/bar?metric=" + ",".join(metric) + "&expname=" + expname + "&jobs="+req_component+"&op=op",
             ]
-        # This level redirects the page if currlevel is not job
-        return [
-            #create_grouped_bargraph(title=bar_title, jobs=bar_jobs ,metric=metric,order_by=metric[0],limit=10,y_value='jobid'),
-            "Loading....",
-            "/graph/bar?metric=" + ",".join(metric) + "&expname=" + expname + "&exp_component="+req_component,
-            ]
+        if currLevel == 'experiment':
+            return [
+                #create_grouped_bargraph(title=bar_title, jobs=bar_jobs ,metric=metric,order_by=metric[0],limit=10,y_value='jobid'),
+                "Loading....",
+                "/graph/bar?metric=" + ",".join(metric) + "&expname=" + expname + "&exp_component="+req_component,
+                ]
         #return ["Component:" + str(clickData['points'][0]['y']) + " Metric:" + metric[clickData['points'][0]['curveNumber']]]
     # Handle case where callback fires when page loads & 
     # no click data/input is given.
     else:
-        return [
-            state,
-            "/graph/bar?expname=ESM4_hist-piAer_D1&metric=num_procs"
-            ]
+        logger.debug("Last page")
+
 
 
 @app.callback(

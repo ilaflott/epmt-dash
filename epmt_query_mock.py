@@ -249,7 +249,7 @@ def get_jobs(jobs=None, tags=None, fltr=None, order=None, limit=None, offset=0, 
     return df.to_dict('records')
 
 
-def get_ops(jobs, tags=[], exact_tag_only=False, combine=False, fmt='dict', op_duration_method='sum'):
+def get_ops(jobs, tags=[], exact_tag_only=False, combine=False, fmt='dict', op_duration_method='sum', full=False):
     an_op = {'jobs': ['804278'],
              'tags': {'op': 'ncatted'},
              'exact_tag_only': False,
@@ -294,6 +294,9 @@ def get_ops(jobs, tags=[], exact_tag_only=False, combine=False, fmt='dict', op_d
         j.jobid = job
         e["jobs"] = [j]
         res.extend([e])
+    if fmt is 'pandas':
+        import pandas as pd
+        return pd.DataFrame(res)
     return res
 
 def comparable_job_partitions(jobs, matching_keys=['exp_name', 'exp_component']):

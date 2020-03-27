@@ -14,19 +14,11 @@ import dash_table
 from dash_config import DEFAULT_ROWS_PER_PAGE
 from refs import ref_df
 from jobs import JobGen
-from components import Header, Footer, parse_url, create_gantt_graph, create_boxplot, create_grouped_bargraph
+from components import Header, Footer, parse_url, create_gantt_graph, create_boxplot, create_grouped_bargraph, bar_graph
+from components import graph_jobs, graph_ops, graph_components
 logger = getLogger(__name__)  # pylint: disable=invalid-name
 # basicConfig(level=DEBUG)
 
-
-########################Jobs & References ########################
-
-
-# ref_df = get_references()
-######################## End Jobs & References ########################
-
-
-######################## START index Layout ########################
 
 def create_conditional_style(dataframe):
     """Autosizing Columns
@@ -816,31 +808,42 @@ def graph_plotly(url):
         graph_data = create_boxplot(model=model,jobs=jobs,normalize=query.get('normalize',['True'])[0],metric=query.get('metric',['cpu_time'])[0])
     # Return a bar graph
     elif graph_style == 'bar':
+        
         # Rename and retrieve parameters
         y_value='component'
         jobname = query.get('expname',None)[0]
         bar_title = "exp_name:" + jobname
-        metric = query.get('metric',None)
+        metric = query.get('metric',['duration'])
         order_by = query.get('order',['duration'])[0]
         limit = int(query.get('limit',[0])[0])
         tag_dict = {'exp_name': jobname }
         exp_component = query.get('exp_component',[None])[0]
         ops = query.get('op',[None])[0]
         jobs = query.get('jobs',None)
-        if exp_component:
+        if ops:
+            y_value=ops
+            bar_title = "Operations in job:" + ','.join(jobs)
+            graph_plot = graph_ops(jobs=jobs, tag_value=ops, metric=metric, title=bar_title)
+        elif exp_component or jobs:
+            bar_title = "Jobs in component: " + exp_component
             tag_dict.update({'exp_component':exp_component})
             logger.debug("Requested tag_dict {}".format(tag_dict))
             y_value='jobid'
-            bar_title = bar_title + " exp_component:" + exp_component
-        if ops:
-            y_value='op'
-            bar_title = bar_title + " jobs:" + ','.join(jobs)
-        grouped = True if len(metric) > 1 else False #query.get('grouped',[False])[0]
-        # Build and store a graph of given parameters
-        if grouped:
-            graph_data = create_grouped_bargraph(title=bar_title, jobs=jobs, tags=tag_dict, metric=metric, ops=ops, order_by=order_by,limit=limit, y_value=y_value)
+            graph_plot = graph_components(exp_name=jobname, exp_component=exp_component, jobs=jobs, title=bar_title, metric=metric)
+        elif jobname:
+            bar_title = "Components in experiment: " + jobname
+            graph_plot = graph_jobs(exp_name=jobname, title=bar_title, metric=metric)
+        
+        # Convert plot into graph object
+        # and check if plot was generated
+        if graph_plot:
+            graph_data = dcc.Graph(figure=graph_plot, id='bargraph')
         else:
-            graph_data = "Bar graph not grouped"
+            graph_data = "Something went wrong..."
+        #grouped = True if len(metric) > 1 else False #query.get('grouped',[False])[0]
+        # Build and store a graph of given parameters
+        #graph_data = create_grouped_bargraph(title=bar_title, jobs=jobs, tags=tag_dict, metric=metric, ops=ops, order_by=order_by,limit=limit, y_value=y_value)
+
                 
     else:
         graph_data = 'Unknown graphstyle'
@@ -868,8 +871,12 @@ def graph_plotly(url):
                     # if exp_component is empty
                     html.Div(children="experiment"
                             ,id='bar-level', style={'display':'none'})
-                    if exp_component is None else
-                    # otherwise the bar graph is at
+                    # We have component but no jobs
+                    if exp_component is None and jobs is None else
+                    html.Div(children="component"
+                            ,id='bar-level', style={'display':'none'})
+                    if exp_component and jobs is None else
+                    # Finally we're at job level of ops
                     html.Div(children="job"
                             ,id='bar-level', style={'display':'none'}),
                     ])

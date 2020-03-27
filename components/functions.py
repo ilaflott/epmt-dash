@@ -12,14 +12,15 @@ from logging import getLogger
 logger = getLogger(__name__)  
 #pd.options.mode.chained_assignment = None
 
+class InterfaceError(Exception):
+    pass
+
 if MOCK_EPMT_API:
     logger.info("Using Mock API")
     from epmt_query_mock import get_procs, get_ops, get_refmodels, get_jobs
 else:
     logger.info("Using EPMT API")
     from epmt_query import get_procs, get_ops, get_refmodels, get_jobs
-
-
 
 # Return dictionary query results
 def parseurl(i):
@@ -600,3 +601,111 @@ def trace_renderer(jobs=None,metrics=None, normalize=True):
         for d in data:
             d['y'] = normalize(d['y'],min_=-1/len(metrics), max_=1/len(metrics))
     return data
+
+
+def data_gatherer_ops(jobs=None, metric=['duration'], tag_value='op'):
+
+    a = get_ops(jobs[0], tags=tag_value, fmt='pandas', full=True)
+    if len(jobs)>1:
+        for j in jobs[1:]:
+            a = a.append(get_ops(j, tags=tag_value, fmt='pandas', full=True))
+    
+    # Bump jobid out as string
+    a['jobid'] = a['jobs'].apply(lambda x: x[0].jobid)
+    a['jobid'] = a['jobid'].astype(str)
+
+    if isinstance(tag_value,dict):
+        a[str(tag_value)] = str(tag_value)
+    else:
+        # Bump Op out
+        a[tag_value] = a['tags'].apply(lambda x: x.get(tag_value))
+
+    
+    # bump requested metrics out
+    for m in metric:
+        a[m] = a['proc_sums'].apply(lambda x: x.get(m))
+
+    return a
+
+def bar_graph(graph_df=None, jobs=None, x=None, y=None, exp_name=None, group_on=None, tag_value=None, as_group=True, horizontal=True, title=None):
+    '''
+    as_group: True groups data, False stacks data
+    '''
+    import plotly.graph_objects as go
+    import plotly.express as px
+    import plotly.figure_factory as ff
+    
+    # No dataframe to graph was given, we will build one
+    # Currently only works for ops
+    # Requires jobs & tag_value
+    if graph_df.empty:
+        logger.debug("No dataframe passed, calculating now...")
+        graph_df = data_gatherer_ops(jobs=jobs, metric=x, tag_value=tag_value)
+        # if component data  :: data_gatherer_component()
+        # if proc data
+        # if thread data  :: get_thread_metrics
+
+    fig = go.Figure()
+    # if x or y are a list we should iterate the list and use go.Bar
+    # rather than px.bar
+    if isinstance(x,list):
+        for k in x:
+            fig = go.Figure(data=[go.Bar(name=a, x=graph_df[a], y=graph_df[y], orientation='h' if horizontal else 'v') for a in x])
+    elif isinstance(y,list):
+        for k in y:
+            fig = go.Figure(data=[go.Bar(name=b, x=graph_df[b], y=graph_df[y], orientation='h' if horizontal else 'v') for b in y])
+    else:
+        fig = px.bar(graph_df, x=x, y=y, orientation='h' if horizontal else 'v', color=None if not group_on else group_on) #group_on
+
+    
+    # jobid's are better displayed as category
+    # not interpreted as integers
+    if y == 'jobid':
+        fig.update_layout(yaxis_type='category')
+    if x == 'jobid':
+        fig.update_layout(xaxis_type='category')
+
+    if as_group:
+        fig.update_layout(barmode='group')
+    fig.update_layout(width=800,clickmode='event+select')
+    
+    # Generate a title based on given data
+    if not title:
+        gen_title = ''
+        if exp_name:
+            gen_title = gen_title + "exp_name: " + exp_name
+        if tag_value:
+            gen_title = gen_title + " & tag value:" + str(tag_value)
+        gen_title = 'Y: ' + ','.join(y) if isinstance(y,list) else y 
+        gen_title = gen_title + " X:" + ','.join(x) if isinstance(x,list) else x
+    fig.update_layout(title= gen_title if not title else title,
+    xaxis_title=', '.join(x) if isinstance(x,list) else x,
+    yaxis_title=', '.join(y) if isinstance(y,list) else y)
+    
+    return fig
+
+
+def graph_components(exp_name=None, exp_component=None, jobs=None, title=None, metric=None):
+    # build component dataframe
+    df = get_jobs(jobs=jobs, tags={'exp_name':exp_name, 'exp_component':exp_component}, fmt='pandas')
+    # render graph
+    graph = bar_graph(graph_df=df, y='jobid', x=metric, title=title)
+    return graph
+
+
+def graph_jobs(exp_name=None, jobs=None, metric=['duration'], title=None):
+    # build jobs dataframe
+    df = get_jobs(jobs=jobs, tags={'exp_name':exp_name}, fmt='pandas')
+    df['component'] = df['tags'].apply(lambda x: x.get('exp_component'))
+    grouped_df = df.groupby('component', as_index=False).agg({e:'sum' for e in metric})
+    # render graph
+    graph = bar_graph(graph_df=grouped_df, y='component', x=metric, horizontal=True, title=title)
+    return graph
+
+
+def graph_ops(jobs=None, tag_value=None, metric=None, title=None):
+    # build ops dataframe
+    df = data_gatherer_ops(jobs=jobs, tag_value=tag_value, metric=metric)
+    # render graph
+    graph = bar_graph(graph_df=df, y=tag_value, x=metric, group_on=metric, title=title)
+    return graph
