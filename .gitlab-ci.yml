@@ -29,5 +29,6 @@ build:interface:
     - python index.py & disown
     - echo "Point and click menus and buttons firing callbacks"
     # Start testing against mock interface
+    - python -m pytest test/test_urlparse.py
     - python test/find_and_click.py http://localhost:8050
     - python test/workflow_find_and_click.py localhost
