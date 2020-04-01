@@ -23,6 +23,6 @@ services:
     volumes:
       - ./test/:/usr/workspace
     working_dir:  /usr/workspace/
-    command: python workflow_find_and_click.py dash
+    command: bash -c "python workflow_find_and_click.py dash && python find_and_click.py http://dash:8050"
     links:
       - dash

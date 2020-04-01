@@ -611,8 +611,7 @@ def data_gatherer_ops(jobs=None, metric=['duration'], tag_value='op'):
             a = a.append(get_ops(j, tags=tag_value, fmt='pandas', full=True))
     
     # Bump jobid out as string
-    a['jobid'] = a['jobs'].apply(lambda x: x[0].jobid)
-    a['jobid'] = a['jobid'].astype(str)
+    a['jobid'] = a['jobs'].apply(lambda x: x[0])
 
     if isinstance(tag_value,dict):
         a[str(tag_value)] = str(tag_value)
