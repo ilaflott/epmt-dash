@@ -14,6 +14,8 @@ build:interface:
   script:
     - pip install --upgrade pip
     - pip install --trusted-host pypi.python.org -r requirements-ui.txt.py3
+    - echo "unittest url parser and generator"
+    - EPMT_GUI_MOCK=1 python -m unittest test/test_urlparse.py
     - wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
     - sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
     - apt-get -y update
@@ -22,13 +24,11 @@ build:interface:
     - wget -O /tmp/chromedriver.zip http://chromedriver.storage.googleapis.com/`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE`/chromedriver_linux64.zip
     - unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/
     - python -m py_compile *.py components/*.py		# Compile everything
-    #- echo "pytest url parser and generator"
     #- python -m unittest -v test/test_urlparse.py
     - pip install selenium dash[testing]
     - echo "Start Mock Server"
     - python index.py & disown
     - echo "Point and click menus and buttons firing callbacks"
     # Start testing against mock interface
-    - python -m pytest test/test_urlparse.py
     - python test/find_and_click.py http://localhost:8050
     - python test/workflow_find_and_click.py localhost
