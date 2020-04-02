@@ -7,7 +7,7 @@ import random
 from copy import deepcopy
 from logging import getLogger
 import pandas as pd
-from jobs import JobGen
+import jobs as job
 
 # We log how we want
 # pylint: disable=invalid-name, logging-format-interpolation
@@ -307,7 +307,7 @@ def comparable_job_partitions(jobs, matching_keys=['exp_name', 'exp_component'])
 
     # Typically jobids are only passed
     # I need to get the jobids name and component
-    alt = JobGen().jobs_df[JobGen().jobs_df['job id'].isin(jobs)].reset_index()
+    alt = job.JobGen().jobs_df[job.JobGen().jobs_df['job id'].isin(jobs)].reset_index()
     tags_df = pd.DataFrame.from_dict(alt['tags'].tolist())
     # Only Display Specific tags from dash_config
     tags_df = tags_df[['exp_name', 'exp_component']]
