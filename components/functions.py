@@ -330,7 +330,9 @@ def create_gantt_graph(joblist=[],gtag=['op'],exp_name=None, exp_component=None)
     # Annotations disabled
     #fig = addAnnot(gantt_data,fig)
     basic_graph = dcc.Graph(
-        id='basic-interactions',
+        # Return basic-interactions-end if we're on final gantt
+        # To stop any new callbacks from firing
+        id='basic-interactions-end' if joblist else 'basic-interactions',
         figure=fig
     )
     return basic_graph

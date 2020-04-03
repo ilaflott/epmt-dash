@@ -925,6 +925,7 @@ def show_me_callback(clickData,state,metric,expname,stateurl,currLevel):
     # no click data/input is given.
     else:
         logger.debug("Last page")
+        return ["",stateurl]
 
 
 

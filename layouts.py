@@ -856,7 +856,9 @@ def graph_plotly(url):
             Header(),
             ]),
             html.Div(id="subpage", children=[
-                html.Div(id="graph-area",children=graph_data),
+                # Return graph-area-stop if we are on final jobs page
+                # To stop any new callbacks from firing
+                html.Div(id="graph-area-stop" if jobs else "graph-area" ,children=graph_data),
                 html.Div(id="hidden-divs", children=[
                     # Expname - hidden div
                      html.Div(children=jobname
