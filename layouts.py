@@ -409,8 +409,7 @@ recent_jobs_page = html.Div([
 
 ######################## END index Layout ########################
 
-unproc = JobGen().jobs_df.loc[JobGen().jobs_df['processing complete']
-                              == "No"].to_dict('records')
+
 # logger.info(unproc)
 ######################## START unprocessed Layout ########################
 layout_unprocessed = html.Div([
@@ -433,7 +432,7 @@ layout_unprocessed = html.Div([
                 columns=[
                     {"name": i, "id": i} for i in sorted(JobGen().jobs_df.columns)
                 ],
-                data=unproc
+                
             )
         ]),
         # GRAPHS
@@ -791,12 +790,12 @@ def graph_plotly(url):
         default_tags = ['op_instance','op']
         jobname = query.get('expname',[None])[0]
         exp_name = query.get('expname',[None])[0]
-        job = query.get('job',None)
+        jobs = query.get('jobs',None)
         exp_component = query.get('exp_component',[None])[0]
         #if len(path)>2:
             #job = path[2]
         gtags = query.get('tags',None)
-        graph_data = create_gantt_graph(job, gtags if gtags else default_tags, exp_name=exp_name, exp_component=exp_component)
+        graph_data = create_gantt_graph(jobs, gtags if gtags else default_tags, exp_name=exp_name, exp_component=exp_component)
     # Return a boxplot graph
     elif graph_style == 'boxplot':
         model = ""
@@ -892,17 +891,26 @@ def compare(url):
         html.Div(children=url
             # Hidden Div full url
         ,id='fullurl', style={'display':'none'}),
+        dcc.Location(id='compare-url', refresh=False),
+        html.Div(id='compare-zoom-jobs', style={'display':'none'}),
+        html.Div(id='jobs-in-view', style={'display':'none'}),
         html.Div([
-            dcc.Graph(id='scatter-compare')]),
+            dcc.Graph(id='scatter-compare',
+            figure={
+                    'layout': {
+                        'clickmode': 'select'
+                    }
+                      })]),
         html.Div([
             "X:",
             dcc.Dropdown(
                 id='x-scatter-dropdown',
                 options=[
                     {'label': 'duration', 'value': 'duration'},
-                    {'label': 'cpu_time', 'value': 'cpu_time'}
+                    {'label': 'cpu_time', 'value': 'cpu_time'},
+                    {'label': 'start', 'value': 'start'}
                 ],
-                value='duration')
+                value='start')
         ], style={'width': '49%','display': 'inline-block'}),
         html.Div([
             "Y:",
@@ -914,7 +922,19 @@ def compare(url):
                 ],
                 value='cpu_time')
             ], className="subpage",
-        style={'width': '49%','display': 'inline-block'})
+        style={'width': '49%','display': 'inline-block'}),
+        html.Br(),
+        html.Div([
+            "Graph Style:",
+            dcc.Dropdown(
+                id='compare-type-dropdown',
+                options=[
+                    {'label': 'scatter', 'value': 'scatter'},
+                    {'label': 'gantt', 'value': 'gantt'},
+                    {'label': 'bar', 'value': 'bar'}
+                ],
+                value='scatter')
+        ], style={'width': '20%','display': 'inline-block'})
         ], className="page")
 
 

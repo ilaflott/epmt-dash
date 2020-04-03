@@ -4,6 +4,8 @@ Used to configure aspects of dash gui
 from os import environ
 MOCK_EPMT_API = environ.get('EPMT_GUI_MOCK')
 
+DEBUG = environ.get('DASH_DEBUG')
+
 DEFAULT_ROWS_PER_PAGE = 30
 
 # Job columns in order

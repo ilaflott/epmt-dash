@@ -524,10 +524,24 @@ def update_jobs_table(raw_toggle, search_value, end, rows_per_page, page_current
     job_df = JobGen().jobs_df
     orig = job_df
     alt = orig.copy()
+    logger.debug("Shape is {}".format(orig.shape))
+    if orig['job id'][0].startswith("No Jobs "):
+        return [
+        orig.to_dict('records'),  # Return the table records
+        [{"name": i, "id": i} for i in orig.columns] if raw_toggle else [
+            # if i is not 'tags'],  # hide tags if raw_toggle false
+            {"name": i, "id": i} for i in orig.columns],
+        10,  # Custom page size
+        1,  # Custom Page count
+        # Custom Highlighting on matching job tags
+        []
+        ]
+
+
     # Limit by time
     if end:
         # Only filter on date if jobs exist
-        if int(alt.shape[0]) > 0:
+        if int(alt.shape[0]) > 1:
             logger.debug("Comparing df start days ({},...) with job-date-picker {}".format(
                 job_df['start'][0].date(), dt.strptime(start, "%Y-%m-%d").date()))
             time_mask = (job_df['start'].map(lambda x: x.date())
@@ -537,7 +551,7 @@ def update_jobs_table(raw_toggle, search_value, end, rows_per_page, page_current
             logger.debug("Query: (Start:{} End:{})".format(start, end))
             alt = job_df.loc[time_mask]
         else:
-            logger.info("No jobs exist, not filtering on date")
+            logger.info("Less than 2, not filtering on date")
 
     ctx = dash.callback_context
     # logger.info(value)
@@ -714,26 +728,72 @@ def display_graph():
 ######################## /Create Ref Callbacks ########################
 
 @app.callback(
-    dash.dependencies.Output('scatter-compare', 'figure'),
+    [dash.dependencies.Output('scatter-compare', 'figure'),
+     dash.dependencies.Output('jobs-in-view', 'children'),
+     dash.dependencies.Output('compare-url', 'href')],
     [dash.dependencies.Input('x-scatter-dropdown', 'value'),
-     dash.dependencies.Input('y-scatter-dropdown', 'value')],
-    [dash.dependencies.State('fullurl', 'children')]
+     dash.dependencies.Input('y-scatter-dropdown', 'value'),
+     dash.dependencies.Input('compare-zoom-jobs','children')
+     ],
+    [dash.dependencies.State('fullurl', 'children')
+     ]
 )
-def generate_scatter(x,y,url):
+def generate_scatter(x,y,zoom_state,url):
     import pandas as pd
     import plotly.express as px
     from components import parse_url
     e = parse_url(url)
     tags = tag_from_string(';'.join(e['query']['tags']))
-    logger.debug(e)
+    logger.debug("Tags requested appear to be: {}".format(tags))
     #op_list = []
     #metric = 'cpu_time'
     #[op_list.extend(eq.get_ops(jobby, tags = 'op', combine=False)) for jobby in ['625172','627922','629320','629323','629322']]
     #ops_dur = pd.DataFrame([(op['jobs'][0].jobid, op['tags']['op'], op['proc_sums'][metric]) for op in op_list], columns=['jobid','op',metric])
     #e = fun.df_normalizer(ops_dur,'op',metric)
-    e = get_jobs(fmt='pandas',tags=tags)
-    fig = px.scatter(e,x=x,y=y, color="jobid",size="cpu_time", title=url)
-    return fig
+    urljobs = e['query'].get('jobs',None)
+    logger.debug("Requested jobs: {}".format(urljobs))
+    e = get_jobs(jobs=urljobs if urljobs else None, fmt='pandas',tags=tags)
+    if zoom_state:
+        logger.debug("Zoom data: {} {}".format(type(zoom_state), zoom_state))
+        (xl,xh,yl,yh) = zoom_state
+        xmask = e[x].between(xl,xh)
+        ymask = e[y].between(yl,yh)
+        e = e.loc[xmask & ymask]
+    selected_jobs = e['jobid'].tolist()
+
+    # Rescale the graph to match the selected jobids
+    e = get_jobs(jobs=selected_jobs, fmt='pandas',tags=tags)
+    
+    fig = px.scatter(e,x=e[x],y=e[y], color="jobid", hover_data=['user'], size=None, title=url)
+    import urllib.parse
+    oldQ = {'tags':'exp_name:ESM4_hist-piAer_D1','jobs':','.join(selected_jobs)}
+    newQuery = urllib.parse.urlencode(oldQ)
+    return [fig,0,"/compare?"+newQuery]
+
+@app.callback(
+    dash.dependencies.Output('compare-zoom-jobs', 'children'),
+    [dash.dependencies.Input('scatter-compare', 'relayoutData')
+     ],
+    [dash.dependencies.State('fullurl', 'children')]
+    )
+def generate_scatter_selections(clicked,url):
+    """
+    Return to compare-zoom-jobs the jobs that fit in the new zoom level
+    """
+    from components import parse_url
+    e = parse_url(url)
+    tags = tag_from_string(';'.join(e['query']['tags']))
+    logger.debug("Click Data requested: {}".format(clicked))
+    # Ignore cases of auto scaling & dragmode lasso
+    if clicked and not any( [entry in k for entry in ("dragmode", "autosize", "xaxis.autorange") for k in clicked.keys()]):
+        clicked = (clicked['xaxis.range[0]'],clicked['xaxis.range[1]'],clicked['yaxis.range[0]'],clicked['yaxis.range[1]'])
+        logger.debug("X: {}, Y: {}".format(clicked[0],clicked[1]))
+        #e = get_jobs(fmt='pandas',tags=tags)
+        from json import dumps
+        return clicked
+    else:
+        logger.debug("No zoom data")
+        return None
 
 
 @app.callback(
@@ -890,8 +950,8 @@ def show_me_callback(clickData,graphdata,currLevel,expname,exp_component):
         curvenum = curvenum % graph_df.shape[0]
         logger.debug("Curve number shortened to {}".format(curvenum))
     logger.debug("curve df:\n{}".format(graph_df[['name','x']]))
-    if currLevel == 'job':
-        return [graph_df.iloc[curvenum, :]['name'], "/graph/gantt/?expname=" + expname + "&exp_component=" + exp_component + "&job="+graph_df.iloc[curvenum, :]['name'] + "&tags=op"]    
+    if currLevel == 'component':
+        return [graph_df.iloc[curvenum, :]['name'], "/graph/gantt/?expname=" + expname + "&exp_component=" + exp_component + "&jobs="+graph_df.iloc[curvenum, :]['name'] + "&tags=op"]    
     return [graph_df.iloc[curvenum, :]['name'], "/graph/gantt/?expname=ESM4_hist-piAer_D1&exp_component="+graph_df.iloc[curvenum, :]['name']]
 
 
@@ -945,3 +1005,8 @@ def update_workflow_table(job_data, sel_jobs):
         return [table, {'display':'contents'}]
     return ["",{'display':'none'}]
 
+# todo:
+# handle returning layout_unprocessed data
+#  
+#unproc = JobGen().jobs_df.loc[JobGen().jobs_df['processing complete']
+#                              == "No"].to_dict('records')

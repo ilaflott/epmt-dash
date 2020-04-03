@@ -298,12 +298,13 @@ def gantt_me(jobs=[], gtags=None, exp_name=None, exp_component=None):
             gantt_title = exp_name + " timeline by component "
     else:
         return None
+    gantt_data_df = gantt_data_df.dropna()
     gcolors = list_of_contrast(len(gantt_data_df),(33,45,237),0.06)
     return (gantt_data_df, gantt_title, gcolors)
 
 
 
-def create_gantt_graph(joblist=[],gtag=['op_instance','op'],exp_name=None, exp_component=None):
+def create_gantt_graph(joblist=[],gtag=['op'],exp_name=None, exp_component=None):
     """
     Generate the data to be graphed and supply it to the graphing
     function gantt_me.  Also do some minor formatting adjustments

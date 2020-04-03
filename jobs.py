@@ -5,11 +5,11 @@ methods for converting and displaying jobs in dash
 from logging import getLogger
 import pandas as pd
 import numpy as np
-from dash_config import columns_to_print, MOCK_EPMT_API
+import dash_config
 logger = getLogger(__name__)  # pylint: disable=invalid-name
 
 # if (__name__ != "__main__"):
-if MOCK_EPMT_API:
+if dash_config.MOCK_EPMT_API:
     import epmt_query_mock as eq
 else:
     import epmt_query as eq
@@ -23,11 +23,14 @@ class JobGen:
         if jobs:
             logger.debug("Jobs requested {}".format(jobs))
         sample = None
+        errmsg = None
         try:
             sample = eq.get_jobs(jobs=jobs, fmt='dict', limit=limit, offset=offset)
         except Exception as E:
             logger.error("Job with ID:\"{}\", Not Found or broken".format(E))
-            
+            # If debug mode assign the error to the dataframe second column
+            if dash_config.DEBUG:
+                errmsg = E
         
         if sample:
             self.jobs_df = pd.DataFrame(sample)
@@ -49,7 +52,7 @@ class JobGen:
             #pd.set_option('display.max_columns', None)
             #pd.set_option('display.width', None)
             #pd.set_option('display.max_colwidth', -1)
-            #self.jobs_df = self.jobs_df[columns_to_print]
+            #self.jobs_df = self.jobs_df[dash_config.columns_to_print]
             #logger.debug("df {}".format(self.jobs_df))
 
             # Convert Job date into a start_day datetime date
@@ -61,22 +64,20 @@ class JobGen:
 
             # Convert True into 'Yes' for user friendly display
             self.jobs_df['Processed'] = np.where(self.jobs_df['Processed'], 'Yes', 'No')
+            self.jobs_df = self.jobs_df[dash_config.columns_to_print]
+            # User friendly column names
+            self.jobs_df.rename(columns={
+                'jobid': 'job id',
+                'exit_code': 'exit status',
+                'Processed': 'processing complete',
+                'write_bytes': 'bytes_out',
+                'read_bytes': 'bytes_in'
+            }, inplace=True)
         else:
-            self.jobs_df = pd.DataFrame(columns=columns_to_print)
+            self.jobs_df = pd.DataFrame([["No Jobs ", str(errmsg) if errmsg else None]] , columns=['job id','exit status'])
             self.jobs_df.append(pd.Series(), ignore_index=True)
             logger.debug(
                 "No jobs found here is an empty jobs_df\n%s", self.jobs_df)
-
-        self.jobs_df = self.jobs_df[columns_to_print]
-
-        # User friendly column names
-        self.jobs_df.rename(columns={
-            'jobid': 'job id',
-            'exit_code': 'exit status',
-            'Processed': 'processing complete',
-            'write_bytes': 'bytes_out',
-            'read_bytes': 'bytes_in'
-        }, inplace=True)
 
 # ####################### End List of jobs ########################
 
