@@ -9,7 +9,7 @@ def Header():
         get_header(),
         html.Br([]),
         html.Div(),
-        get_menu()
+        #get_menu()
     ])
 
 from jobs import get_version
