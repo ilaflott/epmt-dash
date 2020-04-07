@@ -21,7 +21,7 @@ class TestTemplate(unittest.TestCase):
         options.add_argument('--headless')
         options.add_argument('--disable-gpu')
         self.driver = webdriver.Chrome(options=options)
-        self.driver.implicitly_wait(15)
+        self.driver.implicitly_wait(30)
 
     def tearDown(self):
         """Stop web driver"""
