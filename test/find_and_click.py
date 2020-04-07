@@ -4,6 +4,9 @@ A simple selenium test example written by python
 import sys
 import unittest
 from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 
 try:
@@ -31,6 +34,9 @@ class TestTemplate(unittest.TestCase):
         """Find and click Recent Jobs tab"""
         try:
             self.driver.get(TEST_ADDRESS)
+            # Wait till the server starts and datatable loads
+            el = WebDriverWait(self.driver, 60).until(
+                EC.presence_of_element_located((By.ID, "table-multicol-sorting")))
             el = self.driver.find_element_by_xpath("//*[@id='tabs']/div[1]/span")
             el.click()
         except NoSuchElementException as ex:
