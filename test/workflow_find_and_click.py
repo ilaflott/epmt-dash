@@ -54,8 +54,8 @@ class TestTemplate(unittest.TestCase):
     def test_case_4(self):
         """See if job graph was made by id"""
         try:
-            self.driver.get("http://" + host + ":8050/graph/bar?metric=duration,cpu_time&expname=ESM1_historical&jobs=1234043&op=op")
-            el = self.driver.find_element_by_id("bargraph")
+            self.driver.get("http://" + host + ":8050/graph/bar?metric=duration,cpu_time&expname=ESM1_historical&exp_component=land_annual_rho2_1x1deg&jobs=1234043&op=op")
+            el = self.driver.find_element_by_id("graph-area-stop")
             #self.assertEqual(el, "Experiment Performance Management Tool")
         except NoSuchElementException as ex:
             self.fail(ex.msg)

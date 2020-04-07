@@ -880,8 +880,9 @@ def generate_multilayout_graph(zoom,y,click_data,url):
      # Hidden Div with experiment name displayed
      dash.dependencies.State('bar-expname','children'),
      dash.dependencies.State('url', 'href'),
-     dash.dependencies.State('bar-level', 'children')])
-def show_me_callback(clickData,state,metric,expname,stateurl,currLevel):
+     dash.dependencies.State('bar-level', 'children'),
+     dash.dependencies.State('exp-component','children')])
+def show_me_callback(clickData,state,metric,expname,stateurl,currLevel,exp_comp):
     ctx = dash.callback_context
     #logger.info("Callback Context info:\nTriggered:\n{}\nInputs:\n{}\nStates:\n{}".format(
     #    ctx.triggered, ctx.inputs, ctx.states))
@@ -916,7 +917,7 @@ def show_me_callback(clickData,state,metric,expname,stateurl,currLevel):
             # This loading message will momentarily replace the current
             # Graph with Loading text
             "Loading....",
-            "/graph/bar?metric=" + ",".join(metric) + "&expname=" + expname + "&jobs="+req_component+"&op=op",
+            "/graph/bar?metric=" + ",".join(metric) + "&expname=" + expname + "&exp_component="+exp_comp+"&jobs="+req_component+"&op=op",
             ]
         if currLevel == 'experiment':
             return [
@@ -993,11 +994,11 @@ def update_workflow_table(job_data, sel_jobs):
 
         gantt_link_exp =  dcc.Link(exp_name, href='/graph/gantt/?expname='+exp_name)
         gantt_link_comp = dcc.Link(exp_component, href='/graph/gantt/?expname='+exp_name+"&exp_component="+exp_component)
-        gantt_link_job =  dcc.Link(", ".join(jid), href='/graph/gantt/?expname='+exp_name+"&job="+",".join(jid)+"&tags=op")
+        gantt_link_job =  dcc.Link(", ".join(jid), href='/graph/gantt/?expname='+exp_name+"&jobs="+",".join(jid)+"&tags=op")
 
         bar_link_exp =  dcc.Link(exp_name, href='/graph/bar/?expname='+exp_name + "&metric=duration,cpu_time")
         bar_link_comp = dcc.Link(exp_component, href='/graph/bar/?expname='+exp_name+"&exp_component="+exp_component + "&metric=duration,cpu_time")
-        bar_link_job =  dcc.Link(", ".join(jid), href='/graph/bar/?expname='+exp_name+"&jobs="+",".join(jid)+"&op=op" + "&metric=duration,cpu_time")
+        bar_link_job =  dcc.Link(", ".join(jid), href='/graph/bar/?expname='+exp_name+"&exp_component="+exp_component+"&jobs="+",".join(jid)+"&op=op" + "&metric=duration,cpu_time")
         
         table_header = [
             html.Thead(html.Tr([html.Th(""), html.Th("Exp_name (Components)"), html.Th("Component (Jobs)"), html.Th("Job (Operations)")]))

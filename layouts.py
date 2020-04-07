@@ -813,7 +813,8 @@ def graph_plotly(url):
         jobname = query.get('expname',None)[0]
         bar_title = "exp_name:" + jobname
         metric = query.get('metric',['duration'])
-        order_by = query.get('order',['duration'])[0]
+        #order_by = query.get('order',['duration'])[0]
+        order_by = metric[0] if isinstance(metric,list) else metric
         limit = int(query.get('limit',[0])[0])
         tag_dict = {'exp_name': jobname }
         exp_component = query.get('exp_component',[None])[0]
@@ -821,16 +822,16 @@ def graph_plotly(url):
         jobs = query.get('jobs',None)
         if ops:
             y_value=ops
-            bar_title = "Operations in job:" + ','.join(jobs)
+            bar_title = "Operations in job:'" + ','.join(jobs) + "' component: '" + exp_component + "' experiment: '" + jobname + "'"
             graph_plot = graph_ops(jobs=jobs, tag_value=ops, metric=metric, title=bar_title)
         elif exp_component or jobs:
-            bar_title = "Jobs in component: " + exp_component
+            bar_title = "Jobs in component: '" + exp_component + "' in experiment: '" + jobname + "'"
             tag_dict.update({'exp_component':exp_component})
             logger.debug("Requested tag_dict {}".format(tag_dict))
             y_value='jobid'
             graph_plot = graph_components(exp_name=jobname, exp_component=exp_component, jobs=jobs, title=bar_title, metric=metric)
         elif jobname:
-            bar_title = "Components in experiment: " + jobname
+            bar_title = "Components in experiment: '" + jobname + "'"
             graph_plot = graph_jobs(exp_name=jobname, title=bar_title, metric=metric)
         
         # Convert plot into graph object

@@ -691,6 +691,7 @@ def graph_components(exp_name=None, exp_component=None, jobs=None, title=None, m
     # build component dataframe
     df = get_jobs(jobs=jobs, tags={'exp_name':exp_name, 'exp_component':exp_component}, fmt='pandas')
     # render graph
+    df = df.sort_values([metric[0]])
     graph = bar_graph(graph_df=df, y='jobid', x=metric, title=title)
     return graph
 
@@ -701,13 +702,15 @@ def graph_jobs(exp_name=None, jobs=None, metric=['duration'], title=None):
     df['component'] = df['tags'].apply(lambda x: x.get('exp_component'))
     grouped_df = df.groupby('component', as_index=False).agg({e:'sum' for e in metric})
     # render graph
+    grouped_df = grouped_df.sort_values([metric[0]])
     graph = bar_graph(graph_df=grouped_df, y='component', x=metric, horizontal=True, title=title)
     return graph
 
 
-def graph_ops(jobs=None, tag_value=None, metric=None, title=None):
+def graph_ops(jobs=None, tag_value=None, metric=['duration'], title=None):
     # build ops dataframe
     df = data_gatherer_ops(jobs=jobs, tag_value=tag_value, metric=metric)
     # render graph
+    df = df.sort_values([metric[0]])
     graph = bar_graph(graph_df=df, y=tag_value, x=metric, group_on=metric, title=title)
     return graph
