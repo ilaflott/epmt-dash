@@ -28,6 +28,8 @@ build:interface:
     - python -m unittest test/test_urlparse.py
     - echo "Start Mock Server"
     - python index.py & disown
+    # Sleep 10 to give the server time to catch the first request
+    - sleep 10
     - echo "Point and click menus and buttons firing callbacks"
     # Start testing against mock interface
     - python test/find_and_click.py http://localhost:8050
