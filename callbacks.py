@@ -445,14 +445,18 @@ def f(job_data, sel_jobs):
 
 @app.callback(
     Output('table-multicol-sorting', "selected_rows"),
-    [Input('index-select-all', 'n_clicks'), ],
+    [Input('index-select-all', 'n_clicks'),
+    Input(component_id='searchdf', component_property='value')],
     [State('table-multicol-sorting', "data"),
      State('table-multicol-sorting', "selected_rows")]
 )
-def select_all(n_clicks, data, selected_count):
+def select_all(n_clicks,search_value, data, selected_count):
     """select_all
     Method to handle selecting all jobs
     """
+    if search_value is not None:
+        # Clear selections on new search
+        return []
     if selected_count:
         # If All rows selected
         if len(data) == len(selected_count):
