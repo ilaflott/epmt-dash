@@ -262,8 +262,8 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn,
             refa = create_refmodel(jobs=[str(
                 a) for a, b, c in selected_rows], name=model_name_input,
                 tag={"exp_name": n, "exp_component": c}, enabled=True)
-            if refa is None:
-                return ["Failed creating Reference Model", ref_df.to_dict('records'),
+            if refa is False:
+                return ["Failed creating Reference Model, need at least 3 jobs?", ref_df.to_dict('records'),
                         edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
             logger.info("Reference created: {}".format(refa))
 
@@ -967,9 +967,9 @@ def show_me_callback(clickData,graphdata,currLevel,expname,exp_component):
     [
         Input('table-multicol-sorting', 'data'),
         Input('table-multicol-sorting', 'selected_rows'),
-        # Input('table-multicol-sorting', '')
+        Input('model-selector-dropdown', 'value') # This should be a input to fire this callback later
     ])
-def update_workflow_table(job_data, sel_jobs):
+def update_workflow_table(job_data, sel_jobs, selected_model):
     """ Callback
     Input: job table data & job table selected jobs
     Output: model selector dropdown options & active value
@@ -977,7 +977,7 @@ def update_workflow_table(job_data, sel_jobs):
     import dash_core_components as dcc
     import dash_bootstrap_components as dbc
     import dash_html_components as html
-
+    logger.debug("Building and displaying workflow table now")
     # Disregard selections that are stale
     if sel_jobs and all([k <= len(job_data) for k in sel_jobs]):
         logger.debug("Testing selected jobs {} job data len {}".format(
@@ -1008,7 +1008,9 @@ def update_workflow_table(job_data, sel_jobs):
         row2 = html.Tr([html.Td("Metric (Bar)"), html.Td(bar_link_exp), html.Td(bar_link_comp), html.Td(bar_link_job)])
         table_body = [html.Tbody([row1, row2])]
         table = dbc.Table(table_header + table_body, bordered=True)
-        return [table, {'display':'contents'}]
+        bplink = dcc.Link("boxplot Model:" + selected_model + " VS Sample Jobs: " + ",".join(jid)  , href='/graph/boxplot/'+ selected_model + '?jobs=' + ",".join(jid))
+        table_n_link = [table, html.Br(), bplink]
+        return [table_n_link, {'display':'contents'}]
     return ["",{'display':'none'}]
 
 # todo:

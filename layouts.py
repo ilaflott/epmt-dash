@@ -800,11 +800,10 @@ def graph_plotly(url):
     elif graph_style == 'boxplot':
         model = ""
         jobs = []
+        # Assign url value after /boxplot/ to model name
         if len(path)>2:
             model = path[2]
-        if query:
-            jobs = query['jobs']
-        graph_data = create_boxplot(model=model,jobs=jobs,normalize=query.get('normalize',['True'])[0],metric=query.get('metric',['cpu_time'])[0])
+        graph_data = create_boxplot(model=model,jobs=query.get('jobs'),normalize=query.get('normalize',['True'])[0],metric=query.get('metric',['cpu_time'])[0])
     # Return a bar graph
     elif graph_style == 'bar':
         

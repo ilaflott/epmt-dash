@@ -337,7 +337,7 @@ def create_gantt_graph(joblist=[],gtag=['op'],exp_name=None, exp_component=None)
     )
     return basic_graph
 
-def create_boxplot(jobs=['676007','625172','804285'], model="", normalize=True, metric='cpu_time', id=None):
+def create_boxplot(jobs=[], model="", normalize=True, metric='cpu_time', id=None):
     """boxplot wrapper"""
     import dash_core_components as dcc
     import plotly.graph_objects as go
@@ -347,31 +347,43 @@ def create_boxplot(jobs=['676007','625172','804285'], model="", normalize=True, 
     logger.debug("Jobs: {}".format(jobs))
     logger.debug("Normalize: {}".format(normalize))
     model_name = model
-    logger.debug("Model: {}".format(model_name))
-    jobs2test_against_model = jobs
-    boxplot_title = metric + " Per Op: Jobs({}) ".format(', '.join(jobs2test_against_model))
+    # Passed in jobs to scatter over model box
+    sample_jobs = []
+    fig = go.Figure()
+    if jobs:
+        sample_jobs = jobs
+        boxplot_title = metric + " Per Op: Jobs({}) versus ".format(', '.join(sample_jobs))
+    else:
+        boxplot_title = ''
     # Handle missing model
     try:
-        jobs = get_refmodels(name=model_name)[0]['jobs']
+        model_jobs = get_refmodels(name=model_name)[0]['jobs']
         # Model exists include it in title
-        boxplot_title = boxplot_title + " versus Model({})".format(model_name)
+        boxplot_title = boxplot_title + "Model: {}".format(model_name)
+        logger.debug("Model: {} has jobs: {}".format(model_name, model_jobs))
     except IndexError:
-        jobs = []
-        boxplot_title = boxplot_title + " {} model not found".format(model_name)
+        model_jobs = []
+        return "Model " + model_name + " not found or error finding jobs"
 
-
-    # Include test jobs
-    if jobs2test_against_model:
-        jobs.extend(jobs2test_against_model)
-
-    # Convert get_ops into list for all jobs
-    op_list = []
-    [op_list.extend(get_ops(jobby, tags = 'op', combine=False)) for jobby in jobs]
-    ops_dur = pd.DataFrame([(op['jobs'][0].jobid, op['tags']['op'], op['proc_sums'][metric]) for op in op_list], columns=['jobid','op',metric])
-
-    # Assign testjob column
-    ops_dur['testjob'] = ops_dur['jobid'].apply(lambda n: True if n in jobs2test_against_model else False)
+    # Include model jobs
+    ops_dur = pd.DataFrame()
+    for job in model_jobs:
+        logger.info("Calculating ops for model job {}".format(job))
+        df = get_ops(job, tags = 'op', combine=False,fmt='pandas')
+        df['Type'] = 'Model'
+        ops_dur = ops_dur.append(df, sort=False)
     
+    # Include sample jobs
+    for job in sample_jobs:
+        logger.info("Calculating ops for sample job {}".format(job))
+        df = get_ops(job, tags = 'op', combine=False,fmt='pandas')
+        df['Type'] = 'Sample'
+        ops_dur = ops_dur.append(df, sort=False)
+
+    ops_dur[metric] = ops_dur['proc_sums'].apply(lambda x: x.get(metric))
+    ops_dur['op'] = ops_dur['tags'].apply(lambda x: x.get('op'))
+    ops_dur['jobid'] = ops_dur['jobs'].apply(lambda x: x[0])
+
     x_title = metric
 
     # Check to apply normalization
@@ -381,8 +393,9 @@ def create_boxplot(jobs=['676007','625172','804285'], model="", normalize=True, 
         ops_dur = df_normalizer(ops_dur, norm_metric=metric)
         x_title = x_title + "_normalized"
     
-    # Create the model boxplot
-    fig = px.box(ops_dur[(ops_dur['testjob']==False)], title=boxplot_title, x=x_title, y="op", hover_name="jobid", hover_data=[metric, x_title], orientation='h', points='suspectedoutliers')#, color='op')
+    # Create the model boxplot on model_jobs
+    if model_jobs:
+        fig = px.box(ops_dur[(ops_dur['Type']=='Model')], title=boxplot_title, x=x_title, y="op", hover_name="jobid", hover_data=[metric, x_title], orientation='h', points='all')#, color='op')
 
     # Color outliers Red
     # only enabled if px.box(points='suspectedoutliers')
@@ -390,7 +403,7 @@ def create_boxplot(jobs=['676007','625172','804285'], model="", normalize=True, 
 
 
     # Filter dataframe for test jobs
-    filtered = ops_dur[(ops_dur['testjob']==True)]
+    filtered = ops_dur[(ops_dur['Type'] =='Sample')]
 
     # Get unique jobids from filtered list
     uniq_job_ops = filtered.jobid.unique()
@@ -424,7 +437,7 @@ def create_boxplot(jobs=['676007','625172','804285'], model="", normalize=True, 
     fig.update_layout(showlegend=True,clickmode='event+select')
 
     basic_graph = dcc.Graph(
-        id=id if id else 'basic-interactions',
+        id=id if id else 'model-boxplot',
         figure=fig
     )
     return basic_graph
