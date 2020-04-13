@@ -5,8 +5,8 @@
 
 import urllib.parse
 import posixpath
-# import ntpath
-
+from logging import getLogger
+logger = getLogger(__name__)  
 
 def path_parse(path_string, *, normalize=True, module=posixpath):
     # TODO: This while loop causes infinite loops under malformed urls
@@ -80,6 +80,10 @@ def parse_url(url, *, normalize=True, module=posixpath):
     for field in query_parsed.keys():
         if ',' in query_parsed[field][0]:
             query_parsed[field] = query_parsed[field][0].split(',')
+        if ':' in query_parsed[field][0]:
+            logger.debug("Query dict found: {}".format(query_parsed[field]))
+            query_parsed[field] = dict(e.split(':') for e in query_parsed[field])
+            logger.debug("Query dict converted: {}".format(query_parsed[field]))
     return {"path":path_parsed, "query":query_parsed}
 
 

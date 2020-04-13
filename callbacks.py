@@ -103,7 +103,7 @@ def open_create_model_div(create_model_btn, close_model_btn, jobs_selected):
     if recentbtn == 'create_model_open_div':
         if jobs_selected:
             return {'display': 'contents'}
-        logger.info("No jobs are selected, dont open creation pane")
+        # No jobs are selected, dont open creation pane
         return {'display': 'none'}
     if recentbtn == 'close':
         return {'display': 'none'}
@@ -445,24 +445,32 @@ def f(job_data, sel_jobs):
 
 @app.callback(
     Output('table-multicol-sorting', "selected_rows"),
-    [Input('index-select-all', 'n_clicks'),
-    Input(component_id='searchdf', component_property='value')],
-    [State('table-multicol-sorting', "data"),
-     State('table-multicol-sorting', "selected_rows")]
+    [Input('index-select-all', 'n_clicks_timestamp'),
+    Input(component_id='searchdf', component_property='value'),
+    Input('table-multicol-sorting', "data"),
+    Input('searchdf','n_timestamp')],
+    [State('table-multicol-sorting', "selected_rows"),
+    ]
 )
-def select_all(n_clicks,search_value, data, selected_count):
+def select_all(n_clicks,search_value, data,search_timestamp, selected_count):
     """select_all
     Method to handle selecting all jobs
     """
-    if search_value is not None:
-        # Clear selections on new search
-        return []
-    if selected_count:
-        # If All rows selected
-        if len(data) == len(selected_count):
-            # Deselect all
-            return []
-    return [i for i in range(len(data))]
+    import time
+    # Select all was clicked, search bar was used and select all before search
+    logger.debug("Select All button {} Search bar {}".format(n_clicks,search_timestamp))
+    if n_clicks and search_timestamp and n_clicks > search_timestamp:
+        logger.debug("Select all was clicked")
+        if data:
+            # If All rows selected and rows exist
+            if len(data) == len(selected_count):
+                logger.debug("Clearing selection on all selected")
+                return []
+            else:
+                logger.debug("Selecting All, data=selected_count")
+                return [i for i in range(len(data))]
+    logger.debug("Clearing selection For new query")
+    return []
 
 
 def format_bytes(size, roundn=2):
@@ -504,7 +512,8 @@ def strfdelta(tdelta, fmt="{hours}:{minutes}:{seconds}"):
      Output('table-multicol-sorting', 'columns'),
      Output('table-multicol-sorting', "page_size"),
      Output('table-multicol-sorting', "page_count"),
-     Output('table-multicol-sorting', "style_data_conditional")],
+     Output('table-multicol-sorting', "style_data_conditional"),
+     Output('searchdf','n_timestamp')],
     [Input('raw-switch', 'value'),
      Input(component_id='searchdf', component_property='value'),
      Input(component_id='jobs-date-picker', component_property='end_date'),
@@ -518,6 +527,8 @@ def update_jobs_table(raw_toggle, search_value, end, rows_per_page, page_current
     """update_jobs_table
     This callback updates the jobs table data, columns, pages and styling
     """
+    import time
+    reset_time = int(time.time()*1000)
     logger.debug("\nUpdate_output started")
     #ctx = dash.callback_context
     # Debug Context due to this callback being huge
@@ -538,7 +549,8 @@ def update_jobs_table(raw_toggle, search_value, end, rows_per_page, page_current
         10,  # Custom page size
         1,  # Custom Page count
         # Custom Highlighting on matching job tags
-        []
+        [],
+        int(time.time()*1000)+4000
         ]
 
 
@@ -553,7 +565,11 @@ def update_jobs_table(raw_toggle, search_value, end, rows_per_page, page_current
                              days=1)) & (job_df['start'].map(lambda x: x.date())
                                          <= dt.strptime(end, "%Y-%m-%d").date())
             logger.debug("Query: (Start:{} End:{})".format(start, end))
-            alt = job_df.loc[time_mask]
+            # Only reassign df if mask results data
+            if job_df.loc[time_mask].shape[0]>0:
+                alt = job_df.loc[time_mask]
+            else:
+                logger.info("Date query returned no jobs")
         else:
             logger.info("Less than 2, not filtering on date")
 
@@ -704,7 +720,8 @@ def update_jobs_table(raw_toggle, search_value, end, rows_per_page, page_current
         int(rows_per_page),  # Custom page size
         num_pages,  # Custom Page count
         # Custom Highlighting on matching job tags
-        [] if raw_toggle else custom_highlights
+        [] if raw_toggle else custom_highlights,
+        reset_time
     ]
 
 ######################## /Index Callbacks ########################
@@ -1008,7 +1025,9 @@ def update_workflow_table(job_data, sel_jobs, selected_model):
         row2 = html.Tr([html.Td("Metric (Bar)"), html.Td(bar_link_exp), html.Td(bar_link_comp), html.Td(bar_link_job)])
         table_body = [html.Tbody([row1, row2])]
         table = dbc.Table(table_header + table_body, bordered=True)
-        bplink = dcc.Link("boxplot Model:" + selected_model + " VS Sample Jobs: " + ",".join(jid)  , href='/graph/boxplot/'+ selected_model + '?jobs=' + ",".join(jid))
+        bp_text = "boxplot Model:" + ((selected_model + " vs ") if selected_model else '') + " Sample Jobs: " + ",".join(jid)
+        bp_href='/graph/boxplot/'+ (selected_model if selected_model else '') + '?jobs=' + ",".join(jid)
+        bplink = dcc.Link(bp_text , href=bp_href)
         table_n_link = [table, html.Br(), bplink]
         return [table_n_link, {'display':'contents'}]
     return ["",{'display':'none'}]

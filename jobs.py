@@ -19,7 +19,7 @@ class JobGen:
     """JobGen class:
     holds job dataframe after converting fields to display
     """
-    def __init__(self, jobs=[], limit=500, offset=0):
+    def __init__(self, jobs=[], limit=30, offset=0):
         if jobs:
             logger.debug("Jobs requested {}".format(jobs))
         sample = None

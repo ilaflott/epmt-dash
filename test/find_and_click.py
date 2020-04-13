@@ -22,6 +22,7 @@ class TestTemplate(unittest.TestCase):
         options = webdriver.ChromeOptions()
         options.add_argument('--no-sandbox')
         options.add_argument('--headless')
+        options.add_argument("--window-size=1920x1080")
         options.add_argument('--disable-gpu')
         self.driver = webdriver.Chrome(options=options)
         self.driver.implicitly_wait(30)
@@ -160,6 +161,88 @@ class TestTemplate(unittest.TestCase):
             # Find and Click Delete Model button
             el = self.driver.find_element_by_xpath("//*[@id='delete-Model-btn']")
             el.click()
+        except NoSuchElementException as ex:
+            self.fail(ex.msg)
+
+
+    def test_case_13(self):
+        """Handle unselections on search entry"""
+        try:
+            self.driver.get(TEST_ADDRESS+"?case=13")
+
+            el = self.driver.find_element_by_xpath("//*[@id='table-multicol-sorting']/div[2]/div/div[2]/div[2]/table/tbody/tr[30]/td[1]")
+            state = el.is_selected()
+            # Select all
+            print("Click Select All")
+            el = self.driver.find_element_by_xpath("//*[@id='index-select-all']")
+            el.click()
+            # Delay for callback to select everyone
+            from time import sleep
+            sleep(5)
+            # Check if last row(#30) is selected
+            el = self.driver.find_element_by_xpath("/html/body/div[@id='react-entry-point']/div[@id='_dash-global-error-container']/div/div[2]/div[1]/div[@id='_dash-app-content']/div/div[@id='page-content']/div[@class='page']/div[@id='tabs-parent']/div[@class='jsx-4017309047 tab-content ']/div[@class='subpage']/div[@id='table-multicol-sorting']/div[@class='dash-spreadsheet-container dash-spreadsheet dash-freeze-top dash-no-filter dash-fill-width']/div[@class='dash-spreadsheet-inner dash-spreadsheet dash-freeze-top dash-no-filter dash-fill-width']/div[@class='row row-1']/div[@class='cell cell-1-1 dash-fixed-content']/table/tbody/tr[30]/td[@class='dash-select-cell']/input")
+            newstate = el.is_selected()
+            if newstate == state:
+                self.fail("Selection state didn't toggle on newstate:{} oldstate:{}".format(newstate, state))
+            state = newstate
+            # Type 007 to fire text callback
+            input_box = self.driver.find_element_by_xpath("/html/body/div[@id='react-entry-point']/div[@id='_dash-global-error-container']/div/div[2]/div[1]/div[@id='_dash-app-content']/div/div[@id='page-content']/div[@class='page']/div[@id='tabs-parent']/div[@class='jsx-4017309047 tab-content ']/div[@class='container-fluid']/div[@class='align-items-center justify-content-between row']/div[@class='col-auto col-lg-4']/input[@id='searchdf']")
+            input_box.send_keys('00')
+            input_box.send_keys('7')
+            # Jobid 1234007 checkbox
+            el = self.driver.find_element_by_xpath("/html/body/div[@id='react-entry-point']/div[@id='_dash-global-error-container']/div/div[2]/div[1]/div[@id='_dash-app-content']/div/div[@id='page-content']/div[@class='page']/div[@id='tabs-parent']/div[@class='jsx-4017309047 tab-content ']/div[@class='subpage']/div[@id='table-multicol-sorting']/div[@class='dash-spreadsheet-container dash-spreadsheet dash-freeze-top dash-no-filter dash-fill-width']/div[@class='dash-spreadsheet-inner dash-spreadsheet dash-freeze-top dash-no-filter dash-fill-width']/div[@class='row row-1']/div[@class='cell cell-1-1 dash-fixed-content']/table/tbody/tr/td[@class='dash-select-cell']/input")
+            newstate = el.is_selected()
+            if newstate == state:
+                self.fail("Selections were not unselected newstate:{} oldstate:{}".format(newstate, state))
+
+        except NoSuchElementException as ex:
+            self.fail(ex.msg)
+    
+    
+    def test_case_14(self):
+        """Handle unselections on date picker query"""
+        try:
+            self.driver.get(TEST_ADDRESS+"?case=14")
+
+            el = self.driver.find_element_by_xpath("//*[@id='table-multicol-sorting']/div[2]/div/div[2]/div[2]/table/tbody/tr[30]/td[1]")
+            state = el.is_selected()
+            # Select all
+            print("Click Select All")
+            el = self.driver.find_element_by_xpath("//*[@id='index-select-all']")
+            el.click()
+            # Delay for callback to select everyone
+            from time import sleep
+            sleep(5)
+            # Check if last row(#30) is selected
+            el = self.driver.find_element_by_xpath("/html/body/div[@id='react-entry-point']/div[@id='_dash-global-error-container']/div/div[2]/div[1]/div[@id='_dash-app-content']/div/div[@id='page-content']/div[@class='page']/div[@id='tabs-parent']/div[@class='jsx-4017309047 tab-content ']/div[@class='subpage']/div[@id='table-multicol-sorting']/div[@class='dash-spreadsheet-container dash-spreadsheet dash-freeze-top dash-no-filter dash-fill-width']/div[@class='dash-spreadsheet-inner dash-spreadsheet dash-freeze-top dash-no-filter dash-fill-width']/div[@class='row row-1']/div[@class='cell cell-1-1 dash-fixed-content']/table/tbody/tr[30]/td[@class='dash-select-cell']/input")
+            newstate = el.is_selected()
+            if newstate == state:
+                self.fail("Selection state didn't toggle on newstate:{} oldstate:{}".format(newstate, state))
+            state = newstate
+            # enter a full date selection
+            # Activate date picker dialog
+            el = self.driver.find_element_by_xpath("//*[@id='jobs-date-picker']/div/div/div[1]")
+            el.click()
+            # Click start date
+            el = self.driver.find_element_by_xpath(
+                "/html/body/div[2]/div/div/div/div/div[2]/div[2]/div/div[2]/div/table/tbody/tr[1]/td[7]")
+            el.click()
+            # Delay
+            self.driver.implicitly_wait(3)
+            # Click end date
+            el = self.driver.find_element_by_xpath(
+                "/html/body/div[2]/div/div/div/div/div[2]/div[2]/div/div[2]/div/table/tbody/tr[2]/td[4]")
+            el.click()
+
+
+            from time import sleep
+            sleep(5)
+            # Jobid 1234007 checkbox
+            el = self.driver.find_element_by_xpath("/html/body/div[@id='react-entry-point']/div[@id='_dash-global-error-container']/div/div[2]/div[1]/div[@id='_dash-app-content']/div/div[@id='page-content']/div[@class='page']/div[@id='tabs-parent']/div[@class='jsx-4017309047 tab-content ']/div[@class='subpage']/div[@id='table-multicol-sorting']/div[@class='dash-spreadsheet-container dash-spreadsheet dash-freeze-top dash-no-filter dash-fill-width']/div[@class='dash-spreadsheet-inner dash-spreadsheet dash-freeze-top dash-no-filter dash-fill-width']/div[@class='row row-1']/div[@class='cell cell-1-1 dash-fixed-content']/table/tbody/tr[1]/td[@class='dash-select-cell']/input")
+            newstate = el.is_selected()
+            if newstate == state:
+                self.fail("Selections were not unselected newstate:{} oldstate:{}".format(newstate, state))
+
         except NoSuchElementException as ex:
             self.fail(ex.msg)
 

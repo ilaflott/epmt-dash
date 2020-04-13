@@ -337,11 +337,26 @@ def create_gantt_graph(joblist=[],gtag=['op'],exp_name=None, exp_component=None)
     )
     return basic_graph
 
-def create_boxplot(jobs=[], model="", normalize=True, metric='cpu_time', id=None):
-    """boxplot wrapper"""
+def create_boxplot(jobs=[], model="", normalize=True, metric='cpu_time', tags='op', box_title='', id=None):
+    """
+    Create a boxplot based on a model with sample jobs scattered over it, 
+    tags currently only work for: 
+        general strings: 'op' or 'op_instance'
+        single dictionaries: {'op':'hsmget', 'op_instance':2}
+
+    jobs(optional): A list of jobids to scatter over the boxplot
+    model(optional): A model name to act as the boxplot
+    normalize: Will normalize jobs and model jobs as long as there are at least
+                3 in total.
+    metric: A single metric from op proc_sums to graph against
+    tags: tag string or dictionary to search on, default: 'op'
+    box_title(optional): A supplied title otherwise one will be generated
+    id: Dash graph object id name for callback reference
+    """
     import dash_core_components as dcc
     import plotly.graph_objects as go
     import plotly.express as px
+    from json import dumps
     #from epmt_query import get_ops, get_refmodels
     logger.debug("Creating boxplot")
     logger.debug("Jobs: {}".format(jobs))
@@ -350,52 +365,57 @@ def create_boxplot(jobs=[], model="", normalize=True, metric='cpu_time', id=None
     # Passed in jobs to scatter over model box
     sample_jobs = []
     fig = go.Figure()
+    ops_dur = pd.DataFrame()
+    model_jobs = []
+    gen_box_title = metric + " Per " + dumps(tags) + " "
+
     if jobs:
         sample_jobs = jobs
-        boxplot_title = metric + " Per Op: Jobs({}) versus ".format(', '.join(sample_jobs))
-    else:
-        boxplot_title = ''
-    # Handle missing model
-    try:
-        model_jobs = get_refmodels(name=model_name)[0]['jobs']
-        # Model exists include it in title
-        boxplot_title = boxplot_title + "Model: {}".format(model_name)
-        logger.debug("Model: {} has jobs: {}".format(model_name, model_jobs))
-    except IndexError:
-        model_jobs = []
-        return "Model " + model_name + " not found or error finding jobs"
+        gen_box_title = gen_box_title + "Jobs({})".format(', '.join(sample_jobs))
 
-    # Include model jobs
-    ops_dur = pd.DataFrame()
-    for job in model_jobs:
-        logger.info("Calculating ops for model job {}".format(job))
-        df = get_ops(job, tags = 'op', combine=False,fmt='pandas')
-        df['Type'] = 'Model'
-        ops_dur = ops_dur.append(df, sort=False)
+    if model_name:
+        try:
+            model_jobs = get_refmodels(name=model_name)[0]['jobs']
+            # Model exists include it in title
+            if jobs:
+                gen_box_title = gen_box_title + ' versus '
+            gen_box_title = gen_box_title + "Model: {}".format(model_name)
+            logger.debug("Model: {} has jobs: {}".format(model_name, model_jobs))
+        except IndexError:
+            model_jobs = []
+            return "Could not find given " + model_name
+
+        # Include model jobs
+        for job in model_jobs:
+            logger.info("Calculating {} for model job {}".format(tags, job))
+            df = get_ops(job, tags=tags, combine=False,fmt='pandas')
+            df['Type'] = 'Model'
+            ops_dur = ops_dur.append(df, sort=False)
     
     # Include sample jobs
     for job in sample_jobs:
-        logger.info("Calculating ops for sample job {}".format(job))
-        df = get_ops(job, tags = 'op', combine=False,fmt='pandas')
+        logger.info("Calculating {} for sample job {}".format(tags, job))
+        df = get_ops(job, tags=tags, combine=False,fmt='pandas')
         df['Type'] = 'Sample'
         ops_dur = ops_dur.append(df, sort=False)
-
     ops_dur[metric] = ops_dur['proc_sums'].apply(lambda x: x.get(metric))
-    ops_dur['op'] = ops_dur['tags'].apply(lambda x: x.get('op'))
+    ops_dur['op'] = ops_dur['tags'].apply(dumps)
     ops_dur['jobid'] = ops_dur['jobs'].apply(lambda x: x[0])
 
     x_title = metric
 
     # Check to apply normalization
-    if normalize is 'True':
-        boxplot_title = "Mean normalized " + boxplot_title
+    # Models must have a minimum number of jobs
+    # Sample can be run without model, don't normalize a few samples
+    if normalize is 'True' and (len(sample_jobs) + len(model_jobs)) > 3:
+        gen_box_title = "Mean normalized " + gen_box_title
         # Mean Normalize
         ops_dur = df_normalizer(ops_dur, norm_metric=metric)
         x_title = x_title + "_normalized"
     
     # Create the model boxplot on model_jobs
     if model_jobs:
-        fig = px.box(ops_dur[(ops_dur['Type']=='Model')], title=boxplot_title, x=x_title, y="op", hover_name="jobid", hover_data=[metric, x_title], orientation='h', points='all')#, color='op')
+        fig = px.box(ops_dur[(ops_dur['Type']=='Model')], x=x_title, y="op", hover_name="jobid", hover_data=[metric, x_title], orientation='h', points='all')#, color='op')
 
     # Color outliers Red
     # only enabled if px.box(points='suspectedoutliers')
@@ -434,7 +454,8 @@ def create_boxplot(jobs=[], model="", normalize=True, metric='cpu_time', id=None
 ) for job in df_to_scatter]
 
     # Display legend for scatter points
-    fig.update_layout(showlegend=True,clickmode='event+select')
+    fig.update_layout(showlegend=True, clickmode='event+select',
+                      title=box_title if box_title else gen_box_title)
 
     basic_graph = dcc.Graph(
         id=id if id else 'model-boxplot',
@@ -700,16 +721,25 @@ def bar_graph(graph_df=None, jobs=None, x=None, y=None, exp_name=None, group_on=
     return fig
 
 
-def graph_components(exp_name=None, exp_component=None, jobs=None, title=None, metric=None):
+def graph_components(exp_name=None, exp_component=None, jobs=None, title=None, metric=None, order=None):
+    """
+    This Function accepts components to graph Jobid's on the Y axis
+    """
+    logger.info("Graph Components")
     # build component dataframe
     df = get_jobs(jobs=jobs, tags={'exp_name':exp_name, 'exp_component':exp_component}, fmt='pandas')
     # render graph
-    df = df.sort_values([metric[0]])
+    logger.debug("Order received: {}".format(order))
+    df = df.sort_values([order if order is not None else metric[0]])
     graph = bar_graph(graph_df=df, y='jobid', x=metric, title=title)
     return graph
 
 
 def graph_jobs(exp_name=None, jobs=None, metric=['duration'], title=None):
+    """
+    This Function accepts experiments to graph components
+    """
+    logger.info("Graph Jobs")
     # build jobs dataframe
     df = get_jobs(jobs=jobs, tags={'exp_name':exp_name}, fmt='pandas')
     df['component'] = df['tags'].apply(lambda x: x.get('exp_component'))
@@ -721,6 +751,10 @@ def graph_jobs(exp_name=None, jobs=None, metric=['duration'], title=None):
 
 
 def graph_ops(jobs=None, tag_value=None, metric=['duration'], title=None):
+    """
+    This Function accepts Jobs to graph Operations
+    """
+    logger.info("Graph Ops")
     # build ops dataframe
     df = data_gatherer_ops(jobs=jobs, tag_value=tag_value, metric=metric)
     # render graph
