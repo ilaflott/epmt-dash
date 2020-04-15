@@ -21,7 +21,7 @@ dash-test:
 build-selenium:
 	docker build -f Dockerfiles/Dockerfile.chromedriver-sel -t python-chromedriver:3.7 .
 selenium-test:
-	docker run --rm -it -w /usr/workspace/test -v $(PWD):/usr/workspace python-chromedriver:3.7 python selenium_test.py
+	docker run --rm -it -w /usr/workspace/test -v $(PWD):/usr/workspace python-chromedriver:3.7 python find_and_click.py http://10.0.0.12:8050
 build-chromedriver-service:
 	docker build -f Dockerfiles/Dockerfile.chromedriver -t python-chromedriver-ser:latest .
 start-chromedriver:

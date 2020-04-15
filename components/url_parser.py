@@ -6,7 +6,13 @@
 import urllib.parse
 import posixpath
 from logging import getLogger
+from dash_config import MOCK_EPMT_API
 logger = getLogger(__name__)  
+
+if MOCK_EPMT_API:
+    from epmt_mock import tag_from_string
+else:
+    from epmtlib import tag_from_string
 
 def path_parse(path_string, *, normalize=True, module=posixpath):
     # TODO: This while loop causes infinite loops under malformed urls
@@ -79,7 +85,6 @@ def parse_url(url, *, normalize=True, module=posixpath):
     # https://stackoverflow.com/a/50537278
     for field in query_parsed.keys():
         logger.debug("Parsing field {} for {}".format(field,query_parsed[field]))
-        from epmtlib import tag_from_string
         if ',' in query_parsed[field][0]:
             query_parsed[field] = query_parsed[field][0].split(',')
         elif ':' in query_parsed[field]:

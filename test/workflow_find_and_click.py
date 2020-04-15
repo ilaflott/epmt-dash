@@ -10,7 +10,7 @@ try:
     host = str(sys.argv[1])
 except IndexError:
     print("No Test Address given. Defaulting to localhost")
-    host = 'localhost'
+    host = 'http://localhost:8050'
 
 class TestTemplate(unittest.TestCase):
     """Include test cases on a given url"""
@@ -30,7 +30,7 @@ class TestTemplate(unittest.TestCase):
     def test_case_1(self):
         """Load Page, read title"""
         try:
-            self.driver.get("http://" + host + ":8050/graph/bar/?expname=ESM1_historical&metric=duration,cpu_time")
+            self.driver.get(host + "/graph/bar/?expname=ESM1_historical&metric=duration,cpu_time")
             el = self.driver.find_element_by_xpath("//*[@id='page-content']/div/div[1]/div/div[1]/div/h5").text
             self.assertEqual(el, "Experiment Performance Management Tool")
         except NoSuchElementException as ex:
@@ -38,7 +38,7 @@ class TestTemplate(unittest.TestCase):
     def test_case_2(self):
         """See if experiment graph was made by id"""
         try:
-            self.driver.get("http://" + host + ":8050/graph/bar/?expname=ESM1_historical&metric=duration,cpu_time")
+            self.driver.get(host + "/graph/bar/?expname=ESM1_historical&metric=duration,cpu_time")
             el = self.driver.find_element_by_id("bargraph")
             #self.assertEqual(el, "Experiment Performance Management Tool")
         except NoSuchElementException as ex:
@@ -46,7 +46,7 @@ class TestTemplate(unittest.TestCase):
     def test_case_3(self):
         """See if component graph was made by id"""
         try:
-            self.driver.get("http://" + host + ":8050/graph/bar?metric=duration,cpu_time&expname=ESM1_historical&exp_component=ocean_annual_rho2_1x1deg")
+            self.driver.get(host + "/graph/bar?metric=duration,cpu_time&expname=ESM1_historical&exp_component=ocean_annual_rho2_1x1deg")
             el = self.driver.find_element_by_id("bargraph")
             #self.assertEqual(el, "Experiment Performance Management Tool")
         except NoSuchElementException as ex:
@@ -54,7 +54,7 @@ class TestTemplate(unittest.TestCase):
     def test_case_4(self):
         """See if job graph was made by id"""
         try:
-            self.driver.get("http://" + host + ":8050/graph/bar?metric=duration,cpu_time&expname=ESM1_historical&exp_component=land_annual_rho2_1x1deg&jobs=1234043&op=op")
+            self.driver.get(host + "/graph/bar?metric=duration,cpu_time&expname=ESM1_historical&exp_component=land_annual_rho2_1x1deg&jobs=1234043&op=op")
             el = self.driver.find_element_by_id("graph-area-stop")
             #self.assertEqual(el, "Experiment Performance Management Tool")
         except NoSuchElementException as ex:
