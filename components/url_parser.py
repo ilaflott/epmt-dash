@@ -78,11 +78,13 @@ def parse_url(url, *, normalize=True, module=posixpath):
     # TODO: A better method may be encoding or repeating the key
     # https://stackoverflow.com/a/50537278
     for field in query_parsed.keys():
+        logger.debug("Parsing field {} for {}".format(field,query_parsed[field]))
+        from epmtlib import tag_from_string
         if ',' in query_parsed[field][0]:
             query_parsed[field] = query_parsed[field][0].split(',')
-        if ':' in query_parsed[field][0]:
+        elif ':' in query_parsed[field]:
             logger.debug("Query dict found: {}".format(query_parsed[field]))
-            query_parsed[field] = dict(e.split(':') for e in query_parsed[field])
+            query_parsed[field] = tag_from_string(query_parsed[field])
             logger.debug("Query dict converted: {}".format(query_parsed[field]))
     return {"path":path_parsed, "query":query_parsed}
 

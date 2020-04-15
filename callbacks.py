@@ -764,8 +764,8 @@ def generate_scatter(x,y,zoom_state,url):
     import plotly.express as px
     from components import parse_url
     e = parse_url(url)
-    tags = tag_from_string(';'.join(e['query']['tags']))
-    logger.debug("Tags requested appear to be: {}".format(tags))
+    tags = e['query'].get('tags',None)
+    logger.debug("Tags requested: {}".format(tags))
     #op_list = []
     #metric = 'cpu_time'
     #[op_list.extend(eq.get_ops(jobby, tags = 'op', combine=False)) for jobby in ['625172','627922','629320','629323','629322']]
@@ -803,7 +803,7 @@ def generate_scatter_selections(clicked,url):
     """
     from components import parse_url
     e = parse_url(url)
-    tags = tag_from_string(';'.join(e['query']['tags']))
+    tags = e['query']['tags']
     logger.debug("Click Data requested: {}".format(clicked))
     # Ignore cases of auto scaling & dragmode lasso
     if clicked and not any( [entry in k for entry in ("dragmode", "autosize", "xaxis.autorange") for k in clicked.keys()]):
@@ -832,7 +832,7 @@ def generate_multilayout_graph(zoom,y,click_data,url):
     import plotly.express as px
     from components import parse_url
     e = parse_url(url)
-    tags = tag_from_string(';'.join(e['query']['tags']))
+    tags = e['query']['tags']
     logger.debug(e)
     #op_list = []
     #metric = 'cpu_time'
@@ -840,7 +840,7 @@ def generate_multilayout_graph(zoom,y,click_data,url):
     #ops_dur = pd.DataFrame([(op['jobs'][0].jobid, op['tags']['op'], op['proc_sums'][metric]) for op in op_list], columns=['jobid','op',metric])
     #e = fun.df_normalizer(ops_dur,'op',metric)
     e = get_jobs(fmt='pandas',tags=tags)
-    logger.debug("First job seen: \n{}".format(e[['jobid','duration','num_procs']].head(1).to_string(index=False)))
+    logger.debug("Jobs Found: \n{}".format(e[['jobid','duration','num_procs']]))
     logger.debug("Zoom state: {}".format(type(zoom)))
     #fig = px.scatter(e,x='jobid',y=y, title=url)
     fig = {
