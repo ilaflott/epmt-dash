@@ -4,6 +4,9 @@ A simple selenium test example written by python
 import sys
 import unittest
 from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 
 try:
@@ -31,6 +34,8 @@ class TestTemplate(unittest.TestCase):
         """Load Page, read title"""
         try:
             self.driver.get(host + "/graph/bar/?expname=ESM1_historical&metric=duration,cpu_time")
+            WebDriverWait(self.driver, 200).until(
+                EC.presence_of_element_located((By.XPATH, "//*[@id='page-content']/div/div[1]/div/div[1]/div/h5")))
             el = self.driver.find_element_by_xpath("//*[@id='page-content']/div/div[1]/div/div[1]/div/h5").text
             self.assertEqual(el, "Experiment Performance Management Tool")
         except NoSuchElementException as ex:
@@ -74,6 +79,12 @@ class TestTemplate(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    suite = unittest.TestSuite()
+    # 
+    # Uncomment to test a single case
+    #suite.addTest(TestTemplate("test_case_1"))
+
+    # Load entire template of cases
     suite = unittest.TestLoader().loadTestsFromTestCase(TestTemplate)
     result = unittest.TextTestRunner(verbosity=2).run(suite)
     sys.exit(not result.wasSuccessful())

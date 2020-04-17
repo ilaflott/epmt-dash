@@ -1,5 +1,6 @@
 """
-A simple selenium test example written by python
+Useful API link for waiting for expected conditions:
+https://www.selenium.dev/selenium/docs/api/py/webdriver_support/selenium.webdriver.support.expected_conditions.html
 """
 import sys
 import unittest
@@ -170,7 +171,10 @@ class TestTemplate(unittest.TestCase):
         try:
             self.driver.get(TEST_ADDRESS+"?case=13")
 
-            el = self.driver.find_element_by_xpath("//*[@id='table-multicol-sorting']/div[2]/div/div[2]/div[2]/table/tbody/tr[30]/td[1]")
+            # We should wait till rows are available before clicking things
+            el = WebDriverWait(self.driver, 120).until(
+                EC.presence_of_element_located((By.XPATH, "//tr[1]/td/input")))
+            el = self.driver.find_element_by_xpath("//tr[30]/td/input")
             state = el.is_selected()
             # Select all
             print("Click Select All")
@@ -180,17 +184,19 @@ class TestTemplate(unittest.TestCase):
             from time import sleep
             sleep(5)
             # Check if last row(#30) is selected
-            el = self.driver.find_element_by_xpath("/html/body/div[@id='react-entry-point']/div[@id='_dash-global-error-container']/div/div[2]/div[1]/div[@id='_dash-app-content']/div/div[@id='page-content']/div[@class='page']/div[@id='tabs-parent']/div[@class='jsx-4017309047 tab-content ']/div[@class='subpage']/div[@id='table-multicol-sorting']/div[@class='dash-spreadsheet-container dash-spreadsheet dash-freeze-top dash-no-filter dash-fill-width']/div[@class='dash-spreadsheet-inner dash-spreadsheet dash-freeze-top dash-no-filter dash-fill-width']/div[@class='row row-1']/div[@class='cell cell-1-1 dash-fixed-content']/table/tbody/tr[30]/td[@class='dash-select-cell']/input")
+            el = self.driver.find_element_by_xpath("//tr[30]/td/input")
             newstate = el.is_selected()
             if newstate == state:
                 self.fail("Selection state didn't toggle on newstate:{} oldstate:{}".format(newstate, state))
             state = newstate
-            # Type 007 to fire text callback
-            input_box = self.driver.find_element_by_xpath("/html/body/div[@id='react-entry-point']/div[@id='_dash-global-error-container']/div/div[2]/div[1]/div[@id='_dash-app-content']/div/div[@id='page-content']/div[@class='page']/div[@id='tabs-parent']/div[@class='jsx-4017309047 tab-content ']/div[@class='container-fluid']/div[@class='align-items-center justify-content-between row']/div[@class='col-auto col-lg-4']/input[@id='searchdf']")
+            # Type 007 into search box to fire text callback
+            input_box = self.driver.find_element_by_xpath("//*[@id='searchdf']")
             input_box.send_keys('00')
             input_box.send_keys('7')
             # Jobid 1234007 checkbox
-            el = self.driver.find_element_by_xpath("/html/body/div[@id='react-entry-point']/div[@id='_dash-global-error-container']/div/div[2]/div[1]/div[@id='_dash-app-content']/div/div[@id='page-content']/div[@class='page']/div[@id='tabs-parent']/div[@class='jsx-4017309047 tab-content ']/div[@class='subpage']/div[@id='table-multicol-sorting']/div[@class='dash-spreadsheet-container dash-spreadsheet dash-freeze-top dash-no-filter dash-fill-width']/div[@class='dash-spreadsheet-inner dash-spreadsheet dash-freeze-top dash-no-filter dash-fill-width']/div[@class='row row-1']/div[@class='cell cell-1-1 dash-fixed-content']/table/tbody/tr/td[@class='dash-select-cell']/input")
+            WebDriverWait(self.driver, 200).until(
+                EC.element_located_selection_state_to_be((By.XPATH, "//tr[1]/td[1]/input"),False))
+            el = self.driver.find_element_by_xpath("//tr[1]/td[1]/input")
             newstate = el.is_selected()
             if newstate == state:
                 self.fail("Selections were not unselected newstate:{} oldstate:{}".format(newstate, state))
@@ -204,17 +210,21 @@ class TestTemplate(unittest.TestCase):
         try:
             self.driver.get(TEST_ADDRESS+"?case=14")
 
+            # Wait for table rows to be present
+            # //*[@id='table-multicol-sorting']/div[2]/div/div[2]/div[2]/table/tbody/tr[30]/td[1]
+            WebDriverWait(self.driver, 200).until(
+                EC.presence_of_element_located((By.XPATH, "//*[@id='table-multicol-sorting']/div[2]/div/div[2]/div[2]/table/tbody/tr[30]/td[1]")))
             el = self.driver.find_element_by_xpath("//*[@id='table-multicol-sorting']/div[2]/div/div[2]/div[2]/table/tbody/tr[30]/td[1]")
             state = el.is_selected()
             # Select all
-            print("Click Select All")
             el = self.driver.find_element_by_xpath("//*[@id='index-select-all']")
             el.click()
             # Delay for callback to select everyone
-            from time import sleep
-            sleep(5)
+            # We should wait till rows are available before clicking things
+            WebDriverWait(self.driver, 200).until(
+                EC.element_located_selection_state_to_be((By.XPATH, "//tr[30]/td/input"),True))
             # Check if last row(#30) is selected
-            el = self.driver.find_element_by_xpath("/html/body/div[@id='react-entry-point']/div[@id='_dash-global-error-container']/div/div[2]/div[1]/div[@id='_dash-app-content']/div/div[@id='page-content']/div[@class='page']/div[@id='tabs-parent']/div[@class='jsx-4017309047 tab-content ']/div[@class='subpage']/div[@id='table-multicol-sorting']/div[@class='dash-spreadsheet-container dash-spreadsheet dash-freeze-top dash-no-filter dash-fill-width']/div[@class='dash-spreadsheet-inner dash-spreadsheet dash-freeze-top dash-no-filter dash-fill-width']/div[@class='row row-1']/div[@class='cell cell-1-1 dash-fixed-content']/table/tbody/tr[30]/td[@class='dash-select-cell']/input")
+            el = self.driver.find_element_by_xpath("//tr[30]/td/input")
             newstate = el.is_selected()
             if newstate == state:
                 self.fail("Selection state didn't toggle on newstate:{} oldstate:{}".format(newstate, state))
@@ -227,18 +237,18 @@ class TestTemplate(unittest.TestCase):
             el = self.driver.find_element_by_xpath(
                 "/html/body/div[2]/div/div/div/div/div[2]/div[2]/div/div[2]/div/table/tbody/tr[1]/td[7]")
             el.click()
-            # Delay
-            self.driver.implicitly_wait(3)
+
             # Click end date
             el = self.driver.find_element_by_xpath(
                 "/html/body/div[2]/div/div/div/div/div[2]/div[2]/div/div[2]/div/table/tbody/tr[2]/td[4]")
             el.click()
 
 
-            from time import sleep
-            sleep(5)
+            # We should wait till rows are available before clicking things
+            WebDriverWait(self.driver, 200).until(
+                EC.element_located_selection_state_to_be((By.XPATH, "//tr[1]/td/input"),False))
             # Jobid 1234007 checkbox
-            el = self.driver.find_element_by_xpath("/html/body/div[@id='react-entry-point']/div[@id='_dash-global-error-container']/div/div[2]/div[1]/div[@id='_dash-app-content']/div/div[@id='page-content']/div[@class='page']/div[@id='tabs-parent']/div[@class='jsx-4017309047 tab-content ']/div[@class='subpage']/div[@id='table-multicol-sorting']/div[@class='dash-spreadsheet-container dash-spreadsheet dash-freeze-top dash-no-filter dash-fill-width']/div[@class='dash-spreadsheet-inner dash-spreadsheet dash-freeze-top dash-no-filter dash-fill-width']/div[@class='row row-1']/div[@class='cell cell-1-1 dash-fixed-content']/table/tbody/tr[1]/td[@class='dash-select-cell']/input")
+            el = self.driver.find_element_by_xpath("//tr[1]/td/input")
             newstate = el.is_selected()
             if newstate == state:
                 self.fail("Selections were not unselected newstate:{} oldstate:{}".format(newstate, state))
@@ -257,6 +267,12 @@ class TestTemplate(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    suite = unittest.TestSuite()
+    # 
+    # Uncomment to test a single case
+    #suite.addTest(TestTemplate("test_case_13"))
+
+    # Load entire template of cases
     suite = unittest.TestLoader().loadTestsFromTestCase(TestTemplate)
     result = unittest.TextTestRunner(verbosity=2).run(suite)
     sys.exit(not result.wasSuccessful())

@@ -11,15 +11,16 @@ logger = getLogger(__name__)  # pylint: disable=invalid-name
 # if (__name__ != "__main__"):
 if dash_config.MOCK_EPMT_API:
     import epmt_query_mock as eq
+    joblimit = 30
 else:
     import epmt_query as eq
-
+    joblimit = 10000
 
 class JobGen:
     """JobGen class:
     holds job dataframe after converting fields to display
     """
-    def __init__(self, jobs=[], limit=30, offset=0):
+    def __init__(self, jobs=[], limit=joblimit, offset=0):
         if jobs:
             logger.debug("Jobs requested {}".format(jobs))
         sample = None
@@ -77,7 +78,7 @@ class JobGen:
             self.jobs_df = pd.DataFrame([["No Jobs ", str(errmsg) if errmsg else None]] , columns=['job id','exit status'])
             self.jobs_df.append(pd.Series(), ignore_index=True)
             logger.debug(
-                "No jobs found here is an empty jobs_df\n%s", self.jobs_df)
+                "No jobs found, here is an empty jobs_df\n%s", self.jobs_df)
 
 # ####################### End List of jobs ########################
 
