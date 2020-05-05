@@ -761,3 +761,90 @@ def graph_ops(jobs=None, tag_value=None, metric=['duration'], title=None):
     df = df.sort_values([metric[0]])
     graph = bar_graph(graph_df=df, y=tag_value, x=metric, group_on=metric, title=title)
     return graph
+
+def get_nonexistant_path(fname_path):
+    """
+    Get the path to a filename which does not exist by incrementing path.
+
+    Examples
+    --------
+    >>> get_nonexistant_path('/etc/issue')
+    '/etc/issue-1'
+    >>> get_nonexistant_path('whatever/1337bla.py')
+    'whatever/1337bla.py'
+    """
+    import os
+    if not os.path.exists(fname_path):
+        return fname_path
+    filename, file_extension = os.path.splitext(fname_path)
+    i = 1
+    new_fname = "{}-{}{}".format(filename, i, file_extension)
+    while os.path.exists(new_fname):
+        i += 1
+        new_fname = "{}-{}{}".format(filename, i, file_extension)
+    return new_fname
+
+def generate_notebook(values,depth='jobs'):
+    from nbformat.v4.nbbase import (
+    new_code_cell, new_markdown_cell, new_notebook,
+    new_output, new_raw_cell
+    )
+    # This is a relative link to the notebooks location and initial
+    # File name, subsequent files will be made with name-n.ipynb where n
+    # is an integer begining with 1
+    nbpath = get_nonexistant_path('notebooks/ui_notebooks/test.ipynb')
+    cells = []
+    cells.append(new_markdown_cell(
+        source='Import EPMT: ',
+    ))
+    count = 1
+    cells.append(new_code_cell(
+        source="""# epmt_query contains the EPMT Query API
+import epmt_query as eq
+# epmt_outliers contains the EPMT Outlier Detection API
+import epmt_outliers as eod
+# epmt_stat contains statistical functions
+import epmt_stat as es""",
+        execution_count=count,
+    ))
+    count = count + 1
+    if 'tags' in values:
+        cells.append(new_code_cell(
+            source="tags = " + str(values['tags']),
+            execution_count=count,
+        ))
+        count = count + 1
+    if 'jobs' in values:
+        cells.append(new_code_cell(
+            source="jobs = " + str(values['jobs']),
+            execution_count=count,
+        ))
+        count = count + 1
+    if depth == 'jobs':
+        cells.append(new_code_cell(
+                source="eq.get_jobs(tags=tags{})".format(", jobs=jobs" if 'jobs' in values else ''),
+                execution_count=count,
+            ))
+        count = count + 1
+    if depth == 'ops':
+        cells.append(new_code_cell(
+                source="op_tags='op'",
+                execution_count=count,
+            ))
+        count = count + 1
+        cells.append(new_code_cell(
+                source="eq.get_ops(jobs=jobs, tags=op_tags)",
+                execution_count=count,
+            ))
+        count = count + 1
+    nb0 = new_notebook(cells=cells,
+        metadata={
+            'language': 'python',
+        }
+    )
+    import nbformat as nbf
+    import codecs
+    f = codecs.open(nbpath, encoding='utf-8', mode='w')
+    nbf.write(nb0, f, 4)
+    f.close()
+    return nbpath

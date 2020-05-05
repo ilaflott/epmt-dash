@@ -860,6 +860,9 @@ def graph_plotly(url):
             Header(),
             ]),
             html.Div(id="subpage", children=[
+                html.Button(id='Send-hidden-to-nb', children=["Send To Notebook"], n_clicks_timestamp=0,
+                                            style={'backgroundColor': '#20c997', 'color': '#020080'}),
+                html.Div(id='nb-link-div', children=''),
                 # Return graph-area-stop if we are on final jobs page
                 # To stop any new callbacks from firing
                 html.Div(id="graph-area-stop" if jobs else "graph-area" ,children=graph_data),
@@ -872,6 +875,8 @@ def graph_plotly(url):
                             ,id='bar-metrics', style={'display':'none'}),
                     html.Div(children=exp_component
                             ,id='exp-component', style={'display':'none'}),
+                    html.Div(children=jobs
+                            ,id='exp-jobs', style={'display':'none'}),
                     # specify experiment as the level of bar graph
                     # if exp_component is empty
                     html.Div(children="experiment"

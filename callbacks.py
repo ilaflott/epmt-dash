@@ -680,7 +680,7 @@ def update_jobs_table(raw_toggle, search_value, end, rows_per_page, page_current
         comparable_jobs = comparable_job_partitions(alt['job id'].tolist())
         # Generate contrasting colors from length of comparable sets
         cont_colors = list_of_contrast(
-            len(comparable_jobs), start=(200, 200, 120))
+            length=len(comparable_jobs), start=(200, 200, 120),hue_shift=0.08)
         for color, n in enumerate(comparable_jobs, start=0):
             # Only generate a rule if more than one job in rule
             if len(n[1]) > 1:
@@ -1031,6 +1031,47 @@ def update_workflow_table(job_data, sel_jobs, selected_model):
         table_n_link = [table, html.Br(), bplink]
         return [table_n_link, {'display':'contents'}]
     return ["",{'display':'none'}]
+
+
+@app.callback(
+    dash.dependencies.Output('nb-link-div', 'children'),
+    [dash.dependencies.Input('Send-hidden-to-nb', 'n_clicks')],
+    [dash.dependencies.State('bar-expname', 'children'),
+     dash.dependencies.State('exp-component', 'children'),
+     dash.dependencies.State('exp-jobs', 'children'),
+     dash.dependencies.State('url', 'href'),
+    ]
+    )
+def send_2_nb(click,expname,exp_comp,exp_jobs,url):
+    if click and click > 0:
+        import dash_core_components as dcc
+        import dash_html_components as html
+        from urllib.parse import urlparse, urlencode
+        from components import generate_notebook
+        # if we have tag parts, update tag dict to carry them
+        # to the notebook
+        #values = {'tags':{'expname':expname, 'exp_component':exp_comp}}
+        if any([expname,exp_comp]):
+            values = {'tags':{}}
+            if expname:
+                values['tags'].update({'exp_name':expname})
+            if exp_comp:
+                values['tags'].update({'exp_component':exp_comp})
+            depth = 'jobs'
+        if exp_jobs:
+                values['jobs'] = exp_jobs
+                depth = 'ops'
+        notebook_port = 8888
+        # Extract out the prefix for where jupyter may be running
+        base = urlparse(url).hostname
+        nblink = base + ':' + str(notebook_port)
+        # Function call to render notebook with state data
+        nburl = generate_notebook(values,depth)
+        nblink = 'http://' + nblink + '/tree/' + nburl
+        #nblink = dcc.Link(nblink, href=nblink, target="_blank", refresh=True)
+        nblink = html.A(nblink, href=nblink, target="_blank") # target="_top"
+        return ["Visit Notebook: ",nblink]
+    return ['']
 
 # todo:
 # handle returning layout_unprocessed data
