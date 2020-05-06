@@ -822,7 +822,7 @@ import epmt_stat as es""",
         count = count + 1
     if depth == 'jobs':
         cells.append(new_code_cell(
-                source="eq.get_jobs(tags=tags{})".format(", jobs=jobs" if 'jobs' in values else ''),
+                source="eq.get_jobs(tags=tags{}, fmt='pandas')".format(", jobs=jobs" if 'jobs' in values else ''),
                 execution_count=count,
             ))
         count = count + 1
@@ -833,7 +833,7 @@ import epmt_stat as es""",
             ))
         count = count + 1
         cells.append(new_code_cell(
-                source="eq.get_ops(jobs=jobs, tags=op_tags)",
+                source="eq.get_ops(jobs=jobs, tags=op_tags, fmt='pandas')",
                 execution_count=count,
             ))
         count = count + 1
