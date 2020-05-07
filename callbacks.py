@@ -886,10 +886,7 @@ def generate_multilayout_graph(zoom,y,click_data,url):
 
 
 @app.callback(
-    [
-     dash.dependencies.Output('graph-area', 'children'),
-     dash.dependencies.Output('bar-url', 'href')
-     ],
+     dash.dependencies.Output('bar-url', 'href'),
     [dash.dependencies.Input('bargraph', 'clickData')],
     [dash.dependencies.State('graph-area', 'children'),
      # Hidden Div with list of metrics displayed
@@ -899,7 +896,7 @@ def generate_multilayout_graph(zoom,y,click_data,url):
      dash.dependencies.State('url', 'href'),
      dash.dependencies.State('bar-level', 'children'),
      dash.dependencies.State('exp-component','children')])
-def show_me_callback(clickData,state,metric,expname,stateurl,currLevel,exp_comp):
+def bar_workflow_generation(clickData,state,metric,expname,stateurl,currLevel,exp_comp):
     ctx = dash.callback_context
     #logger.info("Callback Context info:\nTriggered:\n{}\nInputs:\n{}\nStates:\n{}".format(
     #    ctx.triggered, ctx.inputs, ctx.states))
@@ -926,42 +923,27 @@ def show_me_callback(clickData,state,metric,expname,stateurl,currLevel,exp_comp)
 
         # If we're already past component and job selection we need need final chart
         if currLevel == 'component':
-            return [
-            # Here we'ere not replacing the element on screen with a
-            # new graph, we'ere redirecting via the second callback
-            # output anurl - href
-            # create_grouped_bargraph(title=bar_title, jobs=bar_jobs ,metric=metric,order_by=metric[0],limit=10,y_value='jobid'),
-            # This loading message will momentarily replace the current
-            # Graph with Loading text
-            "Loading....",
-            "/graph/bar?metric=" + ",".join(metric) + "&expname=" + expname + "&exp_component="+exp_comp+"&jobs="+req_component+"&op=op",
-            ]
+            return "/graph/bar?metric=" + ",".join(metric) + "&expname=" + expname + "&exp_component="+exp_comp+"&jobs="+req_component+"&op=op"
+
         if currLevel == 'experiment':
-            return [
-                #create_grouped_bargraph(title=bar_title, jobs=bar_jobs ,metric=metric,order_by=metric[0],limit=10,y_value='jobid'),
-                "Loading....",
-                "/graph/bar?metric=" + ",".join(metric) + "&expname=" + expname + "&exp_component="+req_component,
-                ]
+            return "/graph/bar?metric=" + ",".join(metric) + "&expname=" + expname + "&exp_component="+req_component
         #return ["Component:" + str(clickData['points'][0]['y']) + " Metric:" + metric[clickData['points'][0]['curveNumber']]]
     # Handle case where callback fires when page loads & 
     # no click data/input is given.
     else:
         logger.debug("Last page")
-        return ["",stateurl]
+        return stateurl
 
 
 
 @app.callback(
-    [
-     dash.dependencies.Output('click-data', 'children'),
-     dash.dependencies.Output('gantt-url', 'href')
-     ],
+    dash.dependencies.Output('gantt-url', 'href'),
     [dash.dependencies.Input('basic-interactions', 'clickData')],
     [dash.dependencies.State('basic-interactions', 'figure'),
      dash.dependencies.State('bar-level', 'children'),
      dash.dependencies.State('bar-expname', 'children'),
      dash.dependencies.State('exp-component', 'children')])
-def show_me_callback(clickData,graphdata,currLevel,expname,exp_component):
+def gantt_workflow_url_generation(clickData,graphdata,currLevel,expname,exp_component):
     logger.debug("Clicked {}".format(clickData))
     clk_index = clickData['points'][0].get('y',None)
     graph_df = pd.DataFrame(graphdata['data'])
@@ -974,8 +956,8 @@ def show_me_callback(clickData,graphdata,currLevel,expname,exp_component):
         logger.debug("Curve number shortened to {}".format(curvenum))
     logger.debug("curve df:\n{}".format(graph_df[['name','x']]))
     if currLevel == 'component':
-        return [graph_df.iloc[curvenum, :]['name'], "/graph/gantt/?expname=" + expname + "&exp_component=" + exp_component + "&jobs="+graph_df.iloc[curvenum, :]['name'] + "&tags=op"]    
-    return [graph_df.iloc[curvenum, :]['name'], "/graph/gantt/?expname=ESM4_hist-piAer_D1&exp_component="+graph_df.iloc[curvenum, :]['name']]
+        return "/graph/gantt/?expname=" + expname + "&exp_component=" + exp_component + "&jobs="+graph_df.iloc[curvenum, :]['name'] + "&tags=op"
+    return "/graph/gantt/?expname=ESM4_hist-piAer_D1&exp_component="+graph_df.iloc[curvenum, :]['name']
 
 
 @app.callback(
