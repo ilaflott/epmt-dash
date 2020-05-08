@@ -14,10 +14,11 @@ from math import ceil
 import pandas as pd
 import dash
 from dash.dependencies import Input, Output, State
-
+from dash.exceptions import PreventUpdate
 from dash_config import MOCK_EPMT_API
 import refs
-from components import convtounit, get_unit, power_labels, recent_button, list_of_contrast
+from components import convtounit, get_unit, power_labels, recent_button
+from graphing import list_of_contrast
 from app import app
 from jobs import JobGen
 from refs import ref_gen
@@ -901,38 +902,42 @@ def bar_workflow_generation(clickData,state,metric,expname,stateurl,currLevel,ex
     #logger.info("Callback Context info:\nTriggered:\n{}\nInputs:\n{}\nStates:\n{}".format(
     #    ctx.triggered, ctx.inputs, ctx.states))
     logger.info("Current level is {}".format(currLevel))
-    if clickData is not None and currLevel is not 'job':
-        from functions import create_boxplot, create_grouped_bargraph
-        # Component is y value
-        # metric is curveNumber
-        import dash_core_components as dcc
-        logger.debug("We have click data, redirecting")
-        
-        # Update only search query on current display
-        #return [dcc.Location(search="?expname=ESM4_hist-piAer_D1&metric=duration", id="someid"),"Activated"]
-        # Full redirect
-        #return dcc.Location(href="http://localhost:8050/graph/boxplot/?jobs=2494106&normalize=False", id="someid")
 
-        # Return custom graph
-        req_component = str(clickData['points'][0]['y'])
-        bar_title = "exp_name:" + expname + " exp_component:" + req_component
-        
-        # be sure metric is not a single item
-        if isinstance(metric,str):
-            metric = [metric]
-
-        # If we're already past component and job selection we need need final chart
-        if currLevel == 'component':
-            return "/graph/bar?metric=" + ",".join(metric) + "&expname=" + expname + "&exp_component="+exp_comp+"&jobs="+req_component+"&op=op"
-
-        if currLevel == 'experiment':
-            return "/graph/bar?metric=" + ",".join(metric) + "&expname=" + expname + "&exp_component="+req_component
-        #return ["Component:" + str(clickData['points'][0]['y']) + " Metric:" + metric[clickData['points'][0]['curveNumber']]]
     # Handle case where callback fires when page loads & 
-    # no click data/input is given.
-    else:
+    if clickData is None:
+        raise PreventUpdate
+    # Handle final workflow page
+    if currLevel is 'job':
         logger.debug("Last page")
-        return stateurl
+        raise PreventUpdate
+
+    # Component is y value
+    # metric is curveNumber
+    import dash_core_components as dcc
+    logger.debug("We have click data, redirecting")
+    
+    # Update only search query on current display
+    #return [dcc.Location(search="?expname=ESM4_hist-piAer_D1&metric=duration", id="someid"),"Activated"]
+    # Full redirect
+    #return dcc.Location(href="http://localhost:8050/graph/boxplot/?jobs=2494106&normalize=False", id="someid")
+
+    # Return custom graph
+    req_component = str(clickData['points'][0]['y'])
+    bar_title = "exp_name:" + expname + " exp_component:" + req_component
+    
+    # be sure metric is not a single item
+    if isinstance(metric,str):
+        metric = [metric]
+
+    # If we're already past component and job selection we need need final chart
+    if currLevel == 'component':
+        return "/graph/bar?metric=" + ",".join(metric) + "&expname=" + expname + "&exp_component="+exp_comp+"&jobs="+req_component+"&op=op"
+
+    if currLevel == 'experiment':
+        return "/graph/bar?metric=" + ",".join(metric) + "&expname=" + expname + "&exp_component="+req_component
+    #return ["Component:" + str(clickData['points'][0]['y']) + " Metric:" + metric[clickData['points'][0]['curveNumber']]]
+
+
 
 
 

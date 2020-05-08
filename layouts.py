@@ -14,8 +14,8 @@ import dash_table
 from dash_config import DEFAULT_ROWS_PER_PAGE
 from refs import ref_df
 from jobs import JobGen
-from components import Header, Footer, parse_url, create_gantt_graph, create_boxplot, create_grouped_bargraph, bar_graph
-from components import graph_jobs, graph_ops, graph_components
+from components import Header, Footer, parse_url
+from graphing import graph_experiment, graph_ops, graph_components, bar_graph, create_gantt_graph, create_boxplot, create_grouped_bargraph
 logger = getLogger(__name__)  # pylint: disable=invalid-name
 # basicConfig(level=DEBUG)
 
@@ -835,7 +835,7 @@ def graph_plotly(url):
             graph_plot = graph_components(exp_name=jobname, exp_component=exp_component, jobs=jobs, title=bar_title, metric=metric, order=sort)
         elif jobname:
             bar_title = "Components in experiment: '" + jobname + "'"
-            graph_plot = graph_jobs(exp_name=jobname, title=bar_title, metric=metric)
+            graph_plot = graph_experiment(exp_name=jobname, title=bar_title, metric=metric)
         
         # Convert plot into graph object
         # and check if plot was generated
@@ -865,7 +865,7 @@ def graph_plotly(url):
                 html.Div(id='nb-link-div', children=''),
                 # Return graph-area-stop if we are on final jobs page
                 # To stop any new callbacks from firing
-                html.Div(id="graph-area-stop" if jobs else "graph-area" ,children=graph_data),
+                html.Div(id="graph-area" if jobs else "graph-area" ,children=graph_data),
                 html.Div(id="hidden-divs", children=[
                     # Expname - hidden div
                      html.Div(children=jobname
