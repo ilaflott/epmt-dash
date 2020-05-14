@@ -18,7 +18,7 @@ def contrasting_color(color,shift=0.16):
     """
 
     This helper function returns a shifted hsv color 
-    and matching hex value for convience.
+    and matching hex value for convenience.
 
     Input: color list [h,s,v]
     Output: (r,g,b), hex of color
@@ -58,6 +58,10 @@ def list_of_contrast(length, start=(33, 45, 237), hue_shift=0.16):
 
 def bar_graph(graph_df=None, jobs=None, x=None, y=None, exp_name=None, group_on=None, tag_value=None, as_group=True, horizontal=True, title=None):
     '''
+    Generic bar graph function utilizing a dataframe as the dat source
+
+    Accepts a dataframe for graph_df, x and y should be columns in the dataframe.
+    
     as_group: True groups data, False stacks data
     '''
     import plotly.graph_objects as go
@@ -144,12 +148,22 @@ def graph_experiment(exp_name=None, jobs=None, metric=['duration'], title=None):
 
 
 def data_gatherer_ops(jobs=None, metric=['duration'], tag_value='op'):
-
+    """
+    Helper function for graph_ops, extracts jobid from job column.
+    Iterates jobs and runs get_ops
+  
+    Returns: dataframe of operations with jobid and op column
+    """
+    if jobs is None:
+        logger.error("Please pass list of jobid to jobs paramater")
+        return "No jobid"
     a = get_ops(jobs[0], tags=tag_value, fmt='pandas', full=True)
+    if a.shape[0] < 1:
+        logger.error("get ops returned df shape: {}".format(a.shape))
+        return False
     if len(jobs)>1:
         for j in jobs[1:]:
             a = a.append(get_ops(j, tags=tag_value, fmt='pandas', full=True))
-    
     # Bump jobid out as string
     a['jobid'] = a['jobs'].apply(lambda x: x[0])
 
@@ -159,7 +173,6 @@ def data_gatherer_ops(jobs=None, metric=['duration'], tag_value='op'):
         # Bump Op out
         a[tag_value] = a['tags'].apply(lambda x: x.get(tag_value))
 
-    
     # bump requested metrics out
     for m in metric:
         a[m] = a['proc_sums'].apply(lambda x: x.get(m))
@@ -167,13 +180,18 @@ def data_gatherer_ops(jobs=None, metric=['duration'], tag_value='op'):
     return a
 
 
-def graph_ops(jobs=None, tag_value=None, metric=['duration'], title=None):
+def graph_ops(jobs=None, tag_value='op', metric=['duration'], title=None):
     """
-    This Function accepts Jobs to bar graph Operations
+    Generate bar graph of operations per metric
     """
     logger.info("Graph Ops")
+    if jobs is None:
+        logger.error("Please pass jobid to jobs paramater")
+        return "No jobid"
     # build ops dataframe
     df = data_gatherer_ops(jobs=jobs, tag_value=tag_value, metric=metric)
+    if df is False:
+        return "get_ops failed"
     # render graph
     df = df.sort_values([metric[0]])
     graph = bar_graph(graph_df=df, y=tag_value, x=metric, group_on=metric, title=title)
@@ -226,7 +244,8 @@ def gantt_me(jobs=[], gtags=None, exp_name=None, exp_component=None):
             gantt_data_df = gantt_data_df.rename(columns={'start': 'Start', 'end': 'Finish', 'exp_component':'Resource', 'jobid':'Task' })
             gantt_title = exp_name + " timeline by component "
     else:
-        return None
+        logger.error("Please pass jobid to jobs paramater")
+        return "No jobid"
     gantt_data_df = gantt_data_df.dropna()
     gcolors = list_of_contrast(len(gantt_data_df),(33,45,237),0.06)
     return (gantt_data_df, gantt_title, gcolors)
@@ -395,9 +414,9 @@ def create_boxplot(jobs=[], model="", normalize=True, metric='cpu_time', tags='o
 
 def create_grouped_bargraph(title='',jobs=None, tags=None, y_value='component', metric=['duration','cpu_time'], ops='op', order_by='duration', limit=10):
     """
-    
-    Horizontal bargraph because the Y axis names are easier to read
-    and there can be alot of bars to plot.
+    The grouped bargraph currently only takes jobs and returns 
+    components on the y axis grouped by requested metrics
+
     """
     import dash_core_components as dcc
     import plotly.graph_objects as go
@@ -517,7 +536,30 @@ def create_grouped_bargraph(title='',jobs=None, tags=None, y_value='component', 
         id='bargraph',
         figure=fig
     )
-    return basic_graph
+    return fig
+
+
+def trace_renderer(jobs=None,metrics=None, normalize=True):
+    """
+    Returns list of traces
+    """
+    import plotly.graph_objects as go
+    # For stacked bar the x values are embedded in each trace
+    # Only trace Data list is returned
+    data = []
+
+    # Traces go vertical, Jobs go horizontal
+    job_dicts = get_jobs(jobs,fmt='dict',limit=0)
+    for m in metrics:
+        data.append(go.Bar(
+        x=jobs, y=[j[m] for j in job_dicts],
+        name=m
+    ))
+    if normalize:
+        from epmt_stat import normalize
+        for d in data:
+            d['y'] = normalize(d['y'],min_=-1/len(metrics), max_=1/len(metrics))
+    return data
 
 
 def create_stacked_bar(jobs=None,metrics=None, normalize=True,order='total'):

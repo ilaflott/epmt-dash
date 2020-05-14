@@ -211,42 +211,6 @@ def df_normalizer(df, idx='op', norm_metric='cpu_time'):
 #     return fig
 
 
-
-
-
-
-
-
-def trace_renderer(jobs=None,metrics=None, normalize=True):
-    """
-    Returns list of traces
-    """
-    import plotly.graph_objects as go
-    # For stacked bar the x values are embedded in each trace
-    # Only trace Data list is returned
-    data = []
-
-    # Traces go vertical, Jobs go horizontal
-    job_dicts = get_jobs(jobs,fmt='dict',limit=0)
-    for m in metrics:
-        data.append(go.Bar(
-        x=jobs, y=[j[m] for j in job_dicts],
-        name=m
-    ))
-    if normalize:
-        from epmt_stat import normalize
-        for d in data:
-            d['y'] = normalize(d['y'],min_=-1/len(metrics), max_=1/len(metrics))
-    return data
-
-
-
-
-
-
-
-
-
 def get_nonexistant_path(fname_path):
     """
     Get the path to a filename which does not exist by incrementing path.
