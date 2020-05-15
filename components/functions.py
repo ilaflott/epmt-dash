@@ -211,27 +211,6 @@ def df_normalizer(df, idx='op', norm_metric='cpu_time'):
 #     return fig
 
 
-def get_nonexistant_path(fname_path):
-    """
-    Get the path to a filename which does not exist by incrementing path.
-
-    Examples
-    --------
-    >>> get_nonexistant_path('/etc/issue')
-    '/etc/issue-1'
-    >>> get_nonexistant_path('whatever/1337bla.py')
-    'whatever/1337bla.py'
-    """
-    import os
-    if not os.path.exists(fname_path):
-        return fname_path
-    filename, file_extension = os.path.splitext(fname_path)
-    i = 1
-    new_fname = "{}-{}{}".format(filename, i, file_extension)
-    while os.path.exists(new_fname):
-        i += 1
-        new_fname = "{}-{}{}".format(filename, i, file_extension)
-    return new_fname
 
 def generate_notebook(values,depth='jobs'):
     from nbformat.v4.nbbase import (
@@ -241,7 +220,8 @@ def generate_notebook(values,depth='jobs'):
     # This is a relative link to the notebooks location and initial
     # File name, subsequent files will be made with name-n.ipynb where n
     # is an integer begining with 1
-    nbpath = get_nonexistant_path('notebooks/ui_notebooks/test.ipynb')
+    from tempfile import mkstemp
+    fd, nbpath = mkstemp(suffix='.ipynb',prefix='dash_nb-', dir='./notebooks/ui_notebooks/')
     cells = []
     cells.append(new_markdown_cell(
         source='Import EPMT: ',
@@ -271,7 +251,8 @@ import epmt_stat as es""",
         count = count + 1
     if depth == 'jobs':
         cells.append(new_code_cell(
-                source="eq.get_jobs(tags=tags{}, fmt='pandas')".format(", jobs=jobs" if 'jobs' in values else ''),
+                source="""j = eq.get_jobs(tags=tags{}, fmt='pandas')
+j""".format(", jobs=jobs" if 'jobs' in values else ''),
                 execution_count=count,
             ))
         count = count + 1
@@ -296,4 +277,6 @@ import epmt_stat as es""",
     f = codecs.open(nbpath, encoding='utf-8', mode='w')
     nbf.write(nb0, f, 4)
     f.close()
-    return nbpath
+    from os.path import relpath
+
+    return relpath(nbpath,'.')
