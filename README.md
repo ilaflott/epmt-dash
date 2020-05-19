@@ -12,36 +12,10 @@ environemnt variable "EPMT_GUI_MOCK" set
 
 Once running a main job table will display on localhost:8050
 
-Job graphs are currently displayed with jobid querys
-
-for example:
+Job graphs are currently displayed with jobid 
 
 http://asus:8050/graph?jobid=1234059&groupby=exename
 
-
-├── EPMT/
-
-│   ├── ui/
-
-│   │   ├── app.py
-
-│   │   ├── index.py
-
-│   │   ├── layout.py
-
-│   │   ├── callbacks.py
-
-│   │   ├── epmt_query_mock.py
-
-│   │   └── ...
-
-│   ├── epmt_query.py
-
-│   ├── epmt
-
-│   ├── settings.py
-
-│   └── ...
 
 Make and run the dash interface.
 
@@ -61,18 +35,6 @@ Mounts volume parent directory (EPMT) to container /home
 Mounts volume current directory (Dash) to container /home/dash
 
 Testing:
-
-make targets:
-
-make build-selenium
-
-make selenium-test
-
-make build-chromedriver-service
-
-make start-chromedriver
-
-
 
 ui $ make dash-test
 
