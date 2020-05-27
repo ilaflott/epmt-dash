@@ -1,4 +1,4 @@
-# EPMT Interface
+# EPMT Workflow GUI
 
 An interactive job viewer with experiment, component and job visualization.
 

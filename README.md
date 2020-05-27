@@ -1,4 +1,4 @@
-This Dash interface currently works with EPMT using Pony and sqlite.  
+This EPMT Workflow GUI currently works with EPMT using Pony and sqlite.  
 
 You can use the EPMT library with this interface from the epmt command gui
 
@@ -17,7 +17,7 @@ Job graphs are currently displayed with jobid
 http://asus:8050/graph?jobid=1234059&groupby=exename
 
 
-Make and run the dash interface.
+Make and run the EPMT Workflow GUI.
 
 make build && make run
 

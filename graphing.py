@@ -1,5 +1,5 @@
 """
-Graphing library for EPMT and EPMT Interface
+Graphing library for EPMT and EPMT Workflow GUI
 """
 
 from logging import getLogger

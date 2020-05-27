@@ -220,8 +220,8 @@ def generate_notebook(values,depth='jobs'):
     # This is a relative link to the notebooks location and initial
     # File name, subsequent files will be made with name-n.ipynb where n
     # is an integer begining with 1
-    from tempfile import mkstemp
-    fd, nbpath = mkstemp(suffix='.ipynb',prefix='dash_nb-', dir='./notebooks/ui_notebooks/')
+    from tempfile import NamedTemporaryFile
+    nbpath = NamedTemporaryFile(suffix='.ipynb',prefix='dash_nb-', dir='./notebooks/')#, delete=False)
     cells = []
     cells.append(new_markdown_cell(
         source='Import EPMT: ',
@@ -274,9 +274,9 @@ j""".format(", jobs=jobs" if 'jobs' in values else ''),
     )
     import nbformat as nbf
     import codecs
-    f = codecs.open(nbpath, encoding='utf-8', mode='w')
+    f = codecs.open(nbpath.name, encoding='utf-8', mode='w')
     nbf.write(nb0, f, 4)
-    f.close()
+
     from os.path import relpath
 
-    return relpath(nbpath,'.')
+    return relpath(nbpath.name,'.')
