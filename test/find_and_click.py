@@ -177,7 +177,6 @@ class TestTemplate(unittest.TestCase):
             el = self.driver.find_element_by_xpath("//tr[30]/td/input")
             state = el.is_selected()
             # Select all
-            print("Click Select All")
             el = self.driver.find_element_by_xpath("//*[@id='index-select-all']")
             el.click()
             # Delay for callback to select everyone
