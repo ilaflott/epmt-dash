@@ -26,7 +26,11 @@ class JobGen:
         sample = None
         errmsg = None
         try:
-            sample = eq.get_jobs(jobs=jobs, fmt='dict', limit=limit, offset=offset)
+            #sample = eq.get_jobs(jobs=jobs, fmt='dict',  fltr=(eq.Job.info_dict['post_processed'] == '1'), limit=limit, offset=offset)
+            uj = eq.get_unprocessed_jobs()
+            aj = eq.get_jobs(jobs=jobs, fmt='terse', limit=limit)
+            pj = [j for j in aj if j not in uj]
+            sample = eq.get_jobs(jobs=pj, fmt='dict', limit=limit, offset=offset)
         except Exception as E:
             logger.error("Job with ID:\"{}\", Not Found or broken".format(E))
             # If debug mode assign the error to the dataframe second column
@@ -44,7 +48,9 @@ class JobGen:
             exit_codes = [d.get('status')['exit_code']
                           for d in self.jobs_df.info_dict]
             self.jobs_df['exit_code'] = exit_codes
-            self.jobs_df['Processed'] = 0
+            processed = [d.get('post_processed')
+                          for d in self.jobs_df.info_dict]
+            self.jobs_df['Processed'] = processed
             ## Extract tags out and merge them in as columns
             #tags = pd.DataFrame.from_dict(self.jobs_df['tags'].tolist())
             #self.jobs_df = pd.merge(self.jobs_df,tags, left_index=True, right_index=True)
@@ -64,7 +70,7 @@ class JobGen:
             # logger.info("Tags{}".format(self.jobs_df['tags']))
 
             # Convert True into 'Yes' for user friendly display
-            self.jobs_df['Processed'] = np.where(self.jobs_df['Processed'], 'Yes', 'No')
+            self.jobs_df['Processed'] = np.where(self.jobs_df['Processed']==1, 'Yes', 'No')
             self.jobs_df = self.jobs_df[dash_config.columns_to_print]
             # User friendly column names
             self.jobs_df.rename(columns={
