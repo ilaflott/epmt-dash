@@ -248,6 +248,9 @@ def get_jobs(jobs=None, tags=None, fltr=None, order=None, limit=None, offset=0, 
         return df
     return df.to_dict('records')
 
+def get_unprocessed_jobs():
+    return []
+
 
 def get_ops(jobs, tags=[], exact_tag_only=False, combine=False, fmt='dict', op_duration_method='sum', full=False):
     an_op = {'jobs': ['804278'],
