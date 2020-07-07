@@ -187,7 +187,7 @@ def delete_refmodels(*ref_ids):
 def get_jobs(jobs=None, tags=None, fltr=None, order=None, limit=None, offset=0, when=None,
              before=None, after=None, hosts=[],
              fmt='dict', annotations=None, analyses=None, merge_proc_sums=True,
-             exact_tag_only=False):
+             exact_tag_only=False, processed=None):
     """ Use SAMPLE_JOB real job as template
      replace jobid with new number
      return list of limit of jobs
@@ -247,9 +247,6 @@ def get_jobs(jobs=None, tags=None, fltr=None, order=None, limit=None, offset=0, 
     if fmt=='pandas':
         return df
     return df.to_dict('records')
-
-def get_unprocessed_jobs():
-    return []
 
 
 def get_ops(jobs, tags=[], exact_tag_only=False, combine=False, fmt='dict', op_duration_method='sum', full=False):

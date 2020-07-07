@@ -27,10 +27,7 @@ class JobGen:
         errmsg = None
         try:
             #sample = eq.get_jobs(jobs=jobs, fmt='dict',  fltr=(eq.Job.info_dict['post_processed'] == '1'), limit=limit, offset=offset)
-            uj = eq.get_unprocessed_jobs()
-            aj = eq.get_jobs(jobs=jobs, fmt='terse', limit=limit)
-            pj = [j for j in aj if j not in uj]
-            sample = eq.get_jobs(jobs=pj, fmt='dict', limit=limit, offset=offset)
+            sample = eq.get_jobs(jobs=jobs, fmt='dict', limit=joblimit, offset=offset, processed=True)
         except Exception as E:
             logger.error("Job with ID:\"{}\", Not Found or broken".format(E))
             # If debug mode assign the error to the dataframe second column
