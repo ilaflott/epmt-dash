@@ -272,7 +272,7 @@ def create_gantt_graph(joblist=[],gtag=['op'],exp_name=None, exp_component=None)
     fig.layout.legend.traceorder = "normal"
     logger.debug("Trace layout legend: {}".format(fig.layout.legend))
     # op_sequence can be in the hundreds, turn off the y-axis labels
-    if gtag is 'op_sequence':
+    if gtag == 'op_sequence':
         fig.update_yaxes(showticklabels=False)
     # Annotations disabled
     #fig = addAnnot(gantt_data,fig)
@@ -355,7 +355,7 @@ def create_boxplot(jobs=[], model="", normalize=True, metric='cpu_time', tags='o
     # Check to apply normalization
     # Models must have a minimum number of jobs
     # Sample can be run without model, don't normalize a few samples
-    if normalize is 'True' and (len(sample_jobs) + len(model_jobs)) > 3:
+    if normalize == 'True' and (len(sample_jobs) + len(model_jobs)) > 3:
         gen_box_title = "Mean normalized " + gen_box_title
         # Mean Normalize
         ops_dur = df_normalizer(ops_dur, norm_metric=metric)
@@ -427,14 +427,14 @@ def create_grouped_bargraph(title='',jobs=None, tags=None, y_value='component', 
     # if only a single job exists
     if jobs and len(jobs) == 1:
         jobs = jobs[0]
-    if y_value is 'op':
+    if y_value == 'op':
         logger.debug("Get ops of jobs: {}".format(jobs))
         job_ops = get_ops(jobs=jobs, tags=ops)
     else:
         # Get jobs in dict format.
         # todo: this should be pandas
         exp_jobs = get_jobs(jobs=jobs, tags=tags, fmt='dict')
-        if len(exp_jobs) is 0:
+        if len(exp_jobs) == 0:
             return "No Jobs Found"
         logger.debug("Number of jobs to bargraph: {}".format(len(exp_jobs)))
 
@@ -452,18 +452,17 @@ def create_grouped_bargraph(title='',jobs=None, tags=None, y_value='component', 
     # This can be more easily achieved with pandas.
     c_dict = {}
     #try:
-    if y_value is 'op':
+    if y_value == 'op':
         for o in job_ops:
-            if y_value is "op":
-                c = o['tags'][ops]
+            c = o['tags'][ops]
             entry = c_dict.get(c, {'data': []})
             entry['data'].append(("", o['jobs'][0].jobid, [o['proc_sums'][ok] for ok in metric]))
             c_dict[c] = entry
     else:
         for j in exp_jobs:
-            if y_value is "component":
+            if y_value == "component":
                 c = j['tags']['exp_component']
-            elif y_value is 'jobid':
+            elif y_value == 'jobid':
                 c = j['jobid']
             entry = c_dict.get(c, {'data': []})
             entry['data'].append((j['tags']['exp_time'], j['jobid'], [j[ok] for ok in order_key_list]))
@@ -530,7 +529,7 @@ def create_grouped_bargraph(title='',jobs=None, tags=None, y_value='component', 
                       title=title
                       #title=exp_name + " top " + str(limit) + " " + ", ".join(order_key_list) + " per component"
                       )
-    if y_value is 'jobid':
+    if y_value == 'jobid':
         fig.update_layout(yaxis=dict(type='category'))
     basic_graph = dcc.Graph(
         id='bargraph',
@@ -573,7 +572,7 @@ def create_stacked_bar(jobs=None,metrics=None, normalize=True,order='total'):
         # Across the bottom is each job
         xaxis=dict(tickvals=jobs, type='category')
     )
-    if order is not 'total' and order is not None:
+    if order != 'total' and order != None:
         logger.debug("Ordering by: {}".format(order))
         jobs=get_jobs(jobs=jobs,fmt='dict',limit=0)
         sort_data = [(j['jobid'],j[order]) for j in jobs]
