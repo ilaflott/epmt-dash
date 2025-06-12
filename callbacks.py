@@ -244,7 +244,7 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn,
          })
 
 # Create model
-    if recentbtn is 'save_model':
+    if recentbtn == 'save_model':
         if sel_jobs:
             logger.debug("Model Name:{}".format(model_name_input))
             selected_rows = [(str(job_data[i]['job id']), job_data[i]
@@ -263,7 +263,7 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn,
             refa = create_refmodel(jobs=[str(
                 a) for a, b, c in selected_rows], name=model_name_input,
                 tag={"exp_name": n, "exp_component": c}, enabled=True)
-            if refa is False:
+            if not refa:
                 return ["Failed creating Reference Model, need at least 3 jobs?", ref_df.to_dict('records'),
                         edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
             logger.info("Reference created: {}".format(refa))
@@ -293,7 +293,7 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn,
         return ["", return_models,
                 edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
 # Delete Model
-    elif recentbtn is 'delete_model':
+    elif recentbtn == 'delete_model':
         if sel_refs and len(sel_refs) > 0:
             try:
                 selected_refs = [(ref_data[i]['id'], ref_data[i]['name'])
@@ -312,7 +312,7 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn,
         return [selected_rows, return_models,
                 edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
 # Toggle Active Status
-    elif recentbtn is 'toggle_model':
+    elif recentbtn == 'toggle_model':
         if sel_refs and len(sel_refs) > 0:
             selected_refs = ref_data[sel_refs[0]]['name']
             logger.info("Toggle model name {} pre-invert active {}".format(
@@ -325,7 +325,7 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn,
         return [selected_rows, return_models,
                 edit_div_display_none, jobs_drpdn_options, jobs_drpdn_value]
 # Edit Model
-    elif recentbtn is 'edit_model':
+    elif recentbtn == 'edit_model':
         if sel_refs and len(sel_refs) > 0:
             selected_refs = ref_data[sel_refs[0]]
             # Hack for selected jobs
@@ -362,7 +362,7 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn,
             return [selected_rows, return_models, {'display': 'contents'},
                     jobs_drpdn_options, [i for i in ref_jobs_li]]
 # Close edit model
-    elif recentbtn is 'close_edit':
+    elif recentbtn == 'close_edit':
         # Update our models since changes were likely made
         return_models = refs.get_references().to_dict('records')
         return [selected_rows, return_models,
@@ -908,7 +908,7 @@ def bar_workflow_generation(clickData,state,metric,expname,stateurl,currLevel,ex
     if clickData is None:
         raise PreventUpdate
     # Handle final workflow page
-    if currLevel is 'job':
+    if currLevel == 'job':
         logger.debug("Last page")
         raise PreventUpdate
 

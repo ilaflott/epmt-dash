@@ -294,7 +294,7 @@ def get_ops(jobs, tags=[], exact_tag_only=False, combine=False, fmt='dict', op_d
         j.jobid = job
         e["jobs"] = [j]
         res.extend([e])
-    if fmt is 'pandas':
+    if fmt == 'pandas':
         import pandas as pd
         return pd.DataFrame(res)
     return res
