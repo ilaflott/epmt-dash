@@ -1,0 +1,29 @@
+version: '3.1'
+services:
+  dash:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile.epmt-interface
+    image: epmt-interface:latest
+    restart: unless-stopped
+    environment:
+      ENV PYTHONUNBUFFERED: 0
+      EPMT_GUI_MOCK: 1
+    volumes:
+      - ./:/home/dash
+    command: python index.py
+    expose:
+      - "8050"
+
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile.chromedriver-sel
+    image: python-chromedriver:3.7
+    volumes:
+      - ./test/:/usr/workspace
+    working_dir:  /usr/workspace/
+    command: bash -c "python workflow_find_and_click.py http://dash:8050 &&
+      python find_and_click.py http://dash:8050"
+    links:
+      - dash

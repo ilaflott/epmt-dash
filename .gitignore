@@ -1,0 +1,9 @@
+*.pyc
+.DS_Store
+.env
+
+# IDE
+.vscode/settings.json
+
+# Venv
+.python-version

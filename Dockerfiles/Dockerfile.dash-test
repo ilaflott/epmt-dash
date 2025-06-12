@@ -1,0 +1,20 @@
+FROM python-epmt:latest
+
+WORKDIR /home/app
+# COPY components /home/app/components
+# COPY index.py app.py callbacks.py /home/app/
+COPY requirements-ui.txt.py3 /tmp/
+COPY test /home/app/
+
+RUN python3 -V && pip3 install --upgrade pip && pip3 install -r /tmp/requirements-ui.txt.py3 && pip3 install dash[testing]
+# RUN groupadd -r app && useradd -r -g app app 
+# RUN chown -R app:app /home/app
+# RUN chmod +x /home/app/epmt
+# TODO:
+# Env needs to be set for chromedriver location
+#ENV 
+USER app
+
+# Default executable, using info debug level 
+ENTRYPOINT ["/home/app/test"]
+CMD ["pytest", "--log-cli-level", "INFO", "--headless", "bsly001.py"]

@@ -1,0 +1,12 @@
+dash==1.4.1
+dash-daq==0.2.1
+dash-bootstrap-components==0.7.2
+pandas==0.25.1
+numpy==1.17.2
+dash-table==4.4.1
+pandas==0.25.1
+numpy==1.17.2
+plotly==4.5.4
+pytest==5.3.4
+pytest-mock==2.0.0
+pytest-sugar==0.9.2
