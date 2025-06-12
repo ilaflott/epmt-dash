@@ -71,4 +71,3 @@ ui_test_1 exited with code 0
 
 Unit Testing with pytest:
 make unit-test
->>>>>>> mm/master
