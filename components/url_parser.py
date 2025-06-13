@@ -7,7 +7,7 @@ import urllib.parse
 import posixpath
 from logging import getLogger
 from ..dash_config import MOCK_EPMT_API
-logger = getLogger(__name__)  
+logger = getLogger(__name__)
 
 if MOCK_EPMT_API:
     from ..epmt_mock import tag_from_string
@@ -38,9 +38,9 @@ def parse_url(url, *, normalize=True, module=posixpath):
     Accepts string url and returns a dictionary with path and query.
     Where path is a list of strings of each subdirectory and query is a
     dictionary of the requested parameters.
-    
+
     parse_url('http://172.17.0.1:8050/graph/boxplot/test_model/?jobs=685016&normalize=False&metric=duration')
-    
+
     returns:
     {'path': ['graph', 'boxplot', 'test_model'],
     'query': {'jobs': ['685016'], 'normalize': ['False'], 'metric': ['duration']}}
@@ -122,7 +122,7 @@ def url_gen(graph_type='', jobs=[], model='',parameters=[], host='localhost', po
     import urllib.parse as urlp
     urlprefix = '/graph/'
     urlsuffix = ''
-    
+
     if graph_type not in ['gantt','boxplot','radar']:
         return "Bad graph type or incomplete request"
 
@@ -134,25 +134,25 @@ def url_gen(graph_type='', jobs=[], model='',parameters=[], host='localhost', po
             print("Model will be ignored")
         query = '&'.join(parameters)
 
-    # boxplot 
+    # boxplot
     # suffix will be a single model
     # Apply jobs as comma separated query
     if graph_type is 'boxplot':
         urlsuffix = '/' + model
-        
+
         # Convert jobs into comma separated
         if jobs:
             query = 'jobs=' + ','.join(jobs)
-        
+
         # Convert list of parameters into ampersand spaced
         # Surely a better way to do this
         if parameters:
             query = query + '&' + '&'.join(parameters)
-        
-    
+
+
     netloc = host + ':' + str(port)
     path = urlprefix + graph_type + urlsuffix
-    
+
     url_parts=['http', netloc, path, '', query, '']
     print(url_parts)
     result = urlp.urlunparse(url_parts)

@@ -206,7 +206,7 @@ recent_jobs_page = html.Div([
                             dbc.Col([
                                 html.Button(id='index-select-all',
                                             children="Select All"),
-                            ], width='auto'), 
+                            ], width='auto'),
                             dbc.Col([
                                 html.Div(style={'display': 'block', 'width': '360px', 'text-align': 'center'}, children=[
                                     dcc.DatePickerRange(
@@ -436,7 +436,7 @@ layout_unprocessed = html.Div([
                 columns=[
                     {"name": i, "id": i} for i in sorted(JobGen().jobs_df.columns)
                 ],
-                
+
             )
         ]),
         # GRAPHS
@@ -777,7 +777,7 @@ def graph_plotly(url):
 
     gantt:
         graph_plotly('http://localhost:8050/graph/gantt/804278?tags=op_instance:16,op_instance:10')
-    
+
     boxplot:
         graph_plotly('http://localhost:8050/graph/boxplot/model_sample?jobs=job1,job2&normalize=True')
     """
@@ -812,7 +812,7 @@ def graph_plotly(url):
         graph_data = create_boxplot(model=model,jobs=query.get('jobs'),normalize=query.get('normalize',['True'])[0],metric=query.get('metric',['cpu_time'])[0],tags=tags)
     # Return a bar graph
     elif graph_style == 'bar':
-        
+
         # Rename and retrieve parameters
         y_value='component'
         jobname = query.get('expname',None)[0]
@@ -840,7 +840,7 @@ def graph_plotly(url):
         elif jobname:
             bar_title = "Components in experiment: '" + jobname + "'"
             graph_plot = graph_experiment(exp_name=jobname, title=bar_title, metric=metric)
-        
+
         # Convert plot into graph object
         # and check if plot was generated
         if graph_plot:
@@ -851,7 +851,7 @@ def graph_plotly(url):
         # Build and store a graph of given parameters
         #graph_data = create_grouped_bargraph(title=bar_title, jobs=jobs, tags=tag_dict, metric=metric, ops=ops, order_by=order_by,limit=limit, y_value=y_value)
 
-                
+
     else:
         graph_data = 'Unknown graphstyle'
 
@@ -959,7 +959,7 @@ def multi_flow(url):
         html.Div(children=url
         ,id='fullurl', style={'display':'none'}),
         html.Div([
-            
+
             dcc.Graph(id='multi-flow-chart',
                       figure={
                           'data': [
@@ -1026,7 +1026,7 @@ def multi_flow(url):
             )],style={'inline': 'true'})
         ],style={'inline': 'true'}) # div
     ])  # outer div
-    
+
 
 ######################## END table Layout ########################
 

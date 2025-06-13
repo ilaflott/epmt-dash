@@ -26,7 +26,7 @@ class Boxplot_tests(unittest.TestCase):
         """Check title"""
         try:
             self.driver.get('http://172.17.0.1:8050/graph/boxplot/test_model/?jobs=685016')
-            
+
             # Depending on model size and number of jobs
             # this can take over 30 seconds
             self.driver.implicitly_wait(40)
@@ -35,12 +35,12 @@ class Boxplot_tests(unittest.TestCase):
             self.assertTrue('Mean normalized cpu_time Per Op: Jobs(685016)  versus Model(test_model)' == el.text)
         except NoSuchElementException as ex:
             self.fail(ex.msg)
-    
+
     def test_case_2(self):
         """normalize:off metric:duration"""
         try:
             self.driver.get('http://172.17.0.1:8050/graph/boxplot/test_model/?jobs=685016&normalize=False&metric=duration')
-            
+
             # Depending on model size and number of jobs
             # this can take over 30 seconds
             self.driver.implicitly_wait(40)

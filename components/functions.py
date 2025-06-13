@@ -8,7 +8,7 @@ import pandas as pd
 import time
 from ..dash_config import MOCK_EPMT_API
 from logging import getLogger
-logger = getLogger(__name__)  
+logger = getLogger(__name__)
 #pd.options.mode.chained_assignment = None
 
 class InterfaceError(Exception):
@@ -23,7 +23,7 @@ else:
 
 # Return dictionary query results
 def parseurl(i):
-    """ 
+    """
     This Function uses urllib to parse a query then
     checks each of the query keys values for commas and converts
     those values into lists.
@@ -47,7 +47,7 @@ def parseurl(i):
 
 
 def recent_button(btn_dict):
-    """ 
+    """
     This function accepts a dictionary of buttons, tabs and timestamps
      and returns the most recent one clicked.
     Input: dictionary of buttons timestamps
@@ -150,7 +150,7 @@ def durList(jid, minDur, maxDur, exes):
 
 def separateDataBy(data, graphStyle="exename", pointText=("path", "exe", "args"), ):
     """
-    This function takes traceLists as data and transposes them 
+    This function takes traceLists as data and transposes them
     by the requested graphstyle.
     Graphstyle options are tag-ops, exename or other tag paramaters
     (tag-instance or tag-sequence)

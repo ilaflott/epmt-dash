@@ -792,7 +792,7 @@ def generate_scatter(x,y,zoom_state,url):
 
     # Rescale the graph to match the selected jobids
     e = get_jobs(jobs=selected_jobs, fmt='pandas',tags=tags)
-    
+
     fig = px.scatter(e,x=e[x],y=e[y], color="jobid", hover_data=['user'], size=None, title=url)
     import urllib.parse
     oldQ = {'tags':'exp_name:ESM4_hist-piAer_D1','jobs':','.join(selected_jobs)}
@@ -835,7 +835,7 @@ def generate_scatter_selections(clicked,url):
     [dash.dependencies.State('fullurl', 'children')]
 )
 def generate_multilayout_graph(zoom,y,click_data,url):
-    
+
     import pandas as pd
     import plotly.express as px
     from .components import parse_url
@@ -886,10 +886,10 @@ def generate_multilayout_graph(zoom,y,click_data,url):
             points = [point['pointIndex'] for point in click_data['points']]
             points = e.iloc[points]['jobid'].to_csv(header=False,index=False).strip('\n').split('\n')
             logger.debug("selected data please: {}".format(points))
-            
+
             # Return graph, updating selected jobs, allow slider operations
             return [fig,', '.join(points),1]
-    
+
     return [fig,"Please select a job",0]
 
 
@@ -910,7 +910,7 @@ def bar_workflow_generation(clickData,state,metric,expname,stateurl,currLevel,ex
     #    ctx.triggered, ctx.inputs, ctx.states))
     logger.info("Current level is {}".format(currLevel))
 
-    # Handle case where callback fires when page loads & 
+    # Handle case where callback fires when page loads &
     if clickData is None:
         raise PreventUpdate
     # Handle final workflow page
@@ -923,7 +923,7 @@ def bar_workflow_generation(clickData,state,metric,expname,stateurl,currLevel,ex
     #import dash_core_components as dcc
     from dash import dcc
     logger.debug("We have click data, redirecting")
-    
+
     # Update only search query on current display
     #return [dcc.Location(search="?expname=ESM4_hist-piAer_D1&metric=duration", id="someid"),"Activated"]
     # Full redirect
@@ -932,7 +932,7 @@ def bar_workflow_generation(clickData,state,metric,expname,stateurl,currLevel,ex
     # Return custom graph
     req_component = str(clickData['points'][0]['y'])
     bar_title = "exp_name:" + expname + " exp_component:" + req_component
-    
+
     # be sure metric is not a single item
     if isinstance(metric,str):
         metric = [metric]
@@ -1013,7 +1013,7 @@ def update_workflow_table(job_data, sel_jobs, selected_model):
         bar_link_exp =  dcc.Link(exp_name, href='/graph/bar/?expname='+exp_name + "&metric=duration,cpu_time")
         bar_link_comp = dcc.Link(exp_component, href='/graph/bar/?expname='+exp_name+"&exp_component="+exp_component + "&metric=duration,cpu_time")
         bar_link_job =  dcc.Link(", ".join(jid), href='/graph/bar/?expname='+exp_name+"&exp_component="+exp_component+"&jobs="+",".join(jid)+"&op=op" + "&metric=duration,cpu_time")
-        
+
         table_header = [
             html.Thead(html.Tr([html.Th(""), html.Th("Exp_name (Components)"), html.Th("Component (Jobs)"), html.Th("Job (Operations)")]))
         ]
@@ -1074,6 +1074,6 @@ def send_2_nb(click,expname,exp_comp,exp_jobs,url):
 
 # todo:
 # handle returning layout_unprocessed data
-#  
+#
 #unproc = JobGen().jobs_df.loc[JobGen().jobs_df['processing complete']
 #                              == "No"].to_dict('records')

@@ -439,7 +439,7 @@ def comparable_job_partitions(jobs, matching_keys = ['exp_name', 'exp_component'
     for rec in recs:
         if (rec['exp_name'],rec['exp_component']) in cdict:
             cdict[(rec['exp_name'],rec['exp_component'])].update({rec['job id']})
-        else:    
+        else:
             cdict[(rec['exp_name'],rec['exp_component'])] = {str(rec['job id'])}
     # Reconfigure output format with out
     out = [ ((exp_name,exp_component),cdict[(exp_name,exp_component)]) for exp_name, exp_component in cdict]

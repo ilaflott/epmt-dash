@@ -204,11 +204,11 @@ def get_jobs(jobs=None, tags=None, fltr=None, order=None, limit=None, offset=0, 
     sample_name = '_historical'
     name_list = ['ESM0', 'ESM1']
     result = []
-    
+
     # If Limit is not set make it short for mock jobs
     if not limit:
         limit = 50
-    
+
     for njob in range(limit):
         job = dict(SAMPLE_JOB)
         job['jobid'] = str(1234000 + njob)
@@ -224,7 +224,7 @@ def get_jobs(jobs=None, tags=None, fltr=None, order=None, limit=None, offset=0, 
         comp = component_list[njob % 3] + sample_component
         job['tags']['exp_component'] = str(comp)
         result.append(deepcopy(job))
-    
+
     # Convert to dataframe for filtering sorting etc.
     df = pd.DataFrame.from_records(result)
 

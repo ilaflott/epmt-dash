@@ -3,7 +3,7 @@ Graphing library for EPMT and EPMT Workflow GUI
 """
 
 from logging import getLogger
-logger = getLogger(__name__)  
+logger = getLogger(__name__)
 
 from .dash_config import MOCK_EPMT_API
 if MOCK_EPMT_API:
@@ -17,7 +17,7 @@ else:
 def contrasting_color(color,shift=0.16):
     """
 
-    This helper function returns a shifted hsv color 
+    This helper function returns a shifted hsv color
     and matching hex value for convenience.
 
     Input: color list [h,s,v]
@@ -61,13 +61,13 @@ def bar_graph(graph_df=None, jobs=None, x=None, y=None, exp_name=None, group_on=
     Generic bar graph function utilizing a dataframe as the dat source
 
     Accepts a dataframe for graph_df, x and y should be columns in the dataframe.
-    
+
     as_group: True groups data, False stacks data
     '''
     import plotly.graph_objects as go
     import plotly.express as px
     import plotly.figure_factory as ff
-    
+
     # No dataframe to graph was given, we will build one
     # Currently only works for ops
     # Requires jobs & tag_value
@@ -90,7 +90,7 @@ def bar_graph(graph_df=None, jobs=None, x=None, y=None, exp_name=None, group_on=
     else:
         fig = px.bar(graph_df, x=x, y=y, orientation='h' if horizontal else 'v', color=None if not group_on else group_on) #group_on
 
-    
+
     # jobid's are better displayed as category
     # not interpreted as integers
     if y == 'jobid':
@@ -101,7 +101,7 @@ def bar_graph(graph_df=None, jobs=None, x=None, y=None, exp_name=None, group_on=
     if as_group:
         fig.update_layout(barmode='group')
     fig.update_layout(width=800,clickmode='event+select')
-    
+
     # Generate a title based on given data
     if not title:
         gen_title = ''
@@ -114,7 +114,7 @@ def bar_graph(graph_df=None, jobs=None, x=None, y=None, exp_name=None, group_on=
     fig.update_layout(title= gen_title if not title else title,
     xaxis_title=', '.join(x) if isinstance(x,list) else x,
     yaxis_title=', '.join(y) if isinstance(y,list) else y)
-    
+
     return fig
 
 
@@ -151,7 +151,7 @@ def data_gatherer_ops(jobs=None, metric=['duration'], tag_value='op'):
     """
     Helper function for graph_ops, extracts jobid from job column.
     Iterates jobs and runs get_ops
-  
+
     Returns: dataframe of operations with jobid and op column
     """
     if jobs is None:
@@ -261,7 +261,7 @@ def create_gantt_graph(joblist=[],gtag=['op'],exp_name=None, exp_component=None)
     import dash
     #import dash_core_components as dcc
     from dash import dcc
-    
+
     (gantt_data, gantt_title, gantt_colors) = gantt_me(jobs=joblist, gtags=gtag, exp_name=exp_name, exp_component=exp_component)
     if gantt_data is None:
         return "Could not get operations or jobs"
@@ -287,8 +287,8 @@ def create_gantt_graph(joblist=[],gtag=['op'],exp_name=None, exp_component=None)
 
 def create_boxplot(jobs=[], model="", normalize=True, metric='cpu_time', tags='op', box_title='', id=None):
     """
-    Create a boxplot based on a model with sample jobs scattered over it, 
-    tags currently only work for: 
+    Create a boxplot based on a model with sample jobs scattered over it,
+    tags currently only work for:
         general strings: 'op' or 'op_instance'
         single dictionaries: {'op':'hsmget', 'op_instance':2}
 
@@ -341,7 +341,7 @@ def create_boxplot(jobs=[], model="", normalize=True, metric='cpu_time', tags='o
             df = get_ops(job, tags=tags, combine=False,fmt='pandas')
             df['Type'] = 'Model'
             ops_dur = ops_dur.append(df, sort=False)
-    
+
     # Include sample jobs
     for job in sample_jobs:
         logger.info("Calculating {} for sample job {}".format(tags, job))
@@ -362,7 +362,7 @@ def create_boxplot(jobs=[], model="", normalize=True, metric='cpu_time', tags='o
         # Mean Normalize
         ops_dur = df_normalizer(ops_dur, norm_metric=metric)
         x_title = x_title + "_normalized"
-    
+
     # Create the model boxplot on model_jobs
     if model_jobs:
         fig = px.box(ops_dur[(ops_dur['Type']=='Model')], x=x_title, y="op", hover_name="jobid", hover_data=[metric, x_title], orientation='h', points='all')#, color='op')
@@ -416,7 +416,7 @@ def create_boxplot(jobs=[], model="", normalize=True, metric='cpu_time', tags='o
 
 def create_grouped_bargraph(title='',jobs=None, tags=None, y_value='component', metric=['duration','cpu_time'], ops='op', order_by='duration', limit=10):
     """
-    The grouped bargraph currently only takes jobs and returns 
+    The grouped bargraph currently only takes jobs and returns
     components on the y axis grouped by requested metrics
 
     """
@@ -425,7 +425,7 @@ def create_grouped_bargraph(title='',jobs=None, tags=None, y_value='component', 
     import plotly.graph_objects as go
     import plotly.express as px
     import operator
-    
+
     # Convert list query of jobs into single jobid
     # if only a single job exists
     if jobs and len(jobs) == 1:
@@ -443,11 +443,11 @@ def create_grouped_bargraph(title='',jobs=None, tags=None, y_value='component', 
 
     order_key_list = metric
     sum_dict = {}
-    
-    # Component dictionary contains key of data value of 
+
+    # Component dictionary contains key of data value of
     # component: data: (exp_time, jobid, [metrics,])
     #
-    # example 1 component, 1 jobid with 2 metrics: 
+    # example 1 component, 1 jobid with 2 metrics:
     # {'aerosol_cmip': {'data': [('18540101',
     #                             '2444929',
     #                             [18941050858.0, 4863690779.0]),
@@ -494,7 +494,7 @@ def create_grouped_bargraph(title='',jobs=None, tags=None, y_value='component', 
             sum_dict[c][ok] = sum(sum_dict[c][ok])
 
     # Generate sorted list on order_by key
-    # This only sorts and limits 
+    # This only sorts and limits
     if order_by not in metric:
         logger.info("{} is not in metrics, ordering by {}".format(order_by,metric[0]))
         order_by = metric[0]
@@ -586,6 +586,6 @@ def create_stacked_bar(jobs=None,metrics=None, normalize=True,order='total'):
     else:
         layout.xaxis.update(dict(categoryorder='total descending'))
         layout.title = ', '.join(metrics)+ " ordered by category total"
-    
+
     fig = go.Figure(data=data, layout=layout)
     return fig

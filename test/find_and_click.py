@@ -202,8 +202,8 @@ class TestTemplate(unittest.TestCase):
 
         except NoSuchElementException as ex:
             self.fail(ex.msg)
-    
-    
+
+
     def test_case_14(self):
         """Handle unselections on date picker query"""
         try:
@@ -267,7 +267,7 @@ class TestTemplate(unittest.TestCase):
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
-    # 
+    #
     # Uncomment to test a single case
     #suite.addTest(TestTemplate("test_case_13"))
 

@@ -80,7 +80,7 @@ class TestTemplate(unittest.TestCase):
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
-    # 
+    #
     # Uncomment to test a single case
     #suite.addTest(TestTemplate("test_case_1"))
 

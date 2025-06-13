@@ -33,7 +33,7 @@ class JobGen:
             # If debug mode assign the error to the dataframe second column
             if dash_config.DEBUG:
                 errmsg = E
-        
+
         if sample:
             self.jobs_df = pd.DataFrame(sample)
             self.jobs_df = self.jobs_df.sort_values(
