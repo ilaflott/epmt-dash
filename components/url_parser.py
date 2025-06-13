@@ -6,13 +6,13 @@
 import urllib.parse
 import posixpath
 from logging import getLogger
-from dash_config import MOCK_EPMT_API
+from ..dash_config import MOCK_EPMT_API
 logger = getLogger(__name__)  
 
 if MOCK_EPMT_API:
-    from epmt_mock import tag_from_string
+    from ..epmt_mock import tag_from_string
 else:
-    from epmtlib import tag_from_string
+    from epmt.epmtlib import tag_from_string
 
 def path_parse(path_string, *, normalize=True, module=posixpath):
     # TODO: This while loop causes infinite loops under malformed urls

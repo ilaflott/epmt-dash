@@ -4,12 +4,16 @@ Configure the Dash server and load the layout
 This file loads the initial layout as well as handles custom url query page delivery.
 """
 
-import dash_core_components as dcc
-import dash_html_components as html
+#import dash_core_components as dcc
+from dash import dcc
+
+#import dash_html_components as html
+from dash import html
+
 from dash.dependencies import Input, Output
-from app import app
-import layouts as lay
-import callbacks  # pylint: disable=unused-import
+from .app import app
+from . import layouts as lay
+from . import callbacks  # pylint: disable=unused-import
 from logging import getLogger
 logger = getLogger(__name__)
 

@@ -5,15 +5,15 @@ methods for converting and displaying jobs in dash
 from logging import getLogger
 import pandas as pd
 import numpy as np
-import dash_config
+from . import dash_config
 logger = getLogger(__name__)  # pylint: disable=invalid-name
 
 # if (__name__ != "__main__"):
 if dash_config.MOCK_EPMT_API:
-    import epmt_query_mock as eq
+    from . import epmt_query_mock as eq
     joblimit = 30
 else:
-    import epmt_query as eq
+    from epmt import epmt_query as eq
     joblimit = 10000
 
 class JobGen:

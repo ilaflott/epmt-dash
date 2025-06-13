@@ -6,7 +6,7 @@ from urllib.parse import parse_qs, urlparse
 from math import log
 import pandas as pd
 import time
-from dash_config import MOCK_EPMT_API
+from ..dash_config import MOCK_EPMT_API
 from logging import getLogger
 logger = getLogger(__name__)  
 #pd.options.mode.chained_assignment = None
@@ -16,10 +16,10 @@ class InterfaceError(Exception):
 
 if MOCK_EPMT_API:
     logger.info("Using Mock API")
-    from epmt_query_mock import get_procs, get_ops, get_refmodels, get_jobs
+    from ..epmt_query_mock import get_procs, get_ops, get_refmodels, get_jobs
 else:
     logger.info("Using EPMT API")
-    from epmt_query import get_procs, get_ops, get_refmodels, get_jobs
+    from epmt.epmt_query import get_procs, get_ops, get_refmodels, get_jobs
 
 # Return dictionary query results
 def parseurl(i):
@@ -229,11 +229,11 @@ def generate_notebook(values,depth='jobs'):
     count = 1
     cells.append(new_code_cell(
         source="""# epmt_query contains the EPMT Query API
-import epmt_query as eq
+from epmt import epmt_query as eq
 # epmt_outliers contains the EPMT Outlier Detection API
-import epmt_outliers as eod
+from epmt import epmt_outliers as eod
 # epmt_stat contains statistical functions
-import epmt_stat as es""",
+from epmt import epmt_stat as es""",
         execution_count=count,
     ))
     count = count + 1

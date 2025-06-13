@@ -5,13 +5,13 @@ Graphing library for EPMT and EPMT Workflow GUI
 from logging import getLogger
 logger = getLogger(__name__)  
 
-from dash_config import MOCK_EPMT_API
+from .dash_config import MOCK_EPMT_API
 if MOCK_EPMT_API:
     logger.info("Using Mock API")
-    from epmt_query_mock import get_procs, get_ops, get_refmodels, get_jobs
+    from epnt.epmt_query_mock import get_procs, get_ops, get_refmodels, get_jobs
 else:
     logger.info("Using EPMT API")
-    from epmt_query import get_procs, get_ops, get_refmodels, get_jobs
+    from epmt.epmt_query import get_procs, get_ops, get_refmodels, get_jobs
 
 
 def contrasting_color(color,shift=0.16):
@@ -259,7 +259,8 @@ def create_gantt_graph(joblist=[],gtag=['op'],exp_name=None, exp_component=None)
     """
     import plotly.figure_factory as ff
     import dash
-    import dash_core_components as dcc
+    #import dash_core_components as dcc
+    from dash import dcc
     
     (gantt_data, gantt_title, gantt_colors) = gantt_me(jobs=joblist, gtags=gtag, exp_name=exp_name, exp_component=exp_component)
     if gantt_data is None:
@@ -300,7 +301,8 @@ def create_boxplot(jobs=[], model="", normalize=True, metric='cpu_time', tags='o
     box_title(optional): A supplied title otherwise one will be generated
     id: Dash graph object id name for callback reference
     """
-    import dash_core_components as dcc
+    #import dash_core_components as dcc
+    from dash import dcc
     import plotly.graph_objects as go
     import plotly.express as px
     import pandas as pd
@@ -399,7 +401,7 @@ def create_boxplot(jobs=[], model="", normalize=True, metric='cpu_time', tags='o
             ),
             showlegend=True
         )
-) for job in df_to_scatter]
+    ) for job in df_to_scatter]
 
     # Display legend for scatter points
     fig.update_layout(showlegend=True, clickmode='event+select',
@@ -418,7 +420,8 @@ def create_grouped_bargraph(title='',jobs=None, tags=None, y_value='component', 
     components on the y axis grouped by requested metrics
 
     """
-    import dash_core_components as dcc
+    #import dash_core_components as dcc
+    from dash import dcc
     import plotly.graph_objects as go
     import plotly.express as px
     import operator
@@ -555,7 +558,7 @@ def trace_renderer(jobs=None,metrics=None, normalize=True):
         name=m
     ))
     if normalize:
-        from epmt_stat import normalize
+        from epmt.epmt_stat import normalize
         for d in data:
             d['y'] = normalize(d['y'],min_=-1/len(metrics), max_=1/len(metrics))
     return data

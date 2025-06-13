@@ -12,16 +12,18 @@ from logging import getLogger
 from math import ceil
 
 import pandas as pd
+
 import dash
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
-from dash_config import MOCK_EPMT_API
-import refs
-from components import convtounit, get_unit, power_labels, recent_button
-from graphing import list_of_contrast
-from app import app
-from jobs import JobGen
-from refs import ref_gen
+from .dash_config import MOCK_EPMT_API
+
+from . import refs
+from .components import convtounit, get_unit, power_labels, recent_button
+from .graphing import list_of_contrast
+from .app import app
+from .jobs import JobGen
+from .refs import ref_gen
 
 # from dash_config import tags_to_display
 # from layouts import DEFAULT_ROWS_PER_PAGE
@@ -35,14 +37,14 @@ logger = getLogger(__name__)
 
 if MOCK_EPMT_API:
     logger.info("Using Mock API")
-    from epmt_query_mock import comparable_job_partitions, get_refmodels, delete_refmodels, create_refmodel, get_jobs
-    from epmt_outliers_mock import detect_outlier_jobs
-    from epmt_mock import tag_from_string
+    from .epmt_query_mock import comparable_job_partitions, get_refmodels, delete_refmodels, create_refmodel, get_jobs
+    from .epmt_outliers_mock import detect_outlier_jobs
+    from .epmt_mock import tag_from_string
 else:
     logger.info("Using EPMT API")
-    from epmtlib import tag_from_string
-    from epmt_query import comparable_job_partitions, get_refmodels, delete_refmodels, create_refmodel, get_jobs
-    from epmt_outliers import detect_outlier_jobs
+    from epmt.epmtlib import tag_from_string
+    from epmt.epmt_query import comparable_job_partitions, get_refmodels, delete_refmodels, create_refmodel, get_jobs
+    from epmt.epmt_outliers import detect_outlier_jobs
 
 # pd.options.mode.chained_assignment = None
 
@@ -659,6 +661,10 @@ def update_jobs_table(raw_toggle, search_value, end, rows_per_page, page_current
 
     # Recalculate number of rows after search complete
     len_jobs = int(alt.shape[0])
+    if rows_per_page is None or rows_per_page < 1:
+        logger.debug('rows_per_page is None, setting to 100')
+        rows_per_page=100
+    logger.debug('rows_per_page = {}'.format(rows_per_page))
     num_pages = ceil(len_jobs / int(rows_per_page))
     logger.debug("Pages = ceil({} / {}) = {}".format(len_jobs,
                                                      int(rows_per_page), num_pages))
@@ -764,7 +770,7 @@ def display_graph():
 def generate_scatter(x,y,zoom_state,url):
     import pandas as pd
     import plotly.express as px
-    from components import parse_url
+    from .components import parse_url
     e = parse_url(url)
     tags = e['query'].get('tags',None)
     logger.debug("Tags requested: {}".format(tags))
@@ -803,7 +809,7 @@ def generate_scatter_selections(clicked,url):
     """
     Return to compare-zoom-jobs the jobs that fit in the new zoom level
     """
-    from components import parse_url
+    from .components import parse_url
     e = parse_url(url)
     tags = e['query']['tags']
     logger.debug("Click Data requested: {}".format(clicked))
@@ -832,7 +838,7 @@ def generate_multilayout_graph(zoom,y,click_data,url):
     
     import pandas as pd
     import plotly.express as px
-    from components import parse_url
+    from .components import parse_url
     e = parse_url(url)
     tags = e['query']['tags']
     logger.debug(e)
@@ -914,7 +920,8 @@ def bar_workflow_generation(clickData,state,metric,expname,stateurl,currLevel,ex
 
     # Component is y value
     # metric is curveNumber
-    import dash_core_components as dcc
+    #import dash_core_components as dcc
+    from dash import dcc
     logger.debug("We have click data, redirecting")
     
     # Update only search query on current display
@@ -979,9 +986,11 @@ def update_workflow_table(job_data, sel_jobs, selected_model):
     Input: job table data & job table selected jobs
     Output: model selector dropdown options & active value
     """
-    import dash_core_components as dcc
+    #import dash_core_components as dcc
+    from dash import dcc
     import dash_bootstrap_components as dbc
-    import dash_html_components as html
+    #import dash_html_components as html
+    from dash import html
     logger.debug("Building and displaying workflow table now")
     # Disregard selections that are stale
     if sel_jobs and all([k <= len(job_data) for k in sel_jobs]):
@@ -1032,10 +1041,12 @@ def update_workflow_table(job_data, sel_jobs, selected_model):
     )
 def send_2_nb(click,expname,exp_comp,exp_jobs,url):
     if click and click > 0:
-        import dash_core_components as dcc
-        import dash_html_components as html
+        #import dash_core_components as dcc
+        from dash import dcc
+        #import dash_html_components as html
+        from dash import html
         from urllib.parse import urlparse, urlencode
-        from components import generate_notebook
+        from .components import generate_notebook
         # if we have tag parts, update tag dict to carry them
         # to the notebook
         #values = {'tags':{'expname':expname, 'exp_component':exp_comp}}

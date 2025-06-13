@@ -8,14 +8,17 @@ from datetime import datetime as dt
 from json import dumps
 import dash_bootstrap_components as dbc
 import dash_daq as daq
-import dash_core_components as dcc
-import dash_html_components as html
-import dash_table
-from dash_config import DEFAULT_ROWS_PER_PAGE
-from refs import ref_df
-from jobs import JobGen
-from components import Header, Footer, parse_url
-from graphing import graph_experiment, graph_ops, graph_components, bar_graph, create_gantt_graph, create_boxplot, create_grouped_bargraph
+#import dash_core_components as dcc
+from dash import dcc
+#import dash_html_components as html
+from dash import html
+from dash import dash_table
+
+from .dash_config import DEFAULT_ROWS_PER_PAGE
+from .refs import ref_df
+from .jobs import JobGen
+from .components import Header, Footer, parse_url
+from .graphing import graph_experiment, graph_ops, graph_components, bar_graph, create_gantt_graph, create_boxplot, create_grouped_bargraph
 logger = getLogger(__name__)  # pylint: disable=invalid-name
 # basicConfig(level=DEBUG)
 
@@ -156,7 +159,8 @@ recent_jobs_page = html.Div([
                                         [
                                             dbc.Col(
                                                 # model name input
-                                                dbc.FormGroup(
+                                                #dbc.FormGroup(
+                                                dbc.Row(
                                                     [
                                                         dbc.Label("Model"),
                                                         dbc.Input(

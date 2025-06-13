@@ -1,4 +1,5 @@
-import dash_html_components as html
+#import dash_html_components as html
+from dash import html
 
 def make_dash_table(df):
     ''' Return a dash definition of an HTML table for a Pandas dataframe '''
