@@ -769,7 +769,7 @@ def display_graph():
      ]
 )
 def generate_scatter(x, y, zoom_state, url):
-    import pandas as pd
+
     import plotly.express as px
     from .components import parse_url
     e = parse_url(url)
@@ -825,7 +825,7 @@ def generate_scatter_selections(clicked, url):
             clicked['yaxis.range[1]'])
         logger.debug("X: {}, Y: {}".format(clicked[0], clicked[1]))
         # e = get_jobs(fmt='pandas',tags=tags)
-        from json import dumps
+
         return clicked
     else:
         logger.debug("No zoom data")
@@ -843,7 +843,7 @@ def generate_scatter_selections(clicked, url):
 )
 def generate_multilayout_graph(zoom, y, click_data, url):
 
-    import pandas as pd
+
     import plotly.express as px
     from .components import parse_url
     e = parse_url(url)

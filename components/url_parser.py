@@ -3,7 +3,7 @@
 # Taken and extended from well researched SO post
 # https://stackoverflow.com/a/25496309/10377587
 
-import urllib.parse
+import urllib.parse as urlp
 import posixpath
 from logging import getLogger
 from ..dash_config import MOCK_EPMT_API
@@ -70,16 +70,16 @@ def parse_url(url, *, normalize=True, module=posixpath):
     # Clean url of whitespace before and after
     url = url.strip()
     # url must start with 'http://' else host becomes part of path
-    # according to urllib.parse.urlparse
+    # according to urlp.urlparse
     if not url.startswith('http'):
         url = "http://" + url
 
-    url_parsed = urllib.parse.urlparse(url)
+    url_parsed = urlp.urlparse(url)
 
-    path_parsed = path_parse(urllib.parse.unquote(url_parsed.path),
+    path_parsed = path_parse(urlp.unquote(url_parsed.path),
                              normalize=normalize, module=module)
 
-    query_parsed = urllib.parse.parse_qs(urllib.parse.urlparse(url).query)
+    query_parsed = urlp.parse_qs(urlp.urlparse(url).query)
 
     # Parse query key values, values for commas
     # TODO: A better method may be encoding or repeating the key
@@ -120,7 +120,6 @@ def url_gen(graph_type='', jobs=[], model='', parameters=[], host='localhost', p
         port dash server is running on, can be int and will be
         converted to str
     """
-    import urllib.parse as urlp
     urlprefix = '/graph/'
     urlsuffix = ''
 

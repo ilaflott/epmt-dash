@@ -2,16 +2,13 @@
 """
 
 import time
-from datetime import timedelta
 import datetime
+from datetime import timedelta
 import random
 from copy import deepcopy
 from logging import getLogger
 import pandas as pd
 import jobs as job
-
-# We log how we want
-# pylint: disable=invalid-name, logging-format-interpolation
 
 logger = getLogger(__name__)
 
@@ -338,7 +335,6 @@ def get_ops(jobs, tags=[], exact_tag_only=False, combine=False, fmt='dict', op_d
         e["jobs"] = [j]
         res.extend([e])
     if fmt == 'pandas':
-        import pandas as pd
         return pd.DataFrame(res)
     return res
 
@@ -438,13 +434,12 @@ def get_procs(
         "tcsh", "tempfile", "touch", "true", "udevadm", "ulockmgr_server", "umount", "uname",
         "uncompress", "unicode_start", "vdir", "wdctl", "which", "whiptail", "ypdomainname", "zcat",
         "zcmp", "zdiff", "zegrep", "zfgrep", "zforce", "zgrep", "zless", "zmore", "znew"]
-    from datetime import datetime
     sample_proc = {'id': 36416,
-                   'start': datetime(2019, 6, 16, 13, 54, 28, 878022),
-                   'end': datetime(2019, 6, 16, 14, 6, 18, 107548),
+                   'start': datetime.datetime(2019, 6, 16, 13, 54, 28, 878022),
+                   'end': datetime.datetime(2019, 6, 16, 14, 6, 18, 107548),
                    'duration': 709229526.0000001,
-                   'created_at': datetime(2019, 12, 17, 21, 1, 32, 442541),
-                   'updated_at': datetime(2019, 12, 17, 21, 1, 32, 442546),
+                   'created_at': datetime.datetime(2019, 12, 17, 21, 1, 32, 442541),
+                   'updated_at': datetime.datetime(2019, 12, 17, 21, 1, 32, 442546),
                    'tags': {'op': 'dmput', 'op_instance': '2', 'op_sequence': '89'},
                    'job': jobs,
                    'host': 'pp028',
@@ -498,8 +493,7 @@ def get_procs(
             timeformat = "%m/%d/%Y %I:%M %p %Z"
             start_datetime = random_date(
                 "11/1/2019 1:30 PM UTC", "11/5/2019 4:50 PM UTC", timeformat)
-            from datetime import datetime
-            start_time = datetime.strptime(start_datetime, timeformat).time()
+            start_time = datetime.datetime.strptime(start_datetime, timeformat).time()
             proc['start'] = start_time
             proc['duration'] = random.uniform(86400 / 4, 86400)
             result.append(deepcopy(proc))
