@@ -48,7 +48,8 @@ else:
 
 # pd.options.mode.chained_assignment = None
 
-#import jobs
+# import jobs
+
 
 @app.callback(dash.dependencies.Output('content', 'data'),
               [dash.dependencies.Input('test', 'children')])
@@ -76,7 +77,7 @@ def test_job_update(saveclick, sel_jobs, ref_data, sel_ref):
     if sel_ref and len(sel_ref) > 0:
         recentbtn = recent_button({'save_model': saveclick})
         if recentbtn == 'save_model':
-            #from json import dumps
+            # from json import dumps
             # Get Dropdown Selected
             selected_refs = ref_data[sel_ref[0]]
             logger.debug(
@@ -85,7 +86,7 @@ def test_job_update(saveclick, sel_jobs, ref_data, sel_ref):
                 selected_refs['name'], sel_jobs))
             refs.edit_model(
                 model_name=selected_refs['name'], new_jobs=sel_jobs)
-            #from ast import literal_eval
+            # from ast import literal_eval
             # refa = make_refs(name=selected_refs['name'], jobs=sel_jobs,
             # tags=literal_eval(selected_refs['tags']))
             return ""  # return placeholder dataframe has been updated
@@ -138,7 +139,7 @@ def run_analysis(run_analysis_btn, sel_jobs, job_data, selected_model):
     recentbtn = recent_button({'run_analysis': run_analysis_btn})
     if recentbtn == 'run_analysis':
         if sel_jobs:
-            #selected_rows = [str(job_data[i]['job id']) for i in sel_jobs]
+            # selected_rows = [str(job_data[i]['job id']) for i in sel_jobs]
             selected_rows = [(str(job_data[i]['job id']), job_data[i]['exp_name'],
                               job_data[i]['exp_component']) for i in sel_jobs]
             logger.info(
@@ -168,20 +169,20 @@ def run_analysis(run_analysis_btn, sel_jobs, job_data, selected_model):
                 if analysis:
                     logger.debug("Analysis returned \n{}".format(analysis))
                 else:
-                    return["Analysis returned None", True]
+                    return ["Analysis returned None", True]
             except RuntimeError as runerr:
-                return["Analysis Failed {}".format(str(runerr)), True]
+                return ["Analysis Failed {}".format(str(runerr)), True]
             if str(selected_model) != "None":
                 logger.info("Analysis with model id:{} {}".format(
                     hackmodel, selected_model))
                 analysis_simplified = str(
                     analysis_simplified) + " With Model: " + selected_model
-            return[analysis_simplified, True]
+            return [analysis_simplified, True]
         else:
             # Pop Alert dialog
             logger.info("Nothing selected")
-            return["Please Select Jobs", True]
-    return["", False]
+            return ["Please Select Jobs", True]
+    return ["", False]
 
 
 @app.callback(
@@ -231,7 +232,7 @@ def update_output(save_model_btn, delete_model_btn, toggle_model_btn,
     jobs_drpdn_value = 'No'
     ctx = dash.callback_context
     # Debug Context due to this callback being huge
-    #logger.debug("Callback Context info:\nTriggered:\n{}\nInputs:\n{}\nStates:\n{}".format(
+    # logger.debug("Callback Context info:\nTriggered:\n{}\nInputs:\n{}\nStates:\n{}".format(
     #    ctx.triggered, ctx.inputs, ctx.states))
     logger.debug("Updating Models table and friends")
     return_models = refs.get_references().to_dict('records')
@@ -449,19 +450,19 @@ def f(job_data, sel_jobs):
 @app.callback(
     Output('table-multicol-sorting', "selected_rows"),
     [Input('index-select-all', 'n_clicks_timestamp'),
-    Input(component_id='searchdf', component_property='value'),
-    Input('table-multicol-sorting', "data"),
-    Input('searchdf','n_timestamp')],
+     Input(component_id='searchdf', component_property='value'),
+     Input('table-multicol-sorting', "data"),
+     Input('searchdf', 'n_timestamp')],
     [State('table-multicol-sorting', "selected_rows"),
-    ]
+     ]
 )
-def select_all(n_clicks,search_value, data,search_timestamp, selected_count):
+def select_all(n_clicks, search_value, data, search_timestamp, selected_count):
     """select_all
     Method to handle selecting all jobs
     """
     import time
     # Select all was clicked, search bar was used and select all before search
-    logger.debug("Select All button {} Search bar {}".format(n_clicks,search_timestamp))
+    logger.debug("Select All button {} Search bar {}".format(n_clicks, search_timestamp))
     if n_clicks and search_timestamp and n_clicks > search_timestamp:
         logger.debug("Select all was clicked")
         if data:
@@ -516,7 +517,7 @@ def strfdelta(tdelta, fmt="{hours}:{minutes}:{seconds}"):
      Output('table-multicol-sorting', "page_size"),
      Output('table-multicol-sorting', "page_count"),
      Output('table-multicol-sorting', "style_data_conditional"),
-     Output('searchdf','n_timestamp')],
+     Output('searchdf', 'n_timestamp')],
     [Input('raw-switch', 'value'),
      Input(component_id='searchdf', component_property='value'),
      Input(component_id='jobs-date-picker', component_property='end_date'),
@@ -531,11 +532,11 @@ def update_jobs_table(raw_toggle, search_value, end, rows_per_page, page_current
     This callback updates the jobs table data, columns, pages and styling
     """
     import time
-    reset_time = int(time.time()*1000)
+    reset_time = int(time.time() * 1000)
     logger.debug("\nUpdate_output started")
-    #ctx = dash.callback_context
+    # ctx = dash.callback_context
     # Debug Context due to this callback being huge
-    #logger.debug("Callback Context info:\nTriggered:\n{}\nInputs:\n{}\nStates:\n{}".format(
+    # logger.debug("Callback Context info:\nTriggered:\n{}\nInputs:\n{}\nStates:\n{}".format(
     #    ctx.triggered, ctx.inputs, ctx.states))
     logger.debug("Rows requested per page:{}".format(rows_per_page))
     # Grab df
@@ -545,17 +546,16 @@ def update_jobs_table(raw_toggle, search_value, end, rows_per_page, page_current
     logger.debug("Shape is {}".format(orig.shape))
     if orig['job id'][0].startswith("No Jobs "):
         return [
-        orig.to_dict('records'),  # Return the table records
-        [{"name": i, "id": i} for i in orig.columns] if raw_toggle else [
-            # if i is not 'tags'],  # hide tags if raw_toggle false
-            {"name": i, "id": i} for i in orig.columns],
-        10,  # Custom page size
-        1,  # Custom Page count
-        # Custom Highlighting on matching job tags
-        [],
-        int(time.time()*1000)+4000
+            orig.to_dict('records'),  # Return the table records
+            [{"name": i, "id": i} for i in orig.columns] if raw_toggle else [
+                # if i is not 'tags'],  # hide tags if raw_toggle false
+                {"name": i, "id": i} for i in orig.columns],
+            10,  # Custom page size
+            1,  # Custom Page count
+            # Custom Highlighting on matching job tags
+            [],
+            int(time.time() * 1000) + 4000
         ]
-
 
     # Limit by time
     if end:
@@ -569,7 +569,7 @@ def update_jobs_table(raw_toggle, search_value, end, rows_per_page, page_current
                                          <= dt.strptime(end, "%Y-%m-%d").date())
             logger.debug("Query: (Start:{} End:{})".format(start, end))
             # Only reassign df if mask results data
-            if job_df.loc[time_mask].shape[0]>0:
+            if job_df.loc[time_mask].shape[0] > 0:
                 alt = job_df.loc[time_mask]
             else:
                 logger.info("Date query returned no jobs")
@@ -627,7 +627,7 @@ def update_jobs_table(raw_toggle, search_value, end, rows_per_page, page_current
         new = alt[['job id', 'tags']]
         b = new.tags.apply(pd.Series)
         # Only Display Specific tags from dash_config
-        #tags_df = c[tags_to_display]
+        # tags_df = c[tags_to_display]
         # Merge those changes into the end of the alt.df
         alt = pd.merge(alt, b, left_index=True, right_index=True)
         # Convert tags into a string that can be searched
@@ -646,13 +646,13 @@ def update_jobs_table(raw_toggle, search_value, end, rows_per_page, page_current
         try:
             # Search on abbreviated data and tags as columns
             results = alt[(alt['exp_name'].str.contains(search_value))
-                        | (alt['job id'].str.contains(search_value))
-                        | (alt['exp_component'].str.contains(search_value))
-                        | (alt['tags'].str.contains(search_value))]
+                          | (alt['job id'].str.contains(search_value))
+                          | (alt['exp_component'].str.contains(search_value))
+                          | (alt['tags'].str.contains(search_value))]
         except KeyError as k:
             logger.warn("Threw key err {}, fallback to searching only columns 'jobid' or 'tags'".format(k))
             results = alt[(alt['tags'].str.contains(search_value))
-                        | (alt['job id'].str.contains(search_value))]
+                          | (alt['job id'].str.contains(search_value))]
     logger.info("Found {} search results on \"{}\"".format(
         int(results.shape[0]), search_value))
     alt = results
@@ -663,7 +663,7 @@ def update_jobs_table(raw_toggle, search_value, end, rows_per_page, page_current
     len_jobs = int(alt.shape[0])
     if rows_per_page is None or rows_per_page < 1:
         logger.debug('rows_per_page is None, setting to 100')
-        rows_per_page=100
+        rows_per_page = 100
     logger.debug('rows_per_page = {}'.format(rows_per_page))
     num_pages = ceil(len_jobs / int(rows_per_page))
     logger.debug("Pages = ceil({} / {}) = {}".format(len_jobs,
@@ -688,7 +688,7 @@ def update_jobs_table(raw_toggle, search_value, end, rows_per_page, page_current
         comparable_jobs = comparable_job_partitions(alt['job id'].tolist())
         # Generate contrasting colors from length of comparable sets
         cont_colors = list_of_contrast(
-            length=len(comparable_jobs), start=(200, 200, 120),hue_shift=0.08)
+            length=len(comparable_jobs), start=(200, 200, 120), hue_shift=0.08)
         for color, n in enumerate(comparable_jobs, start=0):
             # Only generate a rule if more than one job in rule
             if len(n[1]) > 1:
@@ -705,7 +705,7 @@ def update_jobs_table(raw_toggle, search_value, end, rows_per_page, page_current
     else:
         logger.debug(
             "Not enough jobs to do highlighting Len Jobs = {}".format(len_jobs))
-    #logger.debug("Custom Highlights: \n{}".format(custom_highlights))
+    # logger.debug("Custom Highlights: \n{}".format(custom_highlights))
 
     # #################################################################
     # Last reduce df down to 1 page view based on requested page and rows per page
@@ -756,56 +756,58 @@ def display_graph():
     }
 ######################## /Create Ref Callbacks ########################
 
+
 @app.callback(
     [dash.dependencies.Output('scatter-compare', 'figure'),
      dash.dependencies.Output('jobs-in-view', 'children'),
      dash.dependencies.Output('compare-url', 'href')],
     [dash.dependencies.Input('x-scatter-dropdown', 'value'),
      dash.dependencies.Input('y-scatter-dropdown', 'value'),
-     dash.dependencies.Input('compare-zoom-jobs','children')
+     dash.dependencies.Input('compare-zoom-jobs', 'children')
      ],
     [dash.dependencies.State('fullurl', 'children')
      ]
 )
-def generate_scatter(x,y,zoom_state,url):
+def generate_scatter(x, y, zoom_state, url):
     import pandas as pd
     import plotly.express as px
     from .components import parse_url
     e = parse_url(url)
-    tags = e['query'].get('tags',None)
+    tags = e['query'].get('tags', None)
     logger.debug("Tags requested: {}".format(tags))
-    #op_list = []
-    #metric = 'cpu_time'
-    #[op_list.extend(eq.get_ops(jobby, tags = 'op', combine=False)) for jobby in ['625172','627922','629320','629323','629322']]
-    #ops_dur = pd.DataFrame([(op['jobs'][0].jobid, op['tags']['op'], op['proc_sums'][metric]) for op in op_list], columns=['jobid','op',metric])
-    #e = fun.df_normalizer(ops_dur,'op',metric)
-    urljobs = e['query'].get('jobs',None)
+    # op_list = []
+    # metric = 'cpu_time'
+    # [op_list.extend(eq.get_ops(jobby, tags = 'op', combine=False)) for jobby in ['625172','627922','629320','629323','629322']]
+    # ops_dur = pd.DataFrame([(op['jobs'][0].jobid, op['tags']['op'], op['proc_sums'][metric]) for op in op_list], columns=['jobid','op',metric])
+    # e = fun.df_normalizer(ops_dur,'op',metric)
+    urljobs = e['query'].get('jobs', None)
     logger.debug("Requested jobs: {}".format(urljobs))
-    e = get_jobs(jobs=urljobs if urljobs else None, fmt='pandas',tags=tags)
+    e = get_jobs(jobs=urljobs if urljobs else None, fmt='pandas', tags=tags)
     if zoom_state:
         logger.debug("Zoom data: {} {}".format(type(zoom_state), zoom_state))
-        (xl,xh,yl,yh) = zoom_state
-        xmask = e[x].between(xl,xh)
-        ymask = e[y].between(yl,yh)
+        (xl, xh, yl, yh) = zoom_state
+        xmask = e[x].between(xl, xh)
+        ymask = e[y].between(yl, yh)
         e = e.loc[xmask & ymask]
     selected_jobs = e['jobid'].tolist()
 
     # Rescale the graph to match the selected jobids
-    e = get_jobs(jobs=selected_jobs, fmt='pandas',tags=tags)
+    e = get_jobs(jobs=selected_jobs, fmt='pandas', tags=tags)
 
-    fig = px.scatter(e,x=e[x],y=e[y], color="jobid", hover_data=['user'], size=None, title=url)
+    fig = px.scatter(e, x=e[x], y=e[y], color="jobid", hover_data=['user'], size=None, title=url)
     import urllib.parse
-    oldQ = {'tags':'exp_name:ESM4_hist-piAer_D1','jobs':','.join(selected_jobs)}
+    oldQ = {'tags': 'exp_name:ESM4_hist-piAer_D1', 'jobs': ','.join(selected_jobs)}
     newQuery = urllib.parse.urlencode(oldQ)
-    return [fig,0,"/compare?"+newQuery]
+    return [fig, 0, "/compare?" + newQuery]
+
 
 @app.callback(
     dash.dependencies.Output('compare-zoom-jobs', 'children'),
     [dash.dependencies.Input('scatter-compare', 'relayoutData')
      ],
     [dash.dependencies.State('fullurl', 'children')]
-    )
-def generate_scatter_selections(clicked,url):
+)
+def generate_scatter_selections(clicked, url):
     """
     Return to compare-zoom-jobs the jobs that fit in the new zoom level
     """
@@ -814,10 +816,15 @@ def generate_scatter_selections(clicked,url):
     tags = e['query']['tags']
     logger.debug("Click Data requested: {}".format(clicked))
     # Ignore cases of auto scaling & dragmode lasso
-    if clicked and not any( [entry in k for entry in ("dragmode", "autosize", "xaxis.autorange") for k in clicked.keys()]):
-        clicked = (clicked['xaxis.range[0]'],clicked['xaxis.range[1]'],clicked['yaxis.range[0]'],clicked['yaxis.range[1]'])
-        logger.debug("X: {}, Y: {}".format(clicked[0],clicked[1]))
-        #e = get_jobs(fmt='pandas',tags=tags)
+    if clicked and not any([entry in k for entry in ("dragmode", "autosize", "xaxis.autorange")
+                           for k in clicked.keys()]):
+        clicked = (
+            clicked['xaxis.range[0]'],
+            clicked['xaxis.range[1]'],
+            clicked['yaxis.range[0]'],
+            clicked['yaxis.range[1]'])
+        logger.debug("X: {}, Y: {}".format(clicked[0], clicked[1]))
+        # e = get_jobs(fmt='pandas',tags=tags)
         from json import dumps
         return clicked
     else:
@@ -828,13 +835,13 @@ def generate_scatter_selections(clicked,url):
 @app.callback(
     [dash.dependencies.Output('multi-flow-chart', 'figure'),
      dash.dependencies.Output('job-flow-text', 'children'),
-     dash.dependencies.Output('zoom-level-multi-flow','max')],
+     dash.dependencies.Output('zoom-level-multi-flow', 'max')],
     [dash.dependencies.Input('zoom-level-multi-flow', 'value'),
      dash.dependencies.Input('y-metric-multi-flow', 'value'),
      dash.dependencies.Input('multi-flow-chart', 'selectedData')],
     [dash.dependencies.State('fullurl', 'children')]
 )
-def generate_multilayout_graph(zoom,y,click_data,url):
+def generate_multilayout_graph(zoom, y, click_data, url):
 
     import pandas as pd
     import plotly.express as px
@@ -842,21 +849,21 @@ def generate_multilayout_graph(zoom,y,click_data,url):
     e = parse_url(url)
     tags = e['query']['tags']
     logger.debug(e)
-    #op_list = []
-    #metric = 'cpu_time'
-    #[op_list.extend(eq.get_ops(jobby, tags = 'op', combine=False)) for jobby in ['625172','627922','629320','629323','629322']]
-    #ops_dur = pd.DataFrame([(op['jobs'][0].jobid, op['tags']['op'], op['proc_sums'][metric]) for op in op_list], columns=['jobid','op',metric])
-    #e = fun.df_normalizer(ops_dur,'op',metric)
-    e = get_jobs(fmt='pandas',tags=tags)
-    logger.debug("Jobs Found: \n{}".format(e[['jobid','duration','num_procs']]))
+    # op_list = []
+    # metric = 'cpu_time'
+    # [op_list.extend(eq.get_ops(jobby, tags = 'op', combine=False)) for jobby in ['625172','627922','629320','629323','629322']]
+    # ops_dur = pd.DataFrame([(op['jobs'][0].jobid, op['tags']['op'], op['proc_sums'][metric]) for op in op_list], columns=['jobid','op',metric])
+    # e = fun.df_normalizer(ops_dur,'op',metric)
+    e = get_jobs(fmt='pandas', tags=tags)
+    logger.debug("Jobs Found: \n{}".format(e[['jobid', 'duration', 'num_procs']]))
     logger.debug("Zoom state: {}".format(type(zoom)))
-    #fig = px.scatter(e,x='jobid',y=y, title=url)
+    # fig = px.scatter(e,x='jobid',y=y, title=url)
     fig = {
         'data': [dict(
             x=pd.to_datetime(e['created_at']).dt.date.unique().tolist(),
             y=e[[y]].values.flatten().tolist(),
             text=e[['jobid']].values.flatten().tolist(),
-            #customdata=dff[dff['Indicator Name'] == yaxis_column_name]['Country Name'],
+            # customdata=dff[dff['Indicator Name'] == yaxis_column_name]['Country Name'],
             mode='markers',
             marker={
                 'size': 15,
@@ -867,11 +874,11 @@ def generate_multilayout_graph(zoom,y,click_data,url):
         'layout': dict(
             xaxis={
                 'title': "Job ID",
-                #'type': 'linear' if xaxis_type == 'Linear' else 'log'
+                # 'type': 'linear' if xaxis_type == 'Linear' else 'log'
             },
             yaxis={
-                #'title': yaxis_column_name,
-                #'type': 'linear' if yaxis_type == 'Linear' else 'log'
+                # 'title': yaxis_column_name,
+                # 'type': 'linear' if yaxis_type == 'Linear' else 'log'
             },
             margin={'l': 40, 'b': 30, 't': 10, 'r': 0},
             height=450,
@@ -884,29 +891,29 @@ def generate_multilayout_graph(zoom,y,click_data,url):
         # User has selected a job
         if click_data:
             points = [point['pointIndex'] for point in click_data['points']]
-            points = e.iloc[points]['jobid'].to_csv(header=False,index=False).strip('\n').split('\n')
+            points = e.iloc[points]['jobid'].to_csv(header=False, index=False).strip('\n').split('\n')
             logger.debug("selected data please: {}".format(points))
 
             # Return graph, updating selected jobs, allow slider operations
-            return [fig,', '.join(points),1]
+            return [fig, ', '.join(points), 1]
 
-    return [fig,"Please select a job",0]
+    return [fig, "Please select a job", 0]
 
 
 @app.callback(
-     dash.dependencies.Output('bar-url', 'href'),
+    dash.dependencies.Output('bar-url', 'href'),
     [dash.dependencies.Input('bargraph', 'clickData')],
     [dash.dependencies.State('graph-area', 'children'),
      # Hidden Div with list of metrics displayed
-     dash.dependencies.State('bar-metrics','children'),
+     dash.dependencies.State('bar-metrics', 'children'),
      # Hidden Div with experiment name displayed
-     dash.dependencies.State('bar-expname','children'),
+     dash.dependencies.State('bar-expname', 'children'),
      dash.dependencies.State('url', 'href'),
      dash.dependencies.State('bar-level', 'children'),
-     dash.dependencies.State('exp-component','children')])
-def bar_workflow_generation(clickData,state,metric,expname,stateurl,currLevel,exp_comp):
+     dash.dependencies.State('exp-component', 'children')])
+def bar_workflow_generation(clickData, state, metric, expname, stateurl, currLevel, exp_comp):
     ctx = dash.callback_context
-    #logger.info("Callback Context info:\nTriggered:\n{}\nInputs:\n{}\nStates:\n{}".format(
+    # logger.info("Callback Context info:\nTriggered:\n{}\nInputs:\n{}\nStates:\n{}".format(
     #    ctx.triggered, ctx.inputs, ctx.states))
     logger.info("Current level is {}".format(currLevel))
 
@@ -920,33 +927,32 @@ def bar_workflow_generation(clickData,state,metric,expname,stateurl,currLevel,ex
 
     # Component is y value
     # metric is curveNumber
-    #import dash_core_components as dcc
+    # import dash_core_components as dcc
     from dash import dcc
     logger.debug("We have click data, redirecting")
 
     # Update only search query on current display
-    #return [dcc.Location(search="?expname=ESM4_hist-piAer_D1&metric=duration", id="someid"),"Activated"]
+    # return [dcc.Location(search="?expname=ESM4_hist-piAer_D1&metric=duration", id="someid"),"Activated"]
     # Full redirect
-    #return dcc.Location(href="http://localhost:8050/graph/boxplot/?jobs=2494106&normalize=False", id="someid")
+    # return dcc.Location(href="http://localhost:8050/graph/boxplot/?jobs=2494106&normalize=False", id="someid")
 
     # Return custom graph
     req_component = str(clickData['points'][0]['y'])
     bar_title = "exp_name:" + expname + " exp_component:" + req_component
 
     # be sure metric is not a single item
-    if isinstance(metric,str):
+    if isinstance(metric, str):
         metric = [metric]
 
     # If we're already past component and job selection we need need final chart
     if currLevel == 'component':
-        return "/graph/bar?metric=" + ",".join(metric) + "&expname=" + expname + "&exp_component="+exp_comp+"&jobs="+req_component+"&op=op"
+        return "/graph/bar?metric=" + ",".join(metric) + "&expname=" + expname + \
+            "&exp_component=" + exp_comp + "&jobs=" + req_component + "&op=op"
 
     if currLevel == 'experiment':
-        return "/graph/bar?metric=" + ",".join(metric) + "&expname=" + expname + "&exp_component="+req_component
-    #return ["Component:" + str(clickData['points'][0]['y']) + " Metric:" + metric[clickData['points'][0]['curveNumber']]]
-
-
-
+        return "/graph/bar?metric=" + ",".join(metric) + "&expname=" + expname + "&exp_component=" + req_component
+    # return ["Component:" + str(clickData['points'][0]['y']) + " Metric:" +
+    # metric[clickData['points'][0]['curveNumber']]]
 
 
 @app.callback(
@@ -956,21 +962,22 @@ def bar_workflow_generation(clickData,state,metric,expname,stateurl,currLevel,ex
      dash.dependencies.State('bar-level', 'children'),
      dash.dependencies.State('bar-expname', 'children'),
      dash.dependencies.State('exp-component', 'children')])
-def gantt_workflow_url_generation(clickData,graphdata,currLevel,expname,exp_component):
+def gantt_workflow_url_generation(clickData, graphdata, currLevel, expname, exp_component):
     logger.debug("Clicked {}".format(clickData))
-    clk_index = clickData['points'][0].get('y',None)
+    clk_index = clickData['points'][0].get('y', None)
     graph_df = pd.DataFrame(graphdata['data'])
-    curvenum = clickData['points'][0].get('curveNumber',None)
+    curvenum = clickData['points'][0].get('curveNumber', None)
     # Remove no names and reset index
     graph_df = graph_df[graph_df.name != ''].reset_index()
     logger.debug("Curve number is: {}".format(curvenum))
     if curvenum >= graph_df.shape[0]:
         curvenum = curvenum % graph_df.shape[0]
         logger.debug("Curve number shortened to {}".format(curvenum))
-    logger.debug("curve df:\n{}".format(graph_df[['name','x']]))
+    logger.debug("curve df:\n{}".format(graph_df[['name', 'x']]))
     if currLevel == 'component':
-        return "/graph/gantt/?expname=" + expname + "&exp_component=" + exp_component + "&jobs="+graph_df.iloc[curvenum, :]['name'] + "&tags=op"
-    return "/graph/gantt/?expname=ESM4_hist-piAer_D1&exp_component="+graph_df.iloc[curvenum, :]['name']
+        return "/graph/gantt/?expname=" + expname + "&exp_component=" + \
+            exp_component + "&jobs=" + graph_df.iloc[curvenum, :]['name'] + "&tags=op"
+    return "/graph/gantt/?expname=ESM4_hist-piAer_D1&exp_component=" + graph_df.iloc[curvenum, :]['name']
 
 
 @app.callback(
@@ -979,17 +986,17 @@ def gantt_workflow_url_generation(clickData,graphdata,currLevel,expname,exp_comp
     [
         Input('table-multicol-sorting', 'data'),
         Input('table-multicol-sorting', 'selected_rows'),
-        Input('model-selector-dropdown', 'value') # This should be a input to fire this callback later
+        Input('model-selector-dropdown', 'value')  # This should be a input to fire this callback later
     ])
 def update_workflow_table(job_data, sel_jobs, selected_model):
     """ Callback
     Input: job table data & job table selected jobs
     Output: model selector dropdown options & active value
     """
-    #import dash_core_components as dcc
+    # import dash_core_components as dcc
     from dash import dcc
     import dash_bootstrap_components as dbc
-    #import dash_html_components as html
+    # import dash_html_components as html
     from dash import html
     logger.debug("Building and displaying workflow table now")
     # Disregard selections that are stale
@@ -997,37 +1004,61 @@ def update_workflow_table(job_data, sel_jobs, selected_model):
         logger.debug("Testing selected jobs {} job data len {}".format(
             sel_jobs, len(job_data)))
         selected_rows = [(job_data[i]['job id'],
-                        job_data[i]['exp_name'],
-                        job_data[i]['exp_component']) for i in sel_jobs]
-        #(jid, exp_name,exp_component) = selected_rows[0]
+                          job_data[i]['exp_name'],
+                          job_data[i]['exp_component']) for i in sel_jobs]
+        # (jid, exp_name,exp_component) = selected_rows[0]
         # Return a list of values for each parameter
 
         jid = [n[0] for n in selected_rows]
         exp_name = [n[1] for n in selected_rows][0]
         exp_component = [n[2] for n in selected_rows][0]
 
-        gantt_link_exp =  dcc.Link(exp_name, href='/graph/gantt/?expname='+exp_name)
-        gantt_link_comp = dcc.Link(exp_component, href='/graph/gantt/?expname='+exp_name+"&exp_component="+exp_component)
-        gantt_link_job =  dcc.Link(", ".join(jid), href='/graph/gantt/?expname='+exp_name+"&jobs="+",".join(jid)+"&tags=op")
+        gantt_link_exp = dcc.Link(exp_name, href='/graph/gantt/?expname=' + exp_name)
+        gantt_link_comp = dcc.Link(
+            exp_component,
+            href='/graph/gantt/?expname=' +
+            exp_name +
+            "&exp_component=" +
+            exp_component)
+        gantt_link_job = dcc.Link(", ".join(jid), href='/graph/gantt/?expname=' +
+                                  exp_name + "&jobs=" + ",".join(jid) + "&tags=op")
 
-        bar_link_exp =  dcc.Link(exp_name, href='/graph/bar/?expname='+exp_name + "&metric=duration,cpu_time")
-        bar_link_comp = dcc.Link(exp_component, href='/graph/bar/?expname='+exp_name+"&exp_component="+exp_component + "&metric=duration,cpu_time")
-        bar_link_job =  dcc.Link(", ".join(jid), href='/graph/bar/?expname='+exp_name+"&exp_component="+exp_component+"&jobs="+",".join(jid)+"&op=op" + "&metric=duration,cpu_time")
+        bar_link_exp = dcc.Link(exp_name, href='/graph/bar/?expname=' + exp_name + "&metric=duration,cpu_time")
+        bar_link_comp = dcc.Link(
+            exp_component,
+            href='/graph/bar/?expname=' +
+            exp_name +
+            "&exp_component=" +
+            exp_component +
+            "&metric=duration,cpu_time")
+        bar_link_job = dcc.Link(
+            ", ".join(jid),
+            href='/graph/bar/?expname=' +
+            exp_name +
+            "&exp_component=" +
+            exp_component +
+            "&jobs=" +
+            ",".join(jid) +
+            "&op=op" +
+            "&metric=duration,cpu_time")
 
         table_header = [
-            html.Thead(html.Tr([html.Th(""), html.Th("Exp_name (Components)"), html.Th("Component (Jobs)"), html.Th("Job (Operations)")]))
+            html.Thead(html.Tr([html.Th(""), html.Th("Exp_name (Components)"),
+                       html.Th("Component (Jobs)"), html.Th("Job (Operations)")]))
         ]
 
-        row1 = html.Tr([html.Td("Timeline (Gantt)"), html.Td(gantt_link_exp), html.Td(gantt_link_comp), html.Td(gantt_link_job)])
+        row1 = html.Tr([html.Td("Timeline (Gantt)"), html.Td(gantt_link_exp),
+                       html.Td(gantt_link_comp), html.Td(gantt_link_job)])
         row2 = html.Tr([html.Td("Metric (Bar)"), html.Td(bar_link_exp), html.Td(bar_link_comp), html.Td(bar_link_job)])
         table_body = [html.Tbody([row1, row2])]
         table = dbc.Table(table_header + table_body, bordered=True)
-        bp_text = "boxplot Model:" + ((selected_model + " vs ") if selected_model else '') + " Sample Jobs: " + ",".join(jid)
-        bp_href='/graph/boxplot/'+ (selected_model if selected_model else '') + '?jobs=' + ",".join(jid)
-        bplink = dcc.Link(bp_text , href=bp_href)
+        bp_text = "boxplot Model:" + ((selected_model + " vs ") if selected_model else '') + \
+            " Sample Jobs: " + ",".join(jid)
+        bp_href = '/graph/boxplot/' + (selected_model if selected_model else '') + '?jobs=' + ",".join(jid)
+        bplink = dcc.Link(bp_text, href=bp_href)
         table_n_link = [table, html.Br(), bplink]
-        return [table_n_link, {'display':'contents'}]
-    return ["",{'display':'none'}]
+        return [table_n_link, {'display': 'contents'}]
+    return ["", {'display': 'none'}]
 
 
 @app.callback(
@@ -1037,43 +1068,43 @@ def update_workflow_table(job_data, sel_jobs, selected_model):
      dash.dependencies.State('exp-component', 'children'),
      dash.dependencies.State('exp-jobs', 'children'),
      dash.dependencies.State('url', 'href'),
-    ]
-    )
-def send_2_nb(click,expname,exp_comp,exp_jobs,url):
+     ]
+)
+def send_2_nb(click, expname, exp_comp, exp_jobs, url):
     if click and click > 0:
-        #import dash_core_components as dcc
+        # import dash_core_components as dcc
         from dash import dcc
-        #import dash_html_components as html
+        # import dash_html_components as html
         from dash import html
         from urllib.parse import urlparse, urlencode
         from .components import generate_notebook
         # if we have tag parts, update tag dict to carry them
         # to the notebook
-        #values = {'tags':{'expname':expname, 'exp_component':exp_comp}}
-        if any([expname,exp_comp]):
-            values = {'tags':{}}
+        # values = {'tags':{'expname':expname, 'exp_component':exp_comp}}
+        if any([expname, exp_comp]):
+            values = {'tags': {}}
             if expname:
-                values['tags'].update({'exp_name':expname})
+                values['tags'].update({'exp_name': expname})
             if exp_comp:
-                values['tags'].update({'exp_component':exp_comp})
+                values['tags'].update({'exp_component': exp_comp})
             depth = 'jobs'
         if exp_jobs:
-                values['jobs'] = exp_jobs
-                depth = 'ops'
+            values['jobs'] = exp_jobs
+            depth = 'ops'
         notebook_port = 8888
         # Extract out the prefix for where jupyter may be running
         base = urlparse(url).hostname
         nblink = base + ':' + str(notebook_port)
         # Function call to render notebook with state data
-        nburl = generate_notebook(values,depth)
+        nburl = generate_notebook(values, depth)
         nblink = 'http://' + nblink + '/tree/' + nburl
-        #nblink = dcc.Link(nblink, href=nblink, target="_blank", refresh=True)
-        nblink = html.A(nblink, href=nblink, target="_blank") # target="_top"
-        return ["Visit Notebook: ",nblink]
+        # nblink = dcc.Link(nblink, href=nblink, target="_blank", refresh=True)
+        nblink = html.A(nblink, href=nblink, target="_blank")  # target="_top"
+        return ["Visit Notebook: ", nblink]
     return ['']
 
 # todo:
 # handle returning layout_unprocessed data
 #
-#unproc = JobGen().jobs_df.loc[JobGen().jobs_df['processing complete']
+# unproc = JobGen().jobs_df.loc[JobGen().jobs_df['processing complete']
 #                              == "No"].to_dict('records')

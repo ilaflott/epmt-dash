@@ -22,6 +22,7 @@ class Boxplot_tests(unittest.TestCase):
     def tearDown(self):
         """Stop web driver"""
         self.driver.quit()
+
     def test_case_1(self):
         """Check title"""
         try:
@@ -58,6 +59,7 @@ class Boxplot_tests(unittest.TestCase):
             self.assertTrue('op' == el.text)
         except NoSuchElementException as ex:
             self.fail(ex.msg)
+
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(Boxplot_tests)

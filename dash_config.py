@@ -2,7 +2,7 @@
 Used to configure aspects of dash gui
 """
 from os import environ
-#MOCK_EPMT_API = environ.get('EPMT_GUI_MOCK')
+# MOCK_EPMT_API = environ.get('EPMT_GUI_MOCK')
 MOCK_EPMT_API = False
 
 DEBUG = environ.get('DASH_DEBUG')

@@ -2,7 +2,13 @@
 """
 # pylint: disable-all
 
+from string import ascii_letters
+import pandas as pd
+import time
+import datetime
+import random
 from datetime import date, timedelta
+
 
 def str_time_prop(start, end, format):
     """Get a time at a proportion of a range of two formatted times.
@@ -21,16 +27,19 @@ def str_time_prop(start, end, format):
     return time.strftime(format, time.localtime(ptime))
 
 # Check if string time has 1 or 2 colons and convert grabbing just time
+
+
 def conv_str_time(st):
     logger.info("Convert to time")
     import datetime
     if st.count(':') == 1:
-        return datetime.datetime.strptime(st[1][1],"%H:%M").time()
+        return datetime.datetime.strptime(st[1][1], "%H:%M").time()
     # limit functionality for now
-    #if st.count(':') == 2:
+    # if st.count(':') == 2:
     #    return datetime.datetime.strptime(st[1][1],"%H:%M:%S").time()
     else:
         return None
+
 
 def random_date(start, end, dfmt):
     return str_time_prop(start, end, dfmt)
@@ -113,14 +122,9 @@ def _old_make_refs(x, name='', jobs=None, tags={}):
             ref_active = True   # Set active User Friendly
             features = featureli  # Full Features
         refs.append(deepcopy([jname, ref_date, tags, ref_jobs,
-                     features, ref_active]))                       # Append each ref to refs list
+                              features, ref_active]))                       # Append each ref to refs list
     return refs
 
-from string import ascii_letters
-import random
-import datetime
-import time
-import pandas as pd
 
 samplej = {'duration': 6460243317.0,
            'updated_at': datetime.datetime(2019, 11, 26, 22, 0, 22, 485979),
@@ -386,8 +390,11 @@ samplej = {'duration': 6460243317.0,
 # Use samplej real job as template
 # replace jobid with new number
 # return list of limit of jobs
-#def get_jobs(limit=None, fmt='df', offset=0):
-def get_jobs(jobs = [], tags=None, fltr = None, order = None, limit = None, offset = 0, when=None, before=None, after=None, hosts=[], fmt='dict', annotations=None, analyses=None, merge_proc_sums=True, exact_tag_only = False):
+# def get_jobs(limit=None, fmt='df', offset=0):
+
+
+def get_jobs(jobs=[], tags=None, fltr=None, order=None, limit=None, offset=0, when=None, before=None, after=None,
+             hosts=[], fmt='dict', annotations=None, analyses=None, merge_proc_sums=True, exact_tag_only=False):
     from datetime import datetime, timedelta
     # if offset >= limit: offset = limit
     if offset > 0:
@@ -396,9 +403,9 @@ def get_jobs(jobs = [], tags=None, fltr = None, order = None, limit = None, offs
         limit = offset + limit
     logger.info("Getting jobs...Limit{} Offset{}".format(limit, offset))
     sample_component = '_annual_rho2_1x1deg'
-    component_list = ['ocean','land','mountian']
+    component_list = ['ocean', 'land', 'mountian']
     sample_name = '_historical'
-    name_list = ['ESM0','ESM1']
+    name_list = ['ESM0', 'ESM1']
     from copy import deepcopy
     result = []
     for n in range(limit):
@@ -407,17 +414,19 @@ def get_jobs(jobs = [], tags=None, fltr = None, order = None, limit = None, offs
         job['Processed'] = 1
         job['start'] = job['start'] + timedelta(days=n)
         job['end'] = job['end'] + timedelta(days=n)
-        name = name_list[n%2]
+        name = name_list[n % 2]
         job['tags']['exp_name'] = name + sample_name
         if job['jobid'] == str(1234002):
             job['tags']['exp_name'] = "mismatch_test"
-        comp = component_list[n%3] + sample_component
+        comp = component_list[n % 3] + sample_component
         job['tags']['exp_component'] = str(comp)
         result.append(deepcopy(job))
     return result[offset:]
 
 # API Call
-def comparable_job_partitions(jobs, matching_keys = ['exp_name', 'exp_component']):
+
+
+def comparable_job_partitions(jobs, matching_keys=['exp_name', 'exp_component']):
     # Returns [ (('matchname','matchcomponent'), {set of matchjobids}), ...]
 
     # Typically jobids are only passed
@@ -426,28 +435,31 @@ def comparable_job_partitions(jobs, matching_keys = ['exp_name', 'exp_component'
     alt = job_gen().df[job_gen().df['job id'].isin(jobs)].reset_index()
     tags_df = pd.DataFrame.from_dict(alt['tags'].tolist())
     # Only Display Specific tags from dash_config
-    tags_df = tags_df[['exp_name','exp_component']]
+    tags_df = tags_df[['exp_name', 'exp_component']]
     # Dataframe of jobs
-    #logger.debug(alt)
+    # logger.debug(alt)
     # Dataframe of Tags of jobs
-    #logger.debug(tags_df)
+    # logger.debug(tags_df)
     alt = pd.merge(alt, tags_df, left_index=True, right_index=True)
-    #alt.drop('tags',axis=1)
+    # alt.drop('tags',axis=1)
     # Now Calculate comparable jobs
     recs = alt.to_dict('records')
     cdict = {}
     for rec in recs:
-        if (rec['exp_name'],rec['exp_component']) in cdict:
-            cdict[(rec['exp_name'],rec['exp_component'])].update({rec['job id']})
+        if (rec['exp_name'], rec['exp_component']) in cdict:
+            cdict[(rec['exp_name'], rec['exp_component'])].update({rec['job id']})
         else:
-            cdict[(rec['exp_name'],rec['exp_component'])] = {str(rec['job id'])}
+            cdict[(rec['exp_name'], rec['exp_component'])] = {str(rec['job id'])}
     # Reconfigure output format with out
-    out = [ ((exp_name,exp_component),cdict[(exp_name,exp_component)]) for exp_name, exp_component in cdict]
+    out = [((exp_name, exp_component), cdict[(exp_name, exp_component)]) for exp_name, exp_component in cdict]
     logger.debug(out)
     return out
 
 # API Call
-def detect_outlier_jobs(jobs, trained_model=None, features=['cpu_time', 'duration', 'num_procs'], methods=['modified_z_score'], thresholds='thresholds', sanity_check=True):
+
+
+def detect_outlier_jobs(jobs, trained_model=None, features=['cpu_time', 'duration', 'num_procs'], methods=[
+                        'modified_z_score'], thresholds='thresholds', sanity_check=True):
     """
     (df, parts) = eod.detect_outlier_jobs(jobs)
     pprint(parts)
@@ -465,7 +477,7 @@ def detect_outlier_jobs(jobs, trained_model=None, features=['cpu_time', 'duratio
                     u'kern-6656-20190614-191138'],
                    [])}
     """
-    returns = ('df', {'feature' : (['job','job2'], ['joboutlier'])})
+    returns = ('df', {'feature': (['job', 'job2'], ['joboutlier'])})
     return "Running outlier analysis on Jobs: " + str(jobs)
 
 
@@ -505,20 +517,21 @@ def _old_make_refs(x, name='', jobs=None, tags={}):
             ref_active = True   # Set active User Friendly
             features = featureli  # Full Features
         refs.append(deepcopy([jname, ref_date, tags, ref_jobs,
-                     features, ref_active]))                       # Append each ref to refs list
+                              features, ref_active]))                       # Append each ref to refs list
     return refs
+
 
 def create_refmodel(jobs=None, name=None, tag=None):
     get_ref = {'tags': tag if tag else {},
-                'updated_at': None,
-                'created_at': datetime.datetime(2019, 11, 26, 22, 53, 42, 447548),
-                'info_dict': None,
-                'id': 1,
-                'name': "Sample Model" + str(name)  if name else "Sample Ref Model",
-                'op_tags': [],
-                'enabled': True,
-                'jobs': jobs if jobs else ['685000', '685003', '685016'],
-                'modified_z_score': {'duration': [1.6944, 6615525773.0, 155282456.0],
+               'updated_at': None,
+               'created_at': datetime.datetime(2019, 11, 26, 22, 53, 42, 447548),
+               'info_dict': None,
+               'id': 1,
+               'name': "Sample Model" + str(name) if name else "Sample Ref Model",
+               'op_tags': [],
+               'enabled': True,
+               'jobs': jobs if jobs else ['685000', '685003', '685016'],
+               'modified_z_score': {'duration': [1.6944, 6615525773.0, 155282456.0],
                                     'num_procs': [3.0253, 3480.0, 68.0],
                                     'cpu_time': [10.8055, 113135329.0, 19597296.0]}}
     return get_ref

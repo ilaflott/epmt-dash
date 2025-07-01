@@ -14,6 +14,7 @@ if MOCK_EPMT_API:
 else:
     from epmt.epmtlib import tag_from_string
 
+
 def path_parse(path_string, *, normalize=True, module=posixpath):
     # TODO: This while loop causes infinite loops under malformed urls
     # Note the whitespace before http:
@@ -84,17 +85,17 @@ def parse_url(url, *, normalize=True, module=posixpath):
     # TODO: A better method may be encoding or repeating the key
     # https://stackoverflow.com/a/50537278
     for field in query_parsed.keys():
-        logger.debug("Parsing field {} for {}".format(field,query_parsed[field]))
+        logger.debug("Parsing field {} for {}".format(field, query_parsed[field]))
         if ',' in query_parsed[field][0]:
             query_parsed[field] = query_parsed[field][0].split(',')
         elif ':' in query_parsed[field]:
             logger.debug("Query dict found: {}".format(query_parsed[field]))
             query_parsed[field] = tag_from_string(query_parsed[field])
             logger.debug("Query dict converted: {}".format(query_parsed[field]))
-    return {"path":path_parsed, "query":query_parsed}
+    return {"path": path_parsed, "query": query_parsed}
 
 
-def url_gen(graph_type='', jobs=[], model='',parameters=[], host='localhost', port=8050):
+def url_gen(graph_type='', jobs=[], model='', parameters=[], host='localhost', port=8050):
     """
     Generate a url for graphing jobs and models
 
@@ -123,7 +124,7 @@ def url_gen(graph_type='', jobs=[], model='',parameters=[], host='localhost', po
     urlprefix = '/graph/'
     urlsuffix = ''
 
-    if graph_type not in ['gantt','boxplot','radar']:
+    if graph_type not in ['gantt', 'boxplot', 'radar']:
         return "Bad graph type or incomplete request"
 
     # gantt suffix will be a single jobid
@@ -149,18 +150,17 @@ def url_gen(graph_type='', jobs=[], model='',parameters=[], host='localhost', po
         if parameters:
             query = query + '&' + '&'.join(parameters)
 
-
     netloc = host + ':' + str(port)
     path = urlprefix + graph_type + urlsuffix
 
-    url_parts=['http', netloc, path, '', query, '']
+    url_parts = ['http', netloc, path, '', query, '']
     print(url_parts)
     result = urlp.urlunparse(url_parts)
     return result
 
 
-#parse_url("http://eg.com/hithere/something/else")
-#parse_url("http://eg.com/hithere/something/else/")
-#parse_url("http://eg.com/hithere/something/else/", normalize=False)
-#parse_url("http://eg.com/see%5C/if%5C/this%5C/works", normalize=False)
-#parse_url("http://eg.com/see%5C/if%5C/this%5C/works", normalize=False, module=ntpath)
+# parse_url("http://eg.com/hithere/something/else")
+# parse_url("http://eg.com/hithere/something/else/")
+# parse_url("http://eg.com/hithere/something/else/", normalize=False)
+# parse_url("http://eg.com/see%5C/if%5C/this%5C/works", normalize=False)
+# parse_url("http://eg.com/see%5C/if%5C/this%5C/works", normalize=False, module=ntpath)

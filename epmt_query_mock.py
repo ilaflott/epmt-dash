@@ -1,6 +1,7 @@
 """Mock epmt_query methods
 """
 
+import time
 from datetime import timedelta
 import datetime
 import random
@@ -150,8 +151,10 @@ class Models:
     id = 0
     model_list = []
 
+
 class Job:
     jobid = 'initialjobid'
+
 
 def create_refmodel(name, jobs=[], tag={}, enabled=True):
     """ This mock reference model method accepts a job name
@@ -217,8 +220,8 @@ def get_jobs(jobs=None, tags=None, fltr=None, order=None, limit=None, offset=0, 
         job['end'] = job['end'] + timedelta(days=njob)
         name = name_list[njob % 2]
         job['tags']['exp_name'] = name + sample_name
-        job['duration'] = job['duration'] - njob*8000000
-        job['cpu_time'] = job['cpu_time'] - njob*100
+        job['duration'] = job['duration'] - njob * 8000000
+        job['cpu_time'] = job['cpu_time'] - njob * 100
         if job['jobid'] == str(1234002):
             job['tags']['exp_name'] = "mismatch_test"
         comp = component_list[njob % 3] + sample_component
@@ -232,7 +235,7 @@ def get_jobs(jobs=None, tags=None, fltr=None, order=None, limit=None, offset=0, 
     df = df[offset:]
 
     # Filter on keys
-    if tags != None:
+    if tags is not None:
         from json import dumps
         for key in tags.keys():
             # Filter down to requested key
@@ -244,7 +247,7 @@ def get_jobs(jobs=None, tags=None, fltr=None, order=None, limit=None, offset=0, 
                 # No match on key value return df empty
                 df = df.head(0)
 
-    if fmt=='pandas':
+    if fmt == 'pandas':
         return df
     return df.to_dict('records')
 
@@ -299,6 +302,7 @@ def get_ops(jobs, tags=[], exact_tag_only=False, combine=False, fmt='dict', op_d
         return pd.DataFrame(res)
     return res
 
+
 def comparable_job_partitions(jobs, matching_keys=['exp_name', 'exp_component']):
     """Mock comparable_jobs
     Accepts jobid's, identifies based on matching_keys which are compatible
@@ -332,7 +336,6 @@ def comparable_job_partitions(jobs, matching_keys=['exp_name', 'exp_component'])
            for exp_name, exp_component in cdict]
     return out
 
-import time
 
 def str_time_prop(start, end, format):
     """Get a time at a proportion of a range of two formatted times.
@@ -451,13 +454,13 @@ def get_procs(
             proc = sample_proc
             proc['jobid'] = j
             proc['exename'] = random.choice(exelist)
-            proc['path'] = '/bin/'+proc['exename']
+            proc['path'] = '/bin/' + proc['exename']
             timeformat = "%m/%d/%Y %I:%M %p %Z"
             start_datetime = random_date(
-            "11/1/2019 1:30 PM UTC", "11/5/2019 4:50 PM UTC", timeformat)
+                "11/1/2019 1:30 PM UTC", "11/5/2019 4:50 PM UTC", timeformat)
             from datetime import datetime
             start_time = datetime.strptime(start_datetime, timeformat).time()
             proc['start'] = start_time
-            proc['duration'] = random.uniform(86400/4, 86400)
+            proc['duration'] = random.uniform(86400 / 4, 86400)
             result.append(deepcopy(proc))
     return result

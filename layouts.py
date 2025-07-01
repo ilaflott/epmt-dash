@@ -8,9 +8,9 @@ from datetime import datetime as dt
 from json import dumps
 import dash_bootstrap_components as dbc
 import dash_daq as daq
-#import dash_core_components as dcc
+# import dash_core_components as dcc
 from dash import dcc
-#import dash_html_components as html
+# import dash_html_components as html
 from dash import html
 from dash import dash_table
 
@@ -59,8 +59,8 @@ recent_jobs_page = html.Div([
                                      value='',
                                      style={'display': 'block',
                                             'width': '100%'},
-                                     #persistence=True,
-                                     #persistence_type='memory'
+                                     # persistence=True,
+                                     # persistence_type='memory'
                                  )],
                                 width="auto",
                                 # md=3,
@@ -74,7 +74,8 @@ recent_jobs_page = html.Div([
                                                  id='raw-switch',
                                                  # label='Raw Data',
                                                  # labelPosition='left',
-                                                 # style={'display':'inline-block','fontsize':'medium'}, # Set font size so it's not randomly inherited between browsers
+                                                 # style={'display':'inline-block','fontsize':'medium'}, # Set font size
+                                                 # so it's not randomly inherited between browsers
                                                  value=False,
                                                  color='Green'
                                              ),
@@ -142,139 +143,138 @@ recent_jobs_page = html.Div([
                     ),
                     html.Div([
                         dbc.Row([
-                        dbc.Col([
-                        dbc.Row([
-                            dbc.Alert(
-                                children="",
-                                id="run-create-alert",
-                                is_open=False,
-                                dismissable=True,
-                            ),
-                        ]),
-                        dbc.Row([
-                            html.Div(id='name-model-div', style={'display': 'none'}, children=[
-                                # Containers have nice margins and internal spacing
-                                dbc.Container([
-                                    dbc.Row(
-                                        [
-                                            dbc.Col(
-                                                # model name input
-                                                #dbc.FormGroup(
-                                                dbc.Row(
-                                                    [
-                                                        dbc.Label("Model"),
-                                                        dbc.Input(
-                                                            id='model-name-input',
-                                                            placeholder="model name here", type="text"),
-                                                        dbc.FormText(
-                                                            "Enter a Reference Model Name"),
-                                                    ]
-                                                ),
-                                                width="auto"
+                            dbc.Col([
+                                dbc.Row([
+                                    dbc.Alert(
+                                        children="",
+                                        id="run-create-alert",
+                                        is_open=False,
+                                        dismissable=True,
+                                    ),
+                                ]),
+                                dbc.Row([
+                                    html.Div(id='name-model-div', style={'display': 'none'}, children=[
+                                        # Containers have nice margins and internal spacing
+                                        dbc.Container([
+                                            dbc.Row(
+                                                [
+                                                    dbc.Col(
+                                                        # model name input
+                                                        # dbc.FormGroup(
+                                                        dbc.Row(
+                                                            [
+                                                                dbc.Label("Model"),
+                                                                dbc.Input(
+                                                                    id='model-name-input',
+                                                                    placeholder="model name here", type="text"),
+                                                                dbc.FormText(
+                                                                    "Enter a Reference Model Name"),
+                                                            ]
+                                                        ),
+                                                        width="auto"
 
-                                            ),
-                                            dbc.Col([
-                                                # Button for save
-                                                html.Button(id='save-newModel-btn',
+                                                    ),
+                                                    dbc.Col([
+                                                        # Button for save
+                                                        html.Button(id='save-newModel-btn',
                                                             children='Save Model', n_clicks_timestamp=0),
-                                                # Button for close
-                                                html.Button(id='create-Model-close-btn', children='Close', n_clicks_timestamp=0)],
-                                                width=3,
-                                                align="center"
-                                            ),
+                                                        # Button for close
+                                                        html.Button(id='create-Model-close-btn', children='Close', n_clicks_timestamp=0)],
+                                                        width=3,
+                                                        align="center"
+                                                    ),
 
-                                            # Models created notification
-                                            dbc.Col([html.Div(style={'inline': 'true'}, children=["Model Status:",
-                                                                                                  html.Div(id='recent-job-model-status',
-                                                                                                           children='')
-                                                                                                  ])])
+                                                    # Models created notification
+                                                    dbc.Col([html.Div(style={'inline': 'true'}, children=["Model Status:",
+                                                                                                          html.Div(id='recent-job-model-status',
+                                                                                                                   children='')
+                                                                                                          ])])
 
-                                        ]
-                                    )
-                                ], fluid=True),
-                            ]),
-                        ]),
-                        dbc.Row([
-                            dbc.Col([
-                                html.Button(id='run-analysis-btn', children="Run Analysis", n_clicks_timestamp=0,
+                                                ]
+                                            )
+                                        ], fluid=True),
+                                    ]),
+                                ]),
+                                dbc.Row([
+                                    dbc.Col([
+                                        html.Button(id='run-analysis-btn', children="Run Analysis", n_clicks_timestamp=0,
                                             style={'background-color': '#20c997', 'color': '#020080'}),
-                            ], width='auto'),
-                            dbc.Col([
-                                html.Button(id='create-newModel-btn',
-                                            children="Create Model from Selected Jobs", n_clicks_timestamp=0),
-                            ], width='auto'),
-                            dbc.Col([
-                                html.Button(id='index-select-all',
-                                            children="Select All"),
-                            ], width='auto'),
-                            dbc.Col([
-                                html.Div(style={'display': 'block', 'width': '360px', 'text-align': 'center'}, children=[
-                                    dcc.DatePickerRange(
-                                        id='jobs-date-picker',
-                                        min_date_allowed=dt(1990, 1, 1),
-                                        max_date_allowed=dt(2040, 12, 25),
-                                        initial_visible_month=dt(2019, 6, 5),
-                                        clearable=True,
-                                        with_portal=True,
-                                        show_outside_days=True,
-                                        minimum_nights=0
-                                    ), "(Inclusive Date Selections)"]),
-                            ], width='auto'),
-                        ]),
-                        dbc.Row([
-                            # Selected jobs notification
-                            dbc.Col([
-                                html.Div(children=[
-                                    "Available test Models: ",
-                                    dbc.Col(
-                                        dcc.Dropdown(
-                                            id='model-selector-dropdown',
-                                            options=[
-                                                {'label': "No Model",
-                                                    'value': "None"}
-                                            ],
-                                            value="None",
-                                            #style={'display': 'block', 'width': '100%'}
-                                        ), width="11"),
-                                    dbc.Col([
-                                        dcc.Dropdown(
-                                            id='row-count-dropdown',
-                                            options=[
-                                                {'label': '5 Rows', 'value': '5'},
-                                                {'label': '30 Rows',
-                                                    'value': '30'},
-                                                {'label': '50 Rows',
-                                                    'value': '50'},
-                                                {'label': '1000 Rows',
-                                                    'value': '1000'}
-                                            ],
-                                            clearable=False,
-                                            searchable=False,
-                                            value=DEFAULT_ROWS_PER_PAGE,
-                                            persistence=True,
-                                            persistence_type='local'
-                                        )
-                                    ], width=5),
-                                    # df.shape[0]
-                                    # Old Page attempt
-                                    # dbc.Col(['Page:'], html.Div(id="page-selector", children=[dcc.Link(str(n+1)+", ",href="?page="+str(n)) for n in range((job_df.shape[0]//DEFAULT_ROWS_PER_PAGE))])
-                                    # , width='auto'),
-                                    # ','.join([str(n+1) for n in range((job_df.shape[0]//DEFAULT_ROWS_PER_PAGE))]),
-                                    dbc.Col([
-                                        "[ ",
-                                        JobGen().jobs_df.shape[0],
-                                        " Jobs Total ]"
                                     ], width='auto'),
-                                ])
-                            ]),
-                        ]),
-                    ], width=10),
-                    dbc.Col([html.Div(children=[
-                        "Quick Links Here"
-                    ]
-                            ,id='quick-links', style={'display':'none'})])
+                                    dbc.Col([
+                                        html.Button(id='create-newModel-btn',
+                                            children="Create Model from Selected Jobs", n_clicks_timestamp=0),
+                                    ], width='auto'),
+                                    dbc.Col([
+                                        html.Button(id='index-select-all',
+                                            children="Select All"),
+                                    ], width='auto'),
+                                    dbc.Col([
+                                        html.Div(style={'display': 'block', 'width': '360px', 'text-align': 'center'}, children=[
+                                            dcc.DatePickerRange(
+                                                id='jobs-date-picker',
+                                                min_date_allowed=dt(1990, 1, 1),
+                                                max_date_allowed=dt(2040, 12, 25),
+                                                initial_visible_month=dt(2019, 6, 5),
+                                                clearable=True,
+                                                with_portal=True,
+                                                show_outside_days=True,
+                                                minimum_nights=0
+                                            ), "(Inclusive Date Selections)"]),
+                                    ], width='auto'),
+                                ]),
+                                dbc.Row([
+                                    # Selected jobs notification
+                                    dbc.Col([
+                                        html.Div(children=[
+                                            "Available test Models: ",
+                                            dbc.Col(
+                                                dcc.Dropdown(
+                                                    id='model-selector-dropdown',
+                                                    options=[
+                                                        {'label': "No Model",
+                                                         'value': "None"}
+                                                    ],
+                                                    value="None",
+                                                    # style={'display': 'block', 'width': '100%'}
+                                                ), width="11"),
+                                            dbc.Col([
+                                                dcc.Dropdown(
+                                                    id='row-count-dropdown',
+                                                    options=[
+                                                        {'label': '5 Rows', 'value': '5'},
+                                                        {'label': '30 Rows',
+                                                         'value': '30'},
+                                                        {'label': '50 Rows',
+                                                         'value': '50'},
+                                                        {'label': '1000 Rows',
+                                                         'value': '1000'}
+                                                    ],
+                                                    clearable=False,
+                                                    searchable=False,
+                                                    value=DEFAULT_ROWS_PER_PAGE,
+                                                    persistence=True,
+                                                    persistence_type='local'
+                                                )
+                                            ], width=5),
+                                            # df.shape[0]
+                                            # Old Page attempt
+                                            # dbc.Col(['Page:'], html.Div(id="page-selector", children=[dcc.Link(str(n+1)+", ",href="?page="+str(n)) for n in range((job_df.shape[0]//DEFAULT_ROWS_PER_PAGE))])
+                                            # , width='auto'),
+                                            # ','.join([str(n+1) for n in range((job_df.shape[0]//DEFAULT_ROWS_PER_PAGE))]),
+                                            dbc.Col([
+                                                "[ ",
+                                                JobGen().jobs_df.shape[0],
+                                                " Jobs Total ]"
+                                            ], width='auto'),
+                                        ])
+                                    ]),
+                                ]),
+                            ], width=10),
+                            dbc.Col([html.Div(children=[
+                                "Quick Links Here"
+                            ], id='quick-links', style={'display': 'none'})])
+                        ])
                     ])
-                ])
 
 
                 ], className="subpage"),
@@ -768,6 +768,7 @@ def graphit(pfullurl):
         ], className="subpage")
     ], className="page")
 
+
 def graph_plotly(url):
     """
     Based on the url this function will return the page including
@@ -786,57 +787,71 @@ def graph_plotly(url):
     exp_component = None
     e = parse_url(url)
     logger.debug(e)
-    path= e['path']
+    path = e['path']
     query = e['query']
     graph_style = path[1]
     # Return a gantt chart
     if graph_style == 'gantt':
-        default_tags = ['op_instance','op']
-        jobname = query.get('expname',[None])[0]
-        exp_name = query.get('expname',[None])[0]
-        jobs = query.get('jobs',None)
-        exp_component = query.get('exp_component',[None])[0]
-        #if len(path)>2:
-            #job = path[2]
-        gtags = query.get('tags',None)
-        graph_data = create_gantt_graph(jobs, gtags if gtags else default_tags, exp_name=exp_name, exp_component=exp_component)
+        default_tags = ['op_instance', 'op']
+        jobname = query.get('expname', [None])[0]
+        exp_name = query.get('expname', [None])[0]
+        jobs = query.get('jobs', None)
+        exp_component = query.get('exp_component', [None])[0]
+        # if len(path)>2:
+        # job = path[2]
+        gtags = query.get('tags', None)
+        graph_data = create_gantt_graph(
+            jobs,
+            gtags if gtags else default_tags,
+            exp_name=exp_name,
+            exp_component=exp_component)
     # Return a boxplot graph
     elif graph_style == 'boxplot':
         model = ""
         jobs = []
         # Assign url value after /boxplot/ to model name
-        if len(path)>2:
+        if len(path) > 2:
             model = path[2]
-        tags = query.get('tags',['op'])
+        tags = query.get('tags', ['op'])
         logger.debug("Tags requested: {}".format(tags))
-        graph_data = create_boxplot(model=model,jobs=query.get('jobs'),normalize=query.get('normalize',['True'])[0],metric=query.get('metric',['cpu_time'])[0],tags=tags)
+        graph_data = create_boxplot(
+            model=model, jobs=query.get('jobs'), normalize=query.get(
+                'normalize', ['True'])[0], metric=query.get(
+                'metric', ['cpu_time'])[0], tags=tags)
     # Return a bar graph
     elif graph_style == 'bar':
 
         # Rename and retrieve parameters
-        y_value='component'
-        jobname = query.get('expname',None)[0]
+        y_value = 'component'
+        jobname = query.get('expname', None)[0]
         bar_title = "exp_name:" + jobname
-        metric = query.get('metric',['duration'])
-        sort = query.get('sort',[None])[0]
+        metric = query.get('metric', ['duration'])
+        sort = query.get('sort', [None])[0]
         if sort is None:
             logger.debug("Sort by first metric, sort not supplied")
-            sort = metric[0] if isinstance(metric,list) else metric
-        limit = int(query.get('limit',[0])[0])
-        tag_dict = {'exp_name': jobname }
-        exp_component = query.get('exp_component',[None])[0]
-        ops = query.get('op',[None])[0]
-        jobs = query.get('jobs',None)
+            sort = metric[0] if isinstance(metric, list) else metric
+        limit = int(query.get('limit', [0])[0])
+        tag_dict = {'exp_name': jobname}
+        exp_component = query.get('exp_component', [None])[0]
+        ops = query.get('op', [None])[0]
+        jobs = query.get('jobs', None)
         if ops:
-            y_value=ops
-            bar_title = "Operations in job:'" + ','.join(jobs) + "' component: '" + exp_component + "' experiment: '" + jobname + "'"
+            y_value = ops
+            bar_title = "Operations in job:'" + \
+                ','.join(jobs) + "' component: '" + exp_component + "' experiment: '" + jobname + "'"
             graph_plot = graph_ops(jobs=jobs, tag_value=ops, metric=metric, title=bar_title)
         elif exp_component or jobs:
             bar_title = "Jobs in component: '" + exp_component + "' in experiment: '" + jobname + "'"
-            tag_dict.update({'exp_component':exp_component})
+            tag_dict.update({'exp_component': exp_component})
             logger.debug("Requested tag_dict {}".format(tag_dict))
-            y_value='jobid'
-            graph_plot = graph_components(exp_name=jobname, exp_component=exp_component, jobs=jobs, title=bar_title, metric=metric, order=sort)
+            y_value = 'jobid'
+            graph_plot = graph_components(
+                exp_name=jobname,
+                exp_component=exp_component,
+                jobs=jobs,
+                title=bar_title,
+                metric=metric,
+                order=sort)
         elif jobname:
             bar_title = "Components in experiment: '" + jobname + "'"
             graph_plot = graph_experiment(exp_name=jobname, title=bar_title, metric=metric)
@@ -847,10 +862,9 @@ def graph_plotly(url):
             graph_data = dcc.Graph(figure=graph_plot, id='bargraph')
         else:
             graph_data = "Something went wrong..."
-        #grouped = True if len(metric) > 1 else False #query.get('grouped',[False])[0]
+        # grouped = True if len(metric) > 1 else False #query.get('grouped',[False])[0]
         # Build and store a graph of given parameters
-        #graph_data = create_grouped_bargraph(title=bar_title, jobs=jobs, tags=tag_dict, metric=metric, ops=ops, order_by=order_by,limit=limit, y_value=y_value)
-
+        # graph_data = create_grouped_bargraph(title=bar_title, jobs=jobs, tags=tag_dict, metric=metric, ops=ops, order_by=order_by,limit=limit, y_value=y_value)
 
     else:
         graph_data = 'Unknown graphstyle'
@@ -859,43 +873,36 @@ def graph_plotly(url):
         [
             # represents the URL bar, doesn't render anything
             # refresh causes page to reload if path is updated via callback
-            dcc.Location(id=graph_style+'-url', refresh=True),
+            dcc.Location(id=graph_style + '-url', refresh=True),
             html.Div(style={'inline': 'true'}, children=[
-            Header(),
+                Header(),
             ]),
             html.Div(id="subpage", children=[
                 html.Button(id='Send-hidden-to-nb', children=["Send To Notebook"], n_clicks_timestamp=0,
-                                            style={'backgroundColor': '#20c997', 'color': '#020080'}),
+                            style={'backgroundColor': '#20c997', 'color': '#020080'}),
                 html.Div(id='nb-link-div', children=''),
                 # Return graph-area-stop if we are on final jobs page
                 # To stop any new callbacks from firing
-                html.Div(id="graph-area" if jobs else "graph-area" ,children=graph_data),
+                html.Div(id="graph-area" if jobs else "graph-area", children=graph_data),
                 html.Div(id="hidden-divs", children=[
                     # Expname - hidden div
-                     html.Div(children=jobname
-                            ,id='bar-expname', style={'display':'none'}),
-                    # metric - hidden div
-                    html.Div(children=metric
-                            ,id='bar-metrics', style={'display':'none'}),
-                    html.Div(children=exp_component
-                            ,id='exp-component', style={'display':'none'}),
-                    html.Div(children=jobs
-                            ,id='exp-jobs', style={'display':'none'}),
-                    # specify experiment as the level of bar graph
-                    # if exp_component is empty
-                    html.Div(children="experiment"
-                            ,id='bar-level', style={'display':'none'})
-                    # We have component but no jobs
-                    if exp_component is None and jobs is None else
-                    html.Div(children="component"
-                            ,id='bar-level', style={'display':'none'})
-                    if exp_component and jobs is None else
-                    # Finally we're at job level of ops
-                    html.Div(children="job"
-                            ,id='bar-level', style={'display':'none'}),
-                    ])
+                     html.Div(children=jobname, id='bar-expname', style={'display': 'none'}),
+                     # metric - hidden div
+                     html.Div(children=metric, id='bar-metrics', style={'display': 'none'}),
+                     html.Div(children=exp_component, id='exp-component', style={'display': 'none'}),
+                     html.Div(children=jobs, id='exp-jobs', style={'display': 'none'}),
+                     # specify experiment as the level of bar graph
+                     # if exp_component is empty
+                     html.Div(children="experiment", id='bar-level', style={'display': 'none'})
+                     # We have component but no jobs
+                     if exp_component is None and jobs is None else
+                     html.Div(children="component", id='bar-level', style={'display': 'none'})
+                     if exp_component and jobs is None else
+                     # Finally we're at job level of ops
+                     html.Div(children="job", id='bar-level', style={'display': 'none'}),
+                     ])
             ], className="subpage"),
-            html.Pre(id='click-data',children=''),
+            html.Pre(id='click-data', children=''),
             Footer(),
         ], className="page")
 
@@ -903,18 +910,17 @@ def graph_plotly(url):
 def compare(url):
 
     return html.Div([
-        html.Div(children=url
-            # Hidden Div full url
-        ,id='fullurl', style={'display':'none'}),
+        html.Div(children=url                 # Hidden Div full url
+                 , id='fullurl', style={'display': 'none'}),
         dcc.Location(id='compare-url', refresh=False),
-        html.Div(id='compare-zoom-jobs', style={'display':'none'}),
-        html.Div(id='jobs-in-view', style={'display':'none'}),
+        html.Div(id='compare-zoom-jobs', style={'display': 'none'}),
+        html.Div(id='jobs-in-view', style={'display': 'none'}),
         html.Div([
             dcc.Graph(id='scatter-compare',
-            figure={
-                    'layout': {
-                        'clickmode': 'select'
-                    }
+                      figure={
+                          'layout': {
+                              'clickmode': 'select'
+                          }
                       })]),
         html.Div([
             "X:",
@@ -926,7 +932,7 @@ def compare(url):
                     {'label': 'start', 'value': 'start'}
                 ],
                 value='start')
-        ], style={'width': '49%','display': 'inline-block'}),
+        ], style={'width': '49%', 'display': 'inline-block'}),
         html.Div([
             "Y:",
             dcc.Dropdown(
@@ -936,8 +942,8 @@ def compare(url):
                     {'label': 'duration', 'value': 'duration'}
                 ],
                 value='cpu_time')
-            ], className="subpage",
-        style={'width': '49%','display': 'inline-block'}),
+        ], className="subpage",
+            style={'width': '49%', 'display': 'inline-block'}),
         html.Br(),
         html.Div([
             "Graph Style:",
@@ -949,15 +955,14 @@ def compare(url):
                     {'label': 'bar', 'value': 'bar'}
                 ],
                 value='scatter')
-        ], style={'width': '20%','display': 'inline-block'})
-        ], className="page")
+        ], style={'width': '20%', 'display': 'inline-block'})
+    ], className="page")
 
 
 def multi_flow(url):
     return html.Div([
         # hidden url for callback
-        html.Div(children=url
-        ,id='fullurl', style={'display':'none'}),
+        html.Div(children=url, id='fullurl', style={'display': 'none'}),
         html.Div([
 
             dcc.Graph(id='multi-flow-chart',
@@ -989,42 +994,73 @@ def multi_flow(url):
                       style={'width': '100%'}),
         ]),
         html.Div([
-            html.Div(id='job-flow-text',style={'position':'relative','left':'17%','width':'200px','display':'inline-block','text-align':'center'}),
-            html.Div(["operation"],id='op-flow-text',style={'position':'relative','left':'20%','width':'200px','display':'inline-block','text-align':'center'}),
-            html.Div(["process"],id='proc-flow-text',style={'position':'relative','left':'23%','width':'200px','display':'inline-block','text-align':'center'}),
-            html.Div(["thread"],id='thread-flow-text',style={'position':'relative','left':'27%','width':'200px','display':'inline-block','text-align':'center'}),
             html.Div(
-            dcc.Slider(
-                id='zoom-level-multi-flow',
-                step=None,
-                min=0,
-                max=0,
-                value=0,
-                marks={
-                    0: {'label': 'Job'},
-                    1: {'label': 'Operation'},
-                    2: {'label': 'Process'},
-                    3: {'label': 'Thread'},
-                },
-                included=False,
-                #vertical=True,
-            ),style={"width": '240px',
-            'height': '40px',
-            # 'margin': 'auto',
-            'position': 'relative',
-            'left': '25%'}),
+                id='job-flow-text',
+                style={
+                    'position': 'relative',
+                    'left': '17%',
+                    'width': '200px',
+                    'display': 'inline-block',
+                    'text-align': 'center'}),
+            html.Div(
+                ["operation"],
+                id='op-flow-text',
+                style={
+                    'position': 'relative',
+                    'left': '20%',
+                    'width': '200px',
+                    'display': 'inline-block',
+                    'text-align': 'center'}),
+            html.Div(
+                ["process"],
+                id='proc-flow-text',
+                style={
+                    'position': 'relative',
+                    'left': '23%',
+                    'width': '200px',
+                    'display': 'inline-block',
+                    'text-align': 'center'}),
+            html.Div(
+                ["thread"],
+                id='thread-flow-text',
+                style={
+                    'position': 'relative',
+                    'left': '27%',
+                    'width': '200px',
+                    'display': 'inline-block',
+                    'text-align': 'center'}),
+            html.Div(
+                dcc.Slider(
+                    id='zoom-level-multi-flow',
+                    step=None,
+                    min=0,
+                    max=0,
+                    value=0,
+                    marks={
+                        0: {'label': 'Job'},
+                        1: {'label': 'Operation'},
+                        2: {'label': 'Process'},
+                        3: {'label': 'Thread'},
+                    },
+                    included=False,
+                    # vertical=True,
+                ), style={"width": '240px',
+                          'height': '40px',
+                          # 'margin': 'auto',
+                          'position': 'relative',
+                          'left': '25%'}),
             html.Div([
-            "Metric:",
-            dcc.Dropdown(
-                id='y-metric-multi-flow',
-                options=[
-                    {'label': 'duration', 'value': 'duration'},
-                    {'label': 'cpu_time', 'value': 'cpu_time'},
-                    {'label': 'write_bytes', 'value': 'write_bytes'}
-                ],
-                value='duration'
-            )],style={'inline': 'true'})
-        ],style={'inline': 'true'}) # div
+                "Metric:",
+                dcc.Dropdown(
+                    id='y-metric-multi-flow',
+                    options=[
+                        {'label': 'duration', 'value': 'duration'},
+                        {'label': 'cpu_time', 'value': 'cpu_time'},
+                        {'label': 'write_bytes', 'value': 'write_bytes'}
+                    ],
+                    value='duration'
+                )], style={'inline': 'true'})
+        ], style={'inline': 'true'})  # div
     ])  # outer div
 
 

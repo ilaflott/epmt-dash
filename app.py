@@ -32,8 +32,8 @@ app = dash.Dash(
 server = app.server
 app.config.suppress_callback_exceptions = True
 fullurl = ''
-#app.css.config.serve_locally = False
-#app.scripts.config.serve_locally = False
+# app.css.config.serve_locally = False
+# app.scripts.config.serve_locally = False
 
 # import dash_auth
 

@@ -4,10 +4,10 @@ Configure the Dash server and load the layout
 This file loads the initial layout as well as handles custom url query page delivery.
 """
 
-#import dash_core_components as dcc
+# import dash_core_components as dcc
 from dash import dcc
 
-#import dash_html_components as html
+# import dash_html_components as html
 from dash import html
 
 from dash.dependencies import Input, Output
@@ -16,6 +16,7 @@ from . import layouts as lay
 from . import callbacks  # pylint: disable=unused-import
 from logging import getLogger
 logger = getLogger(__name__)
+
 
 def init_app():
     """
@@ -80,8 +81,9 @@ def display_page(pathname, pfullurl):
     else:
         return lay.noPage
 
+
 if __name__ == '__main__':
-    from logging import getLogger, basicConfig, DEBUG, ERROR, INFO, WARNING # pylint: disable=unused-import
+    from logging import getLogger, basicConfig, DEBUG, ERROR, INFO, WARNING  # pylint: disable=unused-import
     logger = getLogger(__name__)  # pylint: disable=invalid-name
     basicConfig(level=DEBUG)
     init_app()

@@ -9,10 +9,12 @@ import time
 from ..dash_config import MOCK_EPMT_API
 from logging import getLogger
 logger = getLogger(__name__)
-#pd.options.mode.chained_assignment = None
+# pd.options.mode.chained_assignment = None
+
 
 class InterfaceError(Exception):
     pass
+
 
 if MOCK_EPMT_API:
     logger.info("Using Mock API")
@@ -22,6 +24,8 @@ else:
     from epmt.epmt_query import get_procs, get_ops, get_refmodels, get_jobs
 
 # Return dictionary query results
+
+
 def parseurl(i):
     """
     This Function uses urllib to parse a query then
@@ -99,7 +103,7 @@ def convtounit(val, reqUnit):
     """
     # Letter to Unit reverse search
     unitp = list(power_labels.keys())[list(power_labels.values()).index(reqUnit)]
-    return val/1000**unitp
+    return val / 1000**unitp
 
 
 def durList(jid, minDur, maxDur, exes):
@@ -124,9 +128,9 @@ def durList(jid, minDur, maxDur, exes):
     procList = get_procs(jid, limit=proc_limit)
     end = time.time()
     print("Took", (end - start))
-    #print("Sorting and Filtering ",len(procList))
-    #procList = procList[0::density]
-    #print("After ", len(procList))
+    # print("Sorting and Filtering ",len(procList))
+    # procList = procList[0::density]
+    # print("After ", len(procList))
     # print("loop:",tuple(i for i in options))
     # x value is start time, y variable index on options
     exenames = list(set([k['exename'] for k in procList]))
@@ -138,7 +142,7 @@ def durList(jid, minDur, maxDur, exes):
     for n in opnames:
         traceList.append({'label': n.capitalize(), 'value': "tag-" + n})
     exenames.sort(key=str.lower)
-    if(exes):  # Leaves alot of empty dicts, dropdown seems to ignore them
+    if (exes):  # Leaves alot of empty dicts, dropdown seems to ignore them
         filteredData = []
         for x in procList:
             if x['exename'] in exes:
@@ -158,7 +162,7 @@ def separateDataBy(data, graphStyle="exename", pointText=("path", "exe", "args")
     """
     from collections import defaultdict
     outputDict = defaultdict(list)
-    #print("graphstyle", graphStyle)
+    # print("graphstyle", graphStyle)
     for entry in data:
         if (graphStyle[:4] == "tag-"):
             # Works but dirty
@@ -167,7 +171,7 @@ def separateDataBy(data, graphStyle="exename", pointText=("path", "exe", "args")
                 outputDict[entry['tags'][graphStyle[4:]]].append([entry])
         else:
             outputDict[entry[graphStyle]].append([entry])
-        #print([sublist[0]['start'] for sublist in outputDict['dash']])
+        # print([sublist[0]['start'] for sublist in outputDict['dash']])
     hoverwidth = 20
     output = [{  # 'x': list(range(1, 11)), 'y': list(range(1, 11)),
               'mode': 'markers',
@@ -175,7 +179,7 @@ def separateDataBy(data, graphStyle="exename", pointText=("path", "exe", "args")
               'y': [sublist[0]['duration'] for sublist in outputDict[n]],
               'text' if (True) else None: [[sublist[0]["exename"], sublist[0]["args"], sublist[0]["path"]] for sublist in outputDict[n]],
               # 'hoverinfo':"text",
-              'hovermode':False,
+              'hovermode': False,
               'name': n,
               # 'hovertemplate': "Path: %{text[2]}<br>" +
               #                  "Args: <br>%{text[1]}"
@@ -183,7 +187,7 @@ def separateDataBy(data, graphStyle="exename", pointText=("path", "exe", "args")
               } for n in outputDict.keys()]
     # print(output)
     #
-    #textwrap.wrap("Path: %{text[2]}<br>" + "Args: <br>%{text[1]}", hoverwidth)
+    # textwrap.wrap("Path: %{text[2]}<br>" + "Args: <br>%{text[1]}", hoverwidth)
     # print("args: {0}".format("<br>".join(textwrap.wrap(longstring,hoverwidth))))
     return output
 
@@ -195,9 +199,9 @@ def df_normalizer(df, idx='op', norm_metric='cpu_time'):
     Normalized Column: (norm_metric)_normalized
     """
     df = df.set_index(idx)
-    means_stds = df.groupby(idx)[norm_metric].agg(['mean','std']).reset_index()
-    df = df.merge(means_stds,on=idx)
-    df[norm_metric +'_normalized'] = (df[norm_metric] - df['mean']) / df['std']
+    means_stds = df.groupby(idx)[norm_metric].agg(['mean', 'std']).reset_index()
+    df = df.merge(means_stds, on=idx)
+    df[norm_metric + '_normalized'] = (df[norm_metric] - df['mean']) / df['std']
     return df
 
 # Incomplete, could be extended to apply text to each bar on gantt chart
@@ -211,17 +215,16 @@ def df_normalizer(df, idx='op', norm_metric='cpu_time'):
 #     return fig
 
 
-
-def generate_notebook(values,depth='jobs'):
+def generate_notebook(values, depth='jobs'):
     from nbformat.v4.nbbase import (
-    new_code_cell, new_markdown_cell, new_notebook,
-    new_output, new_raw_cell
+        new_code_cell, new_markdown_cell, new_notebook,
+        new_output, new_raw_cell
     )
     # This is a relative link to the notebooks location and initial
     # File name, subsequent files will be made with name-n.ipynb where n
     # is an integer begining with 1
     from tempfile import NamedTemporaryFile
-    nbpath = NamedTemporaryFile(suffix='.ipynb',prefix='dash_nb-', dir='./notebooks/')#, delete=False)
+    nbpath = NamedTemporaryFile(suffix='.ipynb', prefix='dash_nb-', dir='./notebooks/')  # , delete=False)
     cells = []
     cells.append(new_markdown_cell(
         source='Import EPMT: ',
@@ -251,27 +254,27 @@ from epmt import epmt_stat as es""",
         count = count + 1
     if depth == 'jobs':
         cells.append(new_code_cell(
-                source="""j = eq.get_jobs(tags=tags{}, fmt='pandas')
+            source="""j = eq.get_jobs(tags=tags{}, fmt='pandas')
 j""".format(", jobs=jobs" if 'jobs' in values else ''),
-                execution_count=count,
-            ))
+            execution_count=count,
+        ))
         count = count + 1
     if depth == 'ops':
         cells.append(new_code_cell(
-                source="op_tags='op'",
-                execution_count=count,
-            ))
+            source="op_tags='op'",
+            execution_count=count,
+        ))
         count = count + 1
         cells.append(new_code_cell(
-                source="eq.get_ops(jobs=jobs, tags=op_tags, fmt='pandas')",
-                execution_count=count,
-            ))
+            source="eq.get_ops(jobs=jobs, tags=op_tags, fmt='pandas')",
+            execution_count=count,
+        ))
         count = count + 1
     nb0 = new_notebook(cells=cells,
-        metadata={
-            'language': 'python',
-        }
-    )
+                       metadata={
+                           'language': 'python',
+                       }
+                       )
     import nbformat as nbf
     import codecs
     f = codecs.open(nbpath.name, encoding='utf-8', mode='w')
@@ -279,4 +282,4 @@ j""".format(", jobs=jobs" if 'jobs' in values else ''),
 
     from os.path import relpath
 
-    return relpath(nbpath.name,'.')
+    return relpath(nbpath.name, '.')
