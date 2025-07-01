@@ -56,7 +56,8 @@ class TestTemplate(unittest.TestCase):
         """See if component graph was made by id"""
         try:
             self.driver.get(
-                host + "/graph/bar?metric=duration,cpu_time&expname=ESM1_historical&exp_component=ocean_annual_rho2_1x1deg")
+                host +
+                "/graph/bar?metric=duration,cpu_time&expname=ESM1_historical&exp_component=ocean_annual_rho2_1x1deg")
             el = self.driver.find_element_by_id("bargraph")
             # self.assertEqual(el, "Experiment Performance Management Tool")
         except NoSuchElementException as ex:

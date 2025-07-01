@@ -211,8 +211,10 @@ class TestTemplate(unittest.TestCase):
 
             # Wait for table rows to be present
             # //*[@id='table-multicol-sorting']/div[2]/div/div[2]/div[2]/table/tbody/tr[30]/td[1]
-            WebDriverWait(self.driver, 200).until(
-                EC.presence_of_element_located((By.XPATH, "//*[@id='table-multicol-sorting']/div[2]/div/div[2]/div[2]/table/tbody/tr[30]/td[1]")))
+            WebDriverWait(
+                self.driver, 200).until(
+                EC.presence_of_element_located(
+                    (By.XPATH, "//*[@id='table-multicol-sorting']/div[2]/div/div[2]/div[2]/table/tbody/tr[30]/td[1]")))
             el = self.driver.find_element_by_xpath(
                 "//*[@id='table-multicol-sorting']/div[2]/div/div[2]/div[2]/table/tbody/tr[30]/td[1]")
             state = el.is_selected()
