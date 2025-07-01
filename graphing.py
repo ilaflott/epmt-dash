@@ -187,8 +187,11 @@ def data_gatherer_ops(jobs=None, metric=['duration'], tag_value='op'):
         a[tag_value] = a['tags'].apply(lambda x: x.get(tag_value))
 
     # bump requested metrics out
-    for m in metric:
-        a[m] = a['proc_sums'].apply(lambda x: x.get(m))
+    # this has a pylint problem that's subtle:
+    #   http://pylint.readthedocs.io/en/latest/user_guide/messages/warning/cell-var-from-loop.html
+    for m in metric: 
+        a[m] = a['proc_sums'].apply(
+            lambda x: x.get(m) )
 
     return a
 
@@ -411,26 +414,49 @@ def create_boxplot(jobs=[], model="", normalize=True, metric='cpu_time', tags='o
     df_to_scatter = [filtered[(filtered['jobid'] == job)] for job in uniq_job_ops]
 
     # Scatter the test jobs against the model
-    [fig.add_trace(
-        go.Scatter(
-            mode='markers',
-            x=job[x_title],
-            y=job['op'],
-            opacity=1,
-            name=job.head(1).jobid.to_string(index=False),
-            text=job.jobid,
-            hoverinfo='text',
-            marker=dict(
-                # color='LightSkyBlue',
-                size=10,
-                line=dict(
-                    # color='Green',
-                    width=2
-                )
-            ),
-            showlegend=True
+    for job in df_to_scatter:
+        fig.add_trace(
+            go.Scatter(
+                mode='markers',
+                x=job[x_title],
+                y=job['op'],
+                opacity=1,
+                name=job.head(1).jobid.to_string(index=False),
+                text=job.jobid,
+                hoverinfo='text',
+                marker=dict(
+                    # color='LightSkyBlue',
+                    size=10,
+                    line=dict(
+                        # color='Green',
+                        width=2
+                    )
+                ),
+                showlegend=True
+            )
         )
-    ) for job in df_to_scatter]
+        
+    ## ... list comp just for efficiency? 
+    # [fig.add_trace(
+    #     go.Scatter(
+    #         mode='markers',
+    #         x=job[x_title],
+    #         y=job['op'],
+    #         opacity=1,
+    #         name=job.head(1).jobid.to_string(index=False),
+    #         text=job.jobid,
+    #         hoverinfo='text',
+    #         marker=dict(
+    #             # color='LightSkyBlue',
+    #             size=10,
+    #             line=dict(
+    #                 # color='Green',
+    #                 width=2
+    #             )
+    #         ),
+    #         showlegend=True
+    #     )
+    # ) for job in df_to_scatter]
 
     # Display legend for scatter points
     fig.update_layout(showlegend=True, clickmode='event+select',

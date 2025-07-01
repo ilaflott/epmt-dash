@@ -62,7 +62,7 @@ def display_page(pathname, pfullurl):
     """
     logger.info("Page requested {}".format(pfullurl))
     app.fullurl = pfullurl
-    if pathname == '' or pathname == '/':
+    if pathname in ['', '/']:
         return lay.recent_jobs_page
     elif pathname == '/unprocessed/':
         return lay.layout_unprocessed
