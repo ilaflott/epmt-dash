@@ -19,10 +19,12 @@ logger = getLogger(__name__)  # you can use other name
 #
 # Note, both key and values will be strings and no attempt will be made to
 # guess the type for integer/floats
-def tag_from_string(s, delim = ';', sep = ':', tag_default_value = '1'):
+def tag_from_string(s, delim=';', sep=':', tag_default_value='1'):
     from pony.orm.ormtypes import TrackedDict
-    if type(s) in (dict, TrackedDict): return s
-    if not s: return (None if s == None else {})
+    if type(s) in (dict, TrackedDict):
+        return s
+    if not s:
+        return (None if s is None else {})
 
     logger = getLogger(__name__)
     tag = {}
@@ -30,13 +32,13 @@ def tag_from_string(s, delim = ';', sep = ':', tag_default_value = '1'):
         t = t.strip()
         if sep in t:
             try:
-                (k,v) = t.split(sep)
+                (k, v) = t.split(sep)
                 k = k.strip()
                 v = v.strip()
                 tag[k] = v
             except Exception as e:
                 logger.warning('ignoring key/value pair as it has an invalid format: {0}'.format(t))
-                logger.warning("%s",e)
+                logger.warning("%s", e)
                 continue
         else:
             # tag is not of the format k:v

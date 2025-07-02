@@ -16,8 +16,10 @@ except IndexError:
     print("No Test Address given. Defaulting to localhost")
     TEST_ADDRESS = 'http://localhost:8050'
 
+
 class TestTemplate(unittest.TestCase):
     """Include test cases on a given url"""
+
     def setUp(self):
         """Start web driver"""
         options = webdriver.ChromeOptions()
@@ -165,11 +167,10 @@ class TestTemplate(unittest.TestCase):
         except NoSuchElementException as ex:
             self.fail(ex.msg)
 
-
     def test_case_13(self):
         """Handle unselections on search entry"""
         try:
-            self.driver.get(TEST_ADDRESS+"?case=13")
+            self.driver.get(TEST_ADDRESS + "?case=13")
 
             # We should wait till rows are available before clicking things
             el = WebDriverWait(self.driver, 120).until(
@@ -194,7 +195,7 @@ class TestTemplate(unittest.TestCase):
             input_box.send_keys('7')
             # Jobid 1234007 checkbox
             WebDriverWait(self.driver, 200).until(
-                EC.element_located_selection_state_to_be((By.XPATH, "//tr[1]/td[1]/input"),False))
+                EC.element_located_selection_state_to_be((By.XPATH, "//tr[1]/td[1]/input"), False))
             el = self.driver.find_element_by_xpath("//tr[1]/td[1]/input")
             newstate = el.is_selected()
             if newstate == state:
@@ -203,17 +204,19 @@ class TestTemplate(unittest.TestCase):
         except NoSuchElementException as ex:
             self.fail(ex.msg)
 
-
     def test_case_14(self):
         """Handle unselections on date picker query"""
         try:
-            self.driver.get(TEST_ADDRESS+"?case=14")
+            self.driver.get(TEST_ADDRESS + "?case=14")
 
             # Wait for table rows to be present
             # //*[@id='table-multicol-sorting']/div[2]/div/div[2]/div[2]/table/tbody/tr[30]/td[1]
-            WebDriverWait(self.driver, 200).until(
-                EC.presence_of_element_located((By.XPATH, "//*[@id='table-multicol-sorting']/div[2]/div/div[2]/div[2]/table/tbody/tr[30]/td[1]")))
-            el = self.driver.find_element_by_xpath("//*[@id='table-multicol-sorting']/div[2]/div/div[2]/div[2]/table/tbody/tr[30]/td[1]")
+            WebDriverWait(
+                self.driver, 200).until(
+                EC.presence_of_element_located(
+                    (By.XPATH, "//*[@id='table-multicol-sorting']/div[2]/div/div[2]/div[2]/table/tbody/tr[30]/td[1]")))
+            el = self.driver.find_element_by_xpath(
+                "//*[@id='table-multicol-sorting']/div[2]/div/div[2]/div[2]/table/tbody/tr[30]/td[1]")
             state = el.is_selected()
             # Select all
             el = self.driver.find_element_by_xpath("//*[@id='index-select-all']")
@@ -221,7 +224,7 @@ class TestTemplate(unittest.TestCase):
             # Delay for callback to select everyone
             # We should wait till rows are available before clicking things
             WebDriverWait(self.driver, 200).until(
-                EC.element_located_selection_state_to_be((By.XPATH, "//tr[30]/td/input"),True))
+                EC.element_located_selection_state_to_be((By.XPATH, "//tr[30]/td/input"), True))
             # Check if last row(#30) is selected
             el = self.driver.find_element_by_xpath("//tr[30]/td/input")
             newstate = el.is_selected()
@@ -242,10 +245,9 @@ class TestTemplate(unittest.TestCase):
                 "/html/body/div[2]/div/div/div/div/div[2]/div[2]/div/div[2]/div/table/tbody/tr[2]/td[4]")
             el.click()
 
-
             # We should wait till rows are available before clicking things
             WebDriverWait(self.driver, 200).until(
-                EC.element_located_selection_state_to_be((By.XPATH, "//tr[1]/td/input"),False))
+                EC.element_located_selection_state_to_be((By.XPATH, "//tr[1]/td/input"), False))
             # Jobid 1234007 checkbox
             el = self.driver.find_element_by_xpath("//tr[1]/td/input")
             newstate = el.is_selected()
@@ -269,7 +271,7 @@ if __name__ == '__main__':
     suite = unittest.TestSuite()
     #
     # Uncomment to test a single case
-    #suite.addTest(TestTemplate("test_case_13"))
+    # suite.addTest(TestTemplate("test_case_13"))
 
     # Load entire template of cases
     suite = unittest.TestLoader().loadTestsFromTestCase(TestTemplate)

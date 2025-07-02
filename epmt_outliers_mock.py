@@ -7,7 +7,8 @@ logger = getLogger(__name__)  # pylint: disable=invalid-name
 basicConfig(level=DEBUG)
 
 
-def detect_outlier_jobs(jobs, trained_model=None, features=['cpu_time', 'duration', 'num_procs'], methods=['modified_z_score'], thresholds='thresholds', sanity_check=True):
+def detect_outlier_jobs(jobs, trained_model=None, features=['cpu_time', 'duration', 'num_procs'], methods=[
+                        'modified_z_score'], thresholds='thresholds', sanity_check=True):
     """
     (df, parts) = eod.detect_outlier_jobs(jobs)
     pprint(parts)
@@ -25,5 +26,5 @@ def detect_outlier_jobs(jobs, trained_model=None, features=['cpu_time', 'duratio
                     u'kern-6656-20190614-191138'],
                    [])}
     """
-    returns = ('df', {'feature' : (['job','job2'], ['joboutlier'])})
+    returns = ('df', {'feature': (['job', 'job2'], ['joboutlier'])})
     return "Running outlier analysis on Jobs: " + str(jobs)

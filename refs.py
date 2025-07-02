@@ -41,8 +41,9 @@ def make_refs(name='', jobs=None, tags=None, active=True):
 class ref_gen:
     """Generate a list of sample references
     ref_gen does data cleanup and conversions for displaying reference models"""
+
     def __init__(self):
-        #references = make_refs(2)
+        # references = make_refs(2)
         self.df = pd.DataFrame(get_refs(), columns=['id',
                                                     'name', 'date created', 'tags', 'jobs',
                                                     'features', 'active'])
@@ -84,5 +85,6 @@ def edit_model(model_name, new_jobs, del_original=True):
         eq.delete_refmodels(mid)
     ret = make_refs(name=mname, jobs=mjobs, tags=mtags, active=menabled)
     return ret[0][0]
+
 
 ref_df = get_references()

@@ -1,16 +1,14 @@
 """Mock epmt_query methods
 """
 
-from datetime import timedelta
+import time
 import datetime
+from datetime import timedelta
 import random
 from copy import deepcopy
 from logging import getLogger
 import pandas as pd
 import jobs as job
-
-# We log how we want
-# pylint: disable=invalid-name, logging-format-interpolation
 
 logger = getLogger(__name__)
 
@@ -20,127 +18,167 @@ logger = getLogger(__name__)
 # Due to sample job dictionary lines will be long
 # pylint: disable=line-too-long
 
-SAMPLE_JOB = {'duration': 6460243317.0,
-              'updated_at': datetime.datetime(2019, 11, 26, 22, 0, 22, 485979),
-              'tags': {'exp_name': 'ESM4_historical_D151',
-                       'exp_component': 'ocean_annual_rho2_1x1deg',
-                       'exp_time': '18840101',
-                       'atm_res': 'c96l49',
-                       'ocn_res': '0.5l75',
-                       'script_name': 'ESM4_historical_D151_ocean_annual_rho2_1x1deg_18840101'},
-              'info_dict': {'tz': 'US/Eastern',
-                            'status': {'exit_code': 0,
-                                       'exit_reason': 'none',
-                                       'script_path': '/home/Jeffrey.Durachta/ESM4/DECK/ESM4_historical_D151/gfdl.ncrc4-intel16-prod-openmp/scripts/postProcess/ESM4_historical_D151_ocean_annual_rho2_1x1deg_18840101.tags',
-                                       'script_name': 'ESM4_historical_D151_ocean_annual_rho2_1x1deg_18840101'}},
-              'env_dict': {'TMP': '/vftmp/Jeffrey.Durachta/job685000',
-                           'MODULE_VERSION': '3.2.10',
-                           'GROUP': 'f',
-                           'SLURM_SUBMIT_DIR': '/home/Jeffrey.Durachta/ESM4/DECK/ESM4_historical_D151/gfdl.ncrc4-intel16-prod-openmp/scripts/postProcess',
-                           'SLURM_NODEID': '0',
-                           'SLURM_JOBID': '685000',
-                           'HOSTTYPE': 'x86_64-linux',
-                           'ENVIRONMENT': 'BATCH',
-                           'MODULESHOME': '/usr/local/Modules/3.2.10',
-                           'SLURM_LOCALID': '0',
-                           'LOGNAME': 'Jeffrey.Durachta',
-                           'USER': 'Jeffrey.Durachta',
-                           'HOME': '/home/Jeffrey.Durachta',
-                           'PATH': '/home/gfdl/bin2:/usr/local/bin:/bin:/usr/bin:.',
-                           'SLURM_JOB_NODELIST': 'pp208',
-                           'SLURM_JOB_USER': 'Jeffrey.Durachta',
-                           'LANG': 'en_US',
-                           'TERM': 'dumb',
-                           'SHELL': '/bin/tcsh',
-                           'SLURM_JOB_CPUS_PER_NODE': '1',
-                           'SHLVL': '2',
-                           'SLURM_JOB_QOS': 'Added as default',
-                           'SLURM_JOB_UID': '4067',
-                           'SLURM_GET_USER_ENV': '1',
-                           'SLURM_NODELIST': 'pp208',
-                           'pp_script': '/home/Jeffrey.Durachta/ESM4/DECK/ESM4_historical_D151/gfdl.ncrc4-intel16-prod-openmp/scripts/postProcess/ESM4_historical_D151_ocean_annual_rho2_1x1deg_18840101.tags',
-                           'PAPIEX_OUTPUT': '/vftmp/Jeffrey.Durachta/job685000/papiex/',
-                           'SLURM_JOB_NUM_NODES': '1',
-                           'MANPATH': '/home/gfdl/man:/usr/local/man:/usr/share/man',
-                           'SLURM_PROCID': '0',
-                           'OSTYPE': 'linux',
-                           'SLURM_TASKS_PER_NODE': '1',
-                           'HOSTNAME': 'pp208',
-                           'ARCHIVE': '/archive/Jeffrey.Durachta',
-                           'SLURM_SUBMIT_HOST': 'an104',
-                           'VENDOR': 'unknown',
-                           'JOB_ID': '685000',
-                           'MODULE_VERSION_STACK': '3.2.10',
-                           'SLURM_CLUSTER_NAME': 'gfdl',
-                           'jobname': 'ESM4_historical_D151_ocean_annual_rho2_1x1deg_18840101',
-                           'SLURM_JOB_PARTITION': 'batch',
-                           'HOST': 'pp208',
-                           'SLURM_JOB_ID': '685000',
-                           'SLURM_NTASKS': '1',
-                           'SLURM_NODE_ALIASES': '(null)',
-                           'SLURM_CPUS_ON_NODE': '1',
-                           'LOADEDMODULES': '',
-                           'SLURM_JOB_GID': '70',
-                           'TMPDIR': '/vftmp/Jeffrey.Durachta/job685000',
-                           'MODULEPATH': '/usr/local/Modules/modulefiles:/home/fms/local/modulefiles',
-                           'EPMT': '/home/Jeffrey.Durachta/workflowDB/build//epmt/epmt',
-                           'SLURM_NPROCS': '1',
-                           'EPMT_JOB_TAGS': 'exp_name:ESM4_historical_D151;exp_component:ocean_annual_rho2_1x1deg;exp_time:18840101;atm_res:c96l49;ocn_res:0.5l75;script_name:ESM4_historical_D151_ocean_annual_rho2_1x1deg_18840101',
-                           'SLURM_PRIO_PROCESS': '0',
-                           'OMP_NUM_THREADS': '1',
-                           'SLURM_CHECKPOINT_IMAGE_DIR': '/var/slurm/checkpoint',
-                           'SLURM_GTIDS': '0',
-                           'SLURM_TASK_PID': '6089',
-                           'SLURM_NNODES': '1',
-                           'SLURM_JOB_NAME': 'ESM4_historical_D151_ocean_annual_rho2_1x1deg_18840101',
-                           'SLURM_TOPOLOGY_ADDR': 'pp208',
-                           'PWD': '/vftmp/Jeffrey.Durachta/job685000',
-                           'SLURM_TOPOLOGY_ADDR_PATTERN': 'node',
-                           'WORKFLOWDB_PATH': '/home/Jeffrey.Durachta/workflowDB/build/',
-                           'SLURM_JOB_ACCOUNT': 'gfdl_f',
-                           'LC_TIME': 'C',
-                           'MACHTYPE': 'x86_64',
-                           'SLURMD_NODENAME': 'pp208',
-                           'SLURM_WORKING_CLUSTER': 'gfdl:slurm01:6817:8448'},
-              'cpu_time': 113135329.0,
-              'annotations': {},
-              'env_changes_dict': {},
-              'analyses': {},
-              'submit': datetime.datetime(2019, 6, 15, 7, 52, 4, 73965),
-              'start': datetime.datetime(2019, 6, 15, 7, 52, 4, 73965),
-              'jobid': 'job1',
-              'end': datetime.datetime(2019, 6, 15, 9, 39, 44, 317282),
-              'jobname': 'ESM4_historical_D151_ocean_annual_rho2_1x1deg_18840101',
-              'created_at': datetime.datetime(2019, 11, 26, 22, 0, 8, 937521),
-              'exitcode': 0,
-              'user': 'Jeffrey.Durachta',
-              'num_procs': 3480,
-              'num_threads': 3668,
-              'rdtsc_duration': -112126610546481758,
-              'PERF_COUNT_SW_CPU_CLOCK': 86903088007,
-              'write_bytes': 12254015488,
-              'systemtime': 41980075,
-              'invol_ctxsw': 20900,
-              'rchar': 15458131996,
-              'majflt': 8,
-              'guest_time': 0,
-              'read_bytes': 7000064,
-              'usertime': 71155254,
-              'inblock': 13672,
-              'rssmax': 31621528,
-              'time_waiting': 10152666725,
-              'outblock': 23933624,
-              'user+system': 113135329,
-              'wchar': 15066048420,
-              'minflt': 4972187,
-              'delayacct_blkio_time': 0,
-              'time_oncpu': 115330986461,
-              'cancelled_write_bytes': 8925798400,
-              'syscr': 2182175,
-              'timeslices': 795433,
-              'processor': 0,
-              'syscw': 897834,
-              'vol_ctxsw': 770843}
+SAMPLE_JOB = {
+    'duration': 6460243317.0,
+    'updated_at': datetime.datetime(
+        2019,
+        11,
+        26,
+        22,
+        0,
+        22,
+        485979),
+    'tags': {
+        'exp_name': 'ESM4_historical_D151',
+        'exp_component': 'ocean_annual_rho2_1x1deg',
+        'exp_time': '18840101',
+        'atm_res': 'c96l49',
+        'ocn_res': '0.5l75',
+        'script_name': 'ESM4_historical_D151_ocean_annual_rho2_1x1deg_18840101'},
+    'info_dict': {
+        'tz': 'US/Eastern',
+        'status': {
+            'exit_code': 0,
+            'exit_reason': 'none',
+            'script_path': '/home/Jeffrey.Durachta/ESM4/DECK/ESM4_historical_D151/gfdl.ncrc4-intel16-prod-openmp/scripts/postProcess/ESM4_historical_D151_ocean_annual_rho2_1x1deg_18840101.tags',
+            'script_name': 'ESM4_historical_D151_ocean_annual_rho2_1x1deg_18840101'}},
+    'env_dict': {
+        'TMP': '/vftmp/Jeffrey.Durachta/job685000',
+        'MODULE_VERSION': '3.2.10',
+        'GROUP': 'f',
+        'SLURM_SUBMIT_DIR': '/home/Jeffrey.Durachta/ESM4/DECK/ESM4_historical_D151/gfdl.ncrc4-intel16-prod-openmp/scripts/postProcess',
+        'SLURM_NODEID': '0',
+                        'SLURM_JOBID': '685000',
+                        'HOSTTYPE': 'x86_64-linux',
+                        'ENVIRONMENT': 'BATCH',
+                        'MODULESHOME': '/usr/local/Modules/3.2.10',
+                        'SLURM_LOCALID': '0',
+                        'LOGNAME': 'Jeffrey.Durachta',
+                        'USER': 'Jeffrey.Durachta',
+                        'HOME': '/home/Jeffrey.Durachta',
+                        'PATH': '/home/gfdl/bin2:/usr/local/bin:/bin:/usr/bin:.',
+                        'SLURM_JOB_NODELIST': 'pp208',
+                        'SLURM_JOB_USER': 'Jeffrey.Durachta',
+                        'LANG': 'en_US',
+                        'TERM': 'dumb',
+                        'SHELL': '/bin/tcsh',
+                        'SLURM_JOB_CPUS_PER_NODE': '1',
+                        'SHLVL': '2',
+                        'SLURM_JOB_QOS': 'Added as default',
+                        'SLURM_JOB_UID': '4067',
+                        'SLURM_GET_USER_ENV': '1',
+                        'SLURM_NODELIST': 'pp208',
+                        'pp_script': '/home/Jeffrey.Durachta/ESM4/DECK/ESM4_historical_D151/gfdl.ncrc4-intel16-prod-openmp/scripts/postProcess/ESM4_historical_D151_ocean_annual_rho2_1x1deg_18840101.tags',
+                        'PAPIEX_OUTPUT': '/vftmp/Jeffrey.Durachta/job685000/papiex/',
+                        'SLURM_JOB_NUM_NODES': '1',
+                        'MANPATH': '/home/gfdl/man:/usr/local/man:/usr/share/man',
+                        'SLURM_PROCID': '0',
+                        'OSTYPE': 'linux',
+                        'SLURM_TASKS_PER_NODE': '1',
+                        'HOSTNAME': 'pp208',
+                        'ARCHIVE': '/archive/Jeffrey.Durachta',
+                        'SLURM_SUBMIT_HOST': 'an104',
+                        'VENDOR': 'unknown',
+                        'JOB_ID': '685000',
+                        'MODULE_VERSION_STACK': '3.2.10',
+                        'SLURM_CLUSTER_NAME': 'gfdl',
+                        'jobname': 'ESM4_historical_D151_ocean_annual_rho2_1x1deg_18840101',
+                        'SLURM_JOB_PARTITION': 'batch',
+                        'HOST': 'pp208',
+                        'SLURM_JOB_ID': '685000',
+                        'SLURM_NTASKS': '1',
+                        'SLURM_NODE_ALIASES': '(null)',
+                        'SLURM_CPUS_ON_NODE': '1',
+                        'LOADEDMODULES': '',
+                        'SLURM_JOB_GID': '70',
+                        'TMPDIR': '/vftmp/Jeffrey.Durachta/job685000',
+                        'MODULEPATH': '/usr/local/Modules/modulefiles:/home/fms/local/modulefiles',
+                        'EPMT': '/home/Jeffrey.Durachta/workflowDB/build//epmt/epmt',
+                        'SLURM_NPROCS': '1',
+                        'EPMT_JOB_TAGS': 'exp_name:ESM4_historical_D151;exp_component:ocean_annual_rho2_1x1deg;exp_time:18840101;atm_res:c96l49;ocn_res:0.5l75;script_name:ESM4_historical_D151_ocean_annual_rho2_1x1deg_18840101',
+                        'SLURM_PRIO_PROCESS': '0',
+                        'OMP_NUM_THREADS': '1',
+                        'SLURM_CHECKPOINT_IMAGE_DIR': '/var/slurm/checkpoint',
+                        'SLURM_GTIDS': '0',
+                        'SLURM_TASK_PID': '6089',
+                        'SLURM_NNODES': '1',
+                        'SLURM_JOB_NAME': 'ESM4_historical_D151_ocean_annual_rho2_1x1deg_18840101',
+                        'SLURM_TOPOLOGY_ADDR': 'pp208',
+                        'PWD': '/vftmp/Jeffrey.Durachta/job685000',
+                        'SLURM_TOPOLOGY_ADDR_PATTERN': 'node',
+                        'WORKFLOWDB_PATH': '/home/Jeffrey.Durachta/workflowDB/build/',
+                        'SLURM_JOB_ACCOUNT': 'gfdl_f',
+                        'LC_TIME': 'C',
+                        'MACHTYPE': 'x86_64',
+                        'SLURMD_NODENAME': 'pp208',
+                        'SLURM_WORKING_CLUSTER': 'gfdl:slurm01:6817:8448'},
+    'cpu_time': 113135329.0,
+    'annotations': {},
+    'env_changes_dict': {},
+    'analyses': {},
+    'submit': datetime.datetime(
+        2019,
+        6,
+        15,
+        7,
+        52,
+        4,
+        73965),
+    'start': datetime.datetime(
+        2019,
+        6,
+        15,
+        7,
+        52,
+        4,
+        73965),
+    'jobid': 'job1',
+    'end': datetime.datetime(
+        2019,
+        6,
+        15,
+        9,
+        39,
+        44,
+        317282),
+    'jobname': 'ESM4_historical_D151_ocean_annual_rho2_1x1deg_18840101',
+    'created_at': datetime.datetime(
+        2019,
+        11,
+        26,
+        22,
+        0,
+        8,
+        937521),
+    'exitcode': 0,
+    'user': 'Jeffrey.Durachta',
+    'num_procs': 3480,
+    'num_threads': 3668,
+    'rdtsc_duration': -112126610546481758,
+    'PERF_COUNT_SW_CPU_CLOCK': 86903088007,
+    'write_bytes': 12254015488,
+    'systemtime': 41980075,
+    'invol_ctxsw': 20900,
+    'rchar': 15458131996,
+    'majflt': 8,
+    'guest_time': 0,
+    'read_bytes': 7000064,
+    'usertime': 71155254,
+    'inblock': 13672,
+    'rssmax': 31621528,
+    'time_waiting': 10152666725,
+    'outblock': 23933624,
+    'user+system': 113135329,
+    'wchar': 15066048420,
+    'minflt': 4972187,
+    'delayacct_blkio_time': 0,
+    'time_oncpu': 115330986461,
+    'cancelled_write_bytes': 8925798400,
+    'syscr': 2182175,
+    'timeslices': 795433,
+    'processor': 0,
+    'syscw': 897834,
+    'vol_ctxsw': 770843}
 
 
 class Models:
@@ -150,8 +188,10 @@ class Models:
     id = 0
     model_list = []
 
+
 class Job:
     jobid = 'initialjobid'
+
 
 def create_refmodel(name, jobs=[], tag={}, enabled=True):
     """ This mock reference model method accepts a job name
@@ -217,8 +257,8 @@ def get_jobs(jobs=None, tags=None, fltr=None, order=None, limit=None, offset=0, 
         job['end'] = job['end'] + timedelta(days=njob)
         name = name_list[njob % 2]
         job['tags']['exp_name'] = name + sample_name
-        job['duration'] = job['duration'] - njob*8000000
-        job['cpu_time'] = job['cpu_time'] - njob*100
+        job['duration'] = job['duration'] - njob * 8000000
+        job['cpu_time'] = job['cpu_time'] - njob * 100
         if job['jobid'] == str(1234002):
             job['tags']['exp_name'] = "mismatch_test"
         comp = component_list[njob % 3] + sample_component
@@ -232,7 +272,7 @@ def get_jobs(jobs=None, tags=None, fltr=None, order=None, limit=None, offset=0, 
     df = df[offset:]
 
     # Filter on keys
-    if tags != None:
+    if tags is not None:
         from json import dumps
         for key in tags.keys():
             # Filter down to requested key
@@ -244,7 +284,7 @@ def get_jobs(jobs=None, tags=None, fltr=None, order=None, limit=None, offset=0, 
                 # No match on key value return df empty
                 df = df.head(0)
 
-    if fmt=='pandas':
+    if fmt == 'pandas':
         return df
     return df.to_dict('records')
 
@@ -295,9 +335,9 @@ def get_ops(jobs, tags=[], exact_tag_only=False, combine=False, fmt='dict', op_d
         e["jobs"] = [j]
         res.extend([e])
     if fmt == 'pandas':
-        import pandas as pd
         return pd.DataFrame(res)
     return res
+
 
 def comparable_job_partitions(jobs, matching_keys=['exp_name', 'exp_component']):
     """Mock comparable_jobs
@@ -332,7 +372,6 @@ def comparable_job_partitions(jobs, matching_keys=['exp_name', 'exp_component'])
            for exp_name, exp_component in cdict]
     return out
 
-import time
 
 def str_time_prop(start, end, format):
     """Get a time at a proportion of a range of two formatted times.
@@ -395,13 +434,12 @@ def get_procs(
         "tcsh", "tempfile", "touch", "true", "udevadm", "ulockmgr_server", "umount", "uname",
         "uncompress", "unicode_start", "vdir", "wdctl", "which", "whiptail", "ypdomainname", "zcat",
         "zcmp", "zdiff", "zegrep", "zfgrep", "zforce", "zgrep", "zless", "zmore", "znew"]
-    from datetime import datetime
     sample_proc = {'id': 36416,
-                   'start': datetime(2019, 6, 16, 13, 54, 28, 878022),
-                   'end': datetime(2019, 6, 16, 14, 6, 18, 107548),
+                   'start': datetime.datetime(2019, 6, 16, 13, 54, 28, 878022),
+                   'end': datetime.datetime(2019, 6, 16, 14, 6, 18, 107548),
                    'duration': 709229526.0000001,
-                   'created_at': datetime(2019, 12, 17, 21, 1, 32, 442541),
-                   'updated_at': datetime(2019, 12, 17, 21, 1, 32, 442546),
+                   'created_at': datetime.datetime(2019, 12, 17, 21, 1, 32, 442541),
+                   'updated_at': datetime.datetime(2019, 12, 17, 21, 1, 32, 442546),
                    'tags': {'op': 'dmput', 'op_instance': '2', 'op_sequence': '89'},
                    'job': jobs,
                    'host': 'pp028',
@@ -451,13 +489,12 @@ def get_procs(
             proc = sample_proc
             proc['jobid'] = j
             proc['exename'] = random.choice(exelist)
-            proc['path'] = '/bin/'+proc['exename']
+            proc['path'] = '/bin/' + proc['exename']
             timeformat = "%m/%d/%Y %I:%M %p %Z"
             start_datetime = random_date(
-            "11/1/2019 1:30 PM UTC", "11/5/2019 4:50 PM UTC", timeformat)
-            from datetime import datetime
-            start_time = datetime.strptime(start_datetime, timeformat).time()
+                "11/1/2019 1:30 PM UTC", "11/5/2019 4:50 PM UTC", timeformat)
+            start_time = datetime.datetime.strptime(start_datetime, timeformat).time()
             proc['start'] = start_time
-            proc['duration'] = random.uniform(86400/4, 86400)
+            proc['duration'] = random.uniform(86400 / 4, 86400)
             result.append(deepcopy(proc))
     return result
